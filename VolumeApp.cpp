@@ -201,6 +201,7 @@ float rotationX = 0.0f;
 float rotationY = 0.0f;
 float rotationZ = 0.0f;
 
+
 BOOL bRotateX = FALSE;
 BOOL bRotateY = FALSE;
 BOOL bRotateZ = FALSE;
@@ -655,6 +656,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	// local:
 
+	//int newX = 0;
+	//int newY = 0;
+
 	// code
 	switch (iMsg)
 	{
@@ -916,20 +920,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_MOUSEMOVE:
-		xMouseValue = GET_X_LPARAM(lParam);
-		yMouseValue = GET_Y_LPARAM(lParam);
 
 		if (bMouseClicked)
 		{
-			rotationX += (yMouseValue - oldY) / 5000.0f;
-			rotationY += (xMouseValue - oldX) / 5000.0f;
+			int newX = GET_X_LPARAM(lParam);
+			int newY = GET_Y_LPARAM(lParam);
+
+			float dX = (newX - oldX) / 5.0f;
+			float dY = (newY - oldY) / 5.0f;
+
+			rotationX += dY;
+
+			float fSign = (cos(glm::radians(rotationX)) >= 0.0 ? 1.0f : -1.0f);
+			//?? float factor = cos(glm::radians(rotationX));
+			rotationY += dX * fSign;
+
+			oldX = newX;
+			oldY = newY;
+
 		}
 		else
 		{
-			oldX = xMouseValue;
-			oldY = yMouseValue;
+			oldX = GET_X_LPARAM(lParam);
+			oldY = GET_Y_LPARAM(lParam);
 		}
-
 		break;
 
 	case WM_MOUSEWHEEL:
@@ -2669,10 +2683,12 @@ void Render_Basic_Volume(void)
 	// local:
 	
 	//setup the camera transform
-	glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-	glm::mat4 Rx = glm::rotate(TranslationMatrix, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 Ry = glm::rotate(Rx, rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 ModelViewMatrix = glm::rotate(Ry, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+
 
 	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);
 
@@ -3240,9 +3256,11 @@ void Render_Raycasting_Output(void)
 {
 	// local:
 
-	glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-	glm::mat4 Rx = glm::rotate(TranslationMatrix, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 ModelViewMatrix = glm::rotate(Rx, rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
 	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
@@ -3662,10 +3680,11 @@ void Initialize_IsoSurface_Geomatry(void)
 void Render_IsoSurface_Output(void)
 {
 	// local:
+	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
 
-	glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-	glm::mat4 Rx = glm::rotate(TranslationMatrix, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 ModelViewMatrix = glm::rotate(Rx, rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
 	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
@@ -4001,10 +4020,11 @@ void Render_ColormapClassification_Output(void)
 {
 	// local:
 
-	glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-	glm::mat4 Rx = glm::rotate(TranslationMatrix, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 Ry = glm::rotate(Rx, rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 ModelViewMatrix = glm::rotate(Ry, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);
 
@@ -4558,9 +4578,12 @@ void Render_MarchingTetrahedra(void)
 	// local:
 
 	//set the modelling transform to move the marching result to origin
-	glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-	glm::mat4 Rx = glm::rotate(TranslationMatrix, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 ModelViewMatrix = glm::rotate(Rx, rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
 	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
 	

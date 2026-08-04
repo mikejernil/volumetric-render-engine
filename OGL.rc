@@ -1,0 +1,5 @@
+//OGL.rc
+
+#include "OGL.h"
+
+MYICON ICON "MyIcon.ico"

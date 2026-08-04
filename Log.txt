@@ -1,0 +1,45 @@
+Shree Gajanan Prasanna #
+Log File Created Successfully.
+Program started Successfully.
+Vertex Shader Compilation Successful.   
+Fragment Shader Compilation Successful. status: 1 
+shaderProgramObject Linking Successful. status: 1 
+LoadVolumeData() Success Step1
+LoadVolumeData() Success Step2 and Last
+Slicer1  Success at  Vertex Shader Compilation 
+Slicer1 Success at NEW FRAGMENT Shader Compilation 
+Slicer1  shaderProgramObject_Slicer1 Linking Successful 
+GridObject Success at  Vertex Shader Compilation 
+GridObject Success at  FRAGMENT Shader Compilation 
+GridObject  Linking Successful 
+******* vaoID is NON - NULL *******  
+Success in Raycating  Vertex Shader Compilation 
+Success  in Raycating FRAGMENT Shader Compilation 
+RayCasting shaderObject Linking Successful 
+Success in IsoSurface  Vertex Shader Compilation 
+Success  in IsoSurface FRAGMENT Shader Compilation 
+IsoSurface shaderObject Linking Successful 
+Success in Colormap VERTEX Shader.
+Success in Colormap FRAGMENT Shader.
+Success in Colormap shaderObject Linking
+------- LoadVolume() Successful.------- 
+Success in MarchingTetrahedra Vertex Shader.
+Success in MarchingTetrahedra Fragment Shader.
+Success in MarchingTetrahedra shaderObject Linking
+SUCCESS: Splatting Vertex Shader Compilation 
+SUCCESS: Splatting FRAGMENT Shader Compilation 
+SUCCESS: Splatting ShaderProgram ObjectLinking Successful 
+SUCCESS: Gaussian_H Vertex Shader Compilation 
+SUCCESS: Gaussian_H FRAGMENT Shader Compilation 
+SUCCESS: Gaussian_H ShaderProgram ObjectLinking Successful 
+SUCCESS: Pass Through VS for Gaussian_V Compilation 
+SUCCESS: Gaussian_V FRAGMENT Shader Compilation 
+SUCCESS: Gaussian_V ShaderProgram ObjectLinking Successful 
+SUCCESS: Splatting Quad Vertex Shader Compilation 
+SUCCESS: Splatting Quad FRAGMENT Shader Compilation 
+SUCCESS: Splatting Quad ShaderProgram ObjectLinking Successful 
+Message: initialize() successful.
+Inside uninitialize().
+Closing the LogFile.
+Program ended successfully.
+=======================================================

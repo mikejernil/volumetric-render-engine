@@ -135,7 +135,9 @@ float fZPlus_FrontFace = 0.5f;
 float fYPlus_TopFace = 0.5f;
 float fXPlus_SideFace = 0.5f;
 
+float fXMinus_SideFace = -0.5f;
 float fYMinus_BottomFace = -0.5f;
+float fZMinus_BackFace = -0.5f;
 
 glm::vec3 vertexList[8] = { 
 						   // Minus Z-Vertices
@@ -501,7 +503,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	// code to create window
 	hwnd = CreateWindowEx(WS_EX_APPWINDOW,
 		szAppName,
-		TEXT("AMC 3D_Viewer"),	
+		TEXT("VolumeApp 3D_Viewer"),	
 		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
 		(iWidth / 4),
 		(iHeight / 4),
@@ -754,7 +756,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case VK_UP:
-			if (fZPlus_FrontFace >= -0.45f)
+			if (fZPlus_FrontFace >= -0.49f)
 			{
 				fZPlus_FrontFace -= 0.01f;
 			}
@@ -768,12 +770,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case VK_LEFT:
-			if (fXPlus_SideFace>= -0.45f)
+			if (fXPlus_SideFace>= -0.49f)
 			{
 				fXPlus_SideFace -= 0.01f;
 			}
 			break;
-			
+
 		case VK_RIGHT:
 			if (fXPlus_SideFace < 0.5f)
 			{
@@ -782,7 +784,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case VK_SUBTRACT:
-			if (fYPlus_TopFace>= -0.45f)
+			if (fYPlus_TopFace >= -0.49f)
 			{
 				fYPlus_TopFace -= 0.01f;
 			}
@@ -802,11 +804,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case VK_DIVIDE:
-			if (fYMinus_BottomFace >= -0.45f)
+			if (fYMinus_BottomFace >= -0.49f)
 			{
 				fYMinus_BottomFace -= 0.01f;
 			}
 			break;
+
+		case VK_NUMPAD2:
+			if (fZMinus_BackFace < 0.5f)
+			{
+				fZMinus_BackFace += 0.01f;
+			}
+			break;
+
+		case VK_NUMPAD8:
+			if (fZMinus_BackFace >= -0.49f)
+			{
+				fZMinus_BackFace -= 0.01f;
+			}
+			break;
+
+		case VK_NUMPAD6:
+			if (fXMinus_SideFace < 0.5f)
+			{
+				fXMinus_SideFace += 0.01f;
+			}
+			break;
+
+		case VK_NUMPAD4:
+			if (fXMinus_SideFace >= -0.49f)
+			{
+				fXMinus_SideFace -= 0.01f;
+			}
+			break;
+
 
 		case VK_ESCAPE:
 			DestroyWindow(hwnd);
@@ -852,6 +883,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				fXPlus_SideFace = 0.5f;
 				fYPlus_TopFace= 0.5f;
 				fYMinus_BottomFace = -0.5f;
+				fZMinus_BackFace= -0.5f;
+				fXMinus_SideFace = -0.5f;
 				dist = -2.0f;
 			}
 			break;
@@ -1387,7 +1420,7 @@ int initialize(void)
 	glGenVertexArrays(1, &VAO_Volume_Axes);
 	glBindVertexArray(VAO_Volume_Axes);
 	{
-		glm::vec3 vertexList[16] = {
+		glm::vec3 vertexList[24] = {
 			//// Minus Z-Vertices
 			//glm::vec3(-0.5f,-0.5f,-0.5f), // 1. Left Bottom
 			//glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),  // 2. Right Bottom
@@ -1400,7 +1433,7 @@ int initialize(void)
 			glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
 			glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace),  // 8. Left Top
 
-			// SIDE FACE : All Plus X-Vertices:
+			// RIGHT SIDE FACE : All Plus X-Vertices:
 			glm::vec3(fXPlus_SideFace, 0.5f, 0.5f),
 			glm::vec3(fXPlus_SideFace, 0.5f,-0.5f),
 			glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),
@@ -1417,6 +1450,18 @@ int initialize(void)
 			glm::vec3(0.5f, fYMinus_BottomFace,-0.5f),
 			glm::vec3(0.5f, fYMinus_BottomFace, 0.5f),
 			glm::vec3(-0.5f, fYMinus_BottomFace, 0.5f),
+
+			// BACK FACE: All Minus Z-Vertices
+			glm::vec3(-0.5f,-0.5f, fZMinus_BackFace),
+			glm::vec3(0.5f,-0.5f, fZMinus_BackFace),
+			glm::vec3(0.5f,  0.5f, fZMinus_BackFace),
+			glm::vec3(-0.5f,  0.5f, fZMinus_BackFace),
+
+			// LEFT SIDE FACE: All Minus X-Vertices
+			glm::vec3(fXMinus_SideFace, 0.5f, 0.5f),
+			glm::vec3(fXMinus_SideFace, 0.5f,-0.5f),
+			glm::vec3(fXMinus_SideFace,-0.5f,-0.5f),
+			glm::vec3(fXMinus_SideFace,-0.5f, 0.5f),
 
 		};
 
@@ -1681,11 +1726,11 @@ void display(void)
 		xMouseValue_NDC = (xMouseValue_NDC - 1.0f);
 		yMouseValue_NDC = (1.0f - yMouseValue_NDC);
 
-		swprintf_s(str, L"AMC 3D_Viewer: xValue,yValue ( %.2f ,%.2f )| Left Click DOWN xMouseValue_NDC,yMouseValue_NDC ( %.2f ,%.2f )  ", xMouseValue, yMouseValue, xMouseValue_NDC, yMouseValue_NDC);
+		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y  ( %.2f ,%.2f )| Left Click DOWN xMouseValue_NDC,yMouseValue_NDC ( %.2f ,%.2f )  ", xMouseValue, yMouseValue, xMouseValue_NDC, yMouseValue_NDC);
 	}
 	else
 	{
-		swprintf_s(str, L"AMC 3D_Viewer: xValue,yValue ( %.2f ,%.2f )", xMouseValue, yMouseValue);
+		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y ( %.2f ,%.2f )", xMouseValue, yMouseValue);
 	}
 	//SetWindowText(ghwnd, (LPCSTR)str);
 	SetWindowTextW(ghwnd, str);
@@ -1811,16 +1856,16 @@ void Slice_Volume(void)
 	glm::vec3 vertexList[8] = {
 
 		// Minus Z-Vertices
-		glm::vec3(-0.5f,fYMinus_BottomFace,-0.5f), // 1. Left Bottom
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,-0.5f),  // 2. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,-0.5f),  // 3. Right Top
-		glm::vec3(-0.5f, fYPlus_TopFace,-0.5f), // 4. Left Top
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),			// 1. Left Bottom
+		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),				// 2. Right Bottom
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,fZMinus_BackFace),				// 3. Right Top
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace,fZMinus_BackFace),				// 4. Left Top
 
 		// Plus Z-Vertices
-		glm::vec3(-0.5f,fYMinus_BottomFace, fZPlus_FrontFace), // 5. Left Bottom
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),  // 6. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
-		glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace)  // 8. Left Top
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),			// 5. Left Bottom
+		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),			// 6. Right Bottom
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),				// 7. Right Top
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZPlus_FrontFace)				// 8. Left Top
 	};
 
 	// get the max and min distance of each vertex of the unit cube in the viewing direction
@@ -2003,15 +2048,15 @@ void Update_Volume_Box_Axes(void)
 {
 	// code:
 
-	glm::vec3 vertexList[16] = {
+	glm::vec3 vertexList[24] = {
 
 		// FRONT FACE: All Plus Z-Vertices
-		glm::vec3(-0.5f,fYMinus_BottomFace, fZPlus_FrontFace), // 5. Left Bottom
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),  // 6. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
-		glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace),  // 8. Left Top
+		glm::vec3(-0.5f,fYMinus_BottomFace, fZPlus_FrontFace),				// 5. Left Bottom
+		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),	// 6. Right Bottom
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),		// 7. Right Top
+		glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace),					// 8. Left Top
 
-		// SIDE FACE : All Plus X-Vertices:
+		// RIGHT FACE : All Plus X-Vertices:
 		glm::vec3(fXPlus_SideFace, 0.5f, 0.5f),
 		glm::vec3(fXPlus_SideFace, 0.5f,-0.5f),
 		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,-0.5f),
@@ -2028,6 +2073,19 @@ void Update_Volume_Box_Axes(void)
 		glm::vec3(0.5f, fYMinus_BottomFace,-0.5f),
 		glm::vec3(0.5f, fYMinus_BottomFace, 0.5f),
 		glm::vec3(-0.5f, fYMinus_BottomFace, 0.5f),
+
+		// LEFT FACE : All Minus X-Vertices:
+		glm::vec3(fXMinus_SideFace, 0.5f, 0.5f),
+		glm::vec3(fXMinus_SideFace, 0.5f,-0.5f),
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace,-0.5f),
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, 0.5f),
+
+		// BACK FACE: All Minus Z-Vertices
+		glm::vec3(-0.5f,fYMinus_BottomFace, fZMinus_BackFace),				// 5. Left Bottom
+		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZMinus_BackFace),	// 6. Right Bottom
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZMinus_BackFace),		// 7. Right Top
+		glm::vec3(-0.5f, fYPlus_TopFace, fZMinus_BackFace),					// 8. Left Top
+
 	};
 
 
@@ -2065,6 +2123,18 @@ void Render_Volume_Box_Axes(glm::mat4 MVPMatrix_)
 		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 1.0f, 0.0f, 1.0f);
 		glBindVertexArray(VAO_Volume_Axes);
 		glDrawArrays(GL_LINE_LOOP, 12, 4);
+		glBindVertexArray(0);
+
+		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
+		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 0.0f, 1.0f, 1.0f, 1.0f);
+		glBindVertexArray(VAO_Volume_Axes);
+		glDrawArrays(GL_LINE_LOOP, 16, 4);
+		glBindVertexArray(0);
+
+		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
+		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 0.0f, 1.0f, 1.0f);
+		glBindVertexArray(VAO_Volume_Axes);
+		glDrawArrays(GL_LINE_LOOP, 20, 4);
 		glBindVertexArray(0);
 	}
 	glUseProgram(0);

@@ -21,7 +21,7 @@
 
 
 // -OpenGL Header Files-
-#include<gl/glew.h>			//! Must be before gl.h
+#include "dependencies/glew/include/GL/glew.h"			//! Must be before gl.h
 #include<gl/GL.h>
 
 #include "vmath.h"
@@ -38,9 +38,9 @@ const float EPSILON = 0.0001f;//for floating point inaccuracy
 #define MENU_OPEN_NEW_FILE 861
 
 // Link with OpenGL Library:
-#pragma comment(lib,"glew32")
+#pragma comment(lib,"dependencies/glew/lib/Release/x64/glew32")
 #pragma comment(lib,"OpenGL32")
-#pragma comment(lib, "Comdlg32.lib")
+#pragma comment(lib, "Comdlg32")
 
 // global variable declarations:
 HWND ghwnd = NULL;
@@ -314,11 +314,9 @@ int Z_SAMPLING_DIST;
 
 //volume data pointer
 GLubyte* pVolume;
-//the given isovalue to look for
 GLubyte isoValue;
 //vertices vector storing positions and normals
 std::vector<Vertex> vertices;
-
 GLuint volumeMarcherVBO;
 GLuint volumeMarcherVAO;
 
@@ -405,10 +403,6 @@ GLuint shaderProgramObject_Splatting_Quad;
 GLuint textureSampler_Quad=0;
 
 
-//VolumeSplatter instance
-// 
-// #include "VolumeSplatter.h"
-// VolumeSplatter* splatter;
 
 
 // Splatting Method Prototypes:

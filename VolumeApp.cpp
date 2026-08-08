@@ -36,9 +36,13 @@ using namespace vmath;
 // MACROS:
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
-const float EPSILON = 0.0001f;//for floating point inaccuracy
 
 #define MENU_OPEN_NEW_FILE 861
+#define ID_RESET_BUTTON 1001
+
+
+const float EPSILON = 0.0001f;//for floating point inaccuracy
+
 
 // Link with OpenGL Library:
 #pragma comment(lib,"dependencies/glew/lib/Release/x64/glew32")
@@ -613,10 +617,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	AppendMenuW(hMenuBar1, MF_POPUP, (UINT_PTR)hmenu_Help, L"Help");
 
 
+	// Reset button:
+	HWND hResetButton = CreateWindow(
+		L"BUTTON",  // Predefined class; Unicode assumed 
+		L"RESET",      // Button text 
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		20,                 // x
+		20,                 // y
+		100,                // width
+		35,                 // height
+		hwnd,               // parent window
+		(HMENU)ID_RESET_BUTTON,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+
 
 	//SetMenu(hwnd, hMenuBar1);
-
-	
 	ShowWindow(hwnd, SW_MAXIMIZE);
 	SetForegroundWindow(hwnd);//Z-Order madhe Pudhe aan.
 	SetFocus(hwnd);//interally goes to WM_SETFOCUS.
@@ -792,6 +810,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					//////	//MessageBox(hwnd, str,TEXT(" TITLE "), MB_ICONINFORMATION | MB_OK);
 					//////}
 
+				}
+				break;
+
+			case ID_RESET_BUTTON:
+				{
+					bRotateX = FALSE;
+					bRotateY = FALSE;
+					bRotateZ = FALSE;
+					rotationX = 0.0f;
+					rotationY = 0.0f;
+					rotationZ = 0.0f;
+					fZPlus_FrontFace = 0.5f;
+					fXPlus_SideFace = 0.5f;
+					fYPlus_TopFace = 0.5f;
+					fYMinus_BottomFace = -0.5f;
+					fZMinus_BackFace = -0.5f;
+					fXMinus_SideFace = -0.5f;
+					dist = -2.0f;
+					bSliceUpdate = TRUE;
+					SetFocus(hwnd);
 				}
 				break;
 
@@ -1039,10 +1077,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		bRotateX = FALSE;
 		bRotateY = FALSE;
 		bRotateZ = FALSE;
+		SetCapture(hwnd);
 		break;
 
 	case WM_LBUTTONUP:
 		bMouseClicked = FALSE;
+		ReleaseCapture();
 		break;
 
 	case WM_SETFOCUS:

@@ -642,7 +642,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	AppendMenuW(hMenuBar1, MF_POPUP, (UINT_PTR)hmenu_ShaderType, L"ShaderType");
 
 	CheckMenuItem(hmenu_ShaderType, 4, MF_CHECKED | MF_BYCOMMAND);
-	iOption = 0;
+	iOption = 3;
 	
 	// 2D View
 	HMENU hmenu_2DView = CreatePopupMenu();
@@ -703,7 +703,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 	wchar_t text1[64];
-	swprintf_s(text1, 64, L"Basic");
+	swprintf_s(text1, 64, L"Colomap");
 	SetWindowText(hwndValueLabel, text1);
 
 	HWND hwndRightButton = CreateWindow(
@@ -1298,7 +1298,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}
 				bSliceUpdate = TRUE;
 				wchar_t text3[64];
-				swprintf_s(text3, 64, L"Front face: %.2f", fXPlus_SideFace);
+				swprintf_s(text3, 64, L"Right face: %.2f", fXPlus_SideFace);
 				SetWindowText(hLabel_RightFace, text3);
 				SetFocus(hwnd);
 				break;
@@ -1309,7 +1309,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					fXPlus_SideFace += 0.01f;
 				}
 				bSliceUpdate = TRUE;
-				swprintf_s(text3, 64, L"Front face: %.2f", fXPlus_SideFace);
+				swprintf_s(text3, 64, L"Right face: %.2f", fXPlus_SideFace);
 				SetWindowText(hLabel_RightFace, text3);
 				SetFocus(hwnd);
 				break;

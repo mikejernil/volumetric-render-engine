@@ -40,6 +40,10 @@ using namespace vmath;
 #define MENU_OPEN_NEW_FILE 861
 #define ID_RESET_BUTTON 1001
 
+#define ID_LEFT_ARROW_EFFECT  1002
+#define ID_RIGHT_ARROW_EFFECT 1003
+#define ID_LABEL_EFFECT   1004
+
 
 const float EPSILON = 0.0001f;//for floating point inaccuracy
 
@@ -490,6 +494,8 @@ GLuint testTex = 0;
 void LoadDebuGTex(void);
 
 
+HWND hwndValueLabel = NULL;
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
@@ -602,7 +608,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	AppendMenuW(hMenuBar1, MF_POPUP, (UINT_PTR)hmenu_ShaderType, L"ShaderType");
 
 	CheckMenuItem(hmenu_ShaderType, 4, MF_CHECKED | MF_BYCOMMAND);
-	iOption = 2;
+	iOption = 0;
 	
 	// 2D View
 	HMENU hmenu_2DView = CreatePopupMenu();
@@ -628,6 +634,54 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		35,                 // height
 		hwnd,               // parent window
 		(HMENU)ID_RESET_BUTTON,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+
+	//---------- EFFECTS ARROW Two Buttons and Label ----------------
+	HWND hwndLeftButton = CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		20+1400,                  // x
+		70+520,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LEFT_ARROW_EFFECT,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hwndValueLabel = CreateWindow(
+		L"STATIC",
+		L"Value 1",
+		WS_VISIBLE | WS_CHILD | SS_CENTER| SS_CENTERIMAGE,
+		65+1400,                  // x
+		70+520,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_EFFECT,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text[64];
+	swprintf_s(text, 64, L"Effect : %d", iOption);
+	SetWindowText(hwndValueLabel, text);
+
+	HWND hwndRightButton = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		170+1400,                 // x
+		70+520,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_RIGHT_ARROW_EFFECT,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
@@ -831,6 +885,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					bSliceUpdate = TRUE;
 					SetFocus(hwnd);
 				}
+				break;
+
+			case ID_LEFT_ARROW_EFFECT:
+				iOption -= 1;
+				if (iOption < 0)
+				{
+					iOption = 3;
+				}
+				bSliceUpdate = TRUE;
+
+				wchar_t text[64];
+				swprintf_s(text, 64, L"Effect : %d", iOption);
+				SetWindowText(hwndValueLabel, text);
+				SetFocus(hwnd);
+				break;
+
+			case ID_RIGHT_ARROW_EFFECT:
+				iOption += 1;
+				if (iOption > 3)
+				{
+					iOption = 0;
+				}
+				bSliceUpdate = TRUE;
+
+				swprintf_s(text, 64, L"Effect : %d", iOption);
+				SetWindowText(hwndValueLabel, text);
+				SetFocus(hwnd);
+				SetFocus(hwnd);
 				break;
 
 			default:

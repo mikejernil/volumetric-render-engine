@@ -57,6 +57,19 @@ using namespace vmath;
 #define ID_LABEL_TOP_FACE 1013
 
 
+#define ID_BACK_FACE_MINUS 1014
+#define ID_BACK_FACE_PLUS 1015
+#define ID_LABEL_BACK_FACE 1016
+
+#define ID_LEFT_FACE_MINUS 1017
+#define ID_LEFT_FACE_PLUS 1018
+#define ID_LABEL_LEFT_FACE 1019
+
+#define ID_BOTTOM_FACE_MINUS 1020
+#define ID_BOTTOM_FACE_PLUS 1021
+#define ID_LABEL_BOTTOM_FACE 1022
+
+
 const float EPSILON = 0.0001f;//for floating point inaccuracy
 
 
@@ -508,9 +521,14 @@ void LoadDebuGTex(void);
 
 
 HWND hwndValueLabel = NULL;
+
 HWND hLabel_FrontFace = NULL;
 HWND hLabel_RightFace = NULL;
 HWND hLabel_TopFace = NULL;
+
+HWND hLabel_BackFace = NULL;
+HWND hLabel_LeftFace = NULL;
+HWND hLabel_BottomFace = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -685,7 +703,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 	wchar_t text1[64];
-	swprintf_s(text1, 64, L"Effect : %d", iOption);
+	swprintf_s(text1, 64, L"Basic");
 	SetWindowText(hwndValueLabel, text1);
 
 	HWND hwndRightButton = CreateWindow(
@@ -842,6 +860,148 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		30,                  // height
 		hwnd,
 		(HMENU)ID_TOP_FACE_PLUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	// ------------------ BACK FACE:  ARROW Two Buttons and Label ------------------ 
+	HWND hBackClip_Minus = CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		760,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_BACK_FACE_MINUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_BackFace= CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		760,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_BACK_FACE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text5[64];
+	swprintf_s(text5, 64, L"Back face: %.2f", fZMinus_BackFace);
+	SetWindowText(hLabel_BackFace, text5);
+
+	HWND hBackClip_Plus = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		760,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_BACK_FACE_PLUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+
+	// ------------------ LEFT FACE:  ARROW Two Buttons and Label ------------------ 
+	HWND hLeftClip_Minus = CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		800,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LEFT_FACE_MINUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_LeftFace = CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		800,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_LEFT_FACE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text6[64];
+	swprintf_s(text6, 64, L"Left face: %.2f", fXMinus_SideFace);
+	SetWindowText(hLabel_LeftFace, text6);
+
+	HWND hLeftClip_Plus = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		800,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LEFT_FACE_PLUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+	
+	// ------------------ BOTTOM FACE:  ARROW Two Buttons and Label ------------------ 
+	HWND hBottomClip_Minus = CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		840,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_BOTTOM_FACE_MINUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_BottomFace = CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		840,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_BOTTOM_FACE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text7[64];
+	swprintf_s(text7, 64, L"Bottom : %.2f",fYMinus_BottomFace);
+	SetWindowText(hLabel_BottomFace, text7);
+
+	HWND hBottomClip_Plus = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		840,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_BOTTOM_FACE_PLUS,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
@@ -1155,34 +1315,103 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			/* TOP FACE  ARROWS */
-
-		case ID_TOP_FACE_MINUS:
-			if (fYPlus_TopFace >= -0.49f)
-			{
-				fYPlus_TopFace -= 0.01f;
-			}
-			bSliceUpdate = TRUE;
-			wchar_t text4[64];
-			swprintf_s(text4, 64, L"Top face: %.2f", fYPlus_TopFace);
-			SetWindowText(hLabel_TopFace, text4);
-			SetFocus(hwnd);
-			break;
-
-		case ID_TOP_FACE_PLUS:
-			if (fYPlus_TopFace < 0.5f)
-			{
-				fYPlus_TopFace += 0.01f;
-			}
-			bSliceUpdate = TRUE;
-			swprintf_s(text4, 64, L"Top face: %.2f", fYPlus_TopFace);
-			SetWindowText(hLabel_TopFace, text4);
-			SetFocus(hwnd);
-			break;
-
-			default:
+			case ID_TOP_FACE_MINUS:
+				if (fYPlus_TopFace >= -0.49f)
+				{
+					fYPlus_TopFace -= 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				wchar_t text4[64];
+				swprintf_s(text4, 64, L"Top face: %.2f", fYPlus_TopFace);
+				SetWindowText(hLabel_TopFace, text4);
+				SetFocus(hwnd);
 				break;
-		}
-		break;
+
+			case ID_TOP_FACE_PLUS:
+				if (fYPlus_TopFace < 0.5f)
+				{
+					fYPlus_TopFace += 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				swprintf_s(text4, 64, L"Top face: %.2f", fYPlus_TopFace);
+				SetWindowText(hLabel_TopFace, text4);
+				SetFocus(hwnd);
+				break;
+
+			/* BACK Face */
+			case ID_BACK_FACE_MINUS:
+				if (fZMinus_BackFace >= -0.49f)
+				{
+					fZMinus_BackFace -= 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				wchar_t text5[64];
+				swprintf_s(text5, 64, L"Back face: %.2f", fZMinus_BackFace);
+				SetWindowText(hLabel_BackFace, text5);
+				SetFocus(hwnd);
+				break;
+			case ID_BACK_FACE_PLUS:
+				if (fZMinus_BackFace < 0.5f)
+				{
+					fZMinus_BackFace += 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				swprintf_s(text5, 64, L"Back face: %.2f", fZMinus_BackFace);
+				SetWindowText(hLabel_BackFace, text5);
+				SetFocus(hwnd);
+				break;
+
+			/* LEFT Face */
+			case ID_LEFT_FACE_MINUS:
+				if (fXMinus_SideFace >= -0.49f)
+				{
+					fXMinus_SideFace -= 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				wchar_t text6[64];
+				swprintf_s(text6, 64, L"Left face: %.2f", fXMinus_SideFace);
+				SetWindowText(hLabel_LeftFace, text6);
+				SetFocus(hwnd);
+				break;
+
+			case ID_LEFT_FACE_PLUS:
+				if (fXMinus_SideFace < 0.5f)
+				{
+					fXMinus_SideFace += 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				swprintf_s(text6, 64, L"Left face: %.2f", fXMinus_SideFace);
+				SetWindowText(hLabel_LeftFace, text6);
+				SetFocus(hwnd);
+				break;
+
+			/* BOTTOM Face */
+			case ID_BOTTOM_FACE_MINUS:
+				if (fYMinus_BottomFace >= -0.49f)
+				{
+					fYMinus_BottomFace -= 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				wchar_t text7[64];
+				swprintf_s(text7, 64, L"Bottom : %.2f", fYMinus_BottomFace);
+				SetWindowText(hLabel_BottomFace, text7);
+				SetFocus(hwnd);
+				break;
+
+			case ID_BOTTOM_FACE_PLUS:
+				if (fYMinus_BottomFace < 0.5f)
+				{
+					fYMinus_BottomFace += 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				swprintf_s(text7, 64, L"Bottom : %.2f", fYMinus_BottomFace);
+				SetWindowText(hLabel_BottomFace, text7);
+				SetFocus(hwnd);
+				break;
+
+
+			}
+			break;
 
 	case WM_KEYDOWN:
 		bSliceUpdate = TRUE;

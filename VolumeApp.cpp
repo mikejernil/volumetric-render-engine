@@ -506,6 +506,7 @@ GLuint testTex = 0;
 void LoadDebuGTex(void);
 
 
+
 HWND hwndValueLabel = NULL;
 HWND hLabel_FrontFace = NULL;
 HWND hLabel_RightFace = NULL;
@@ -643,8 +644,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"BUTTON",  // Predefined class; Unicode assumed 
 		L"RESET",      // Button text 
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		1600,                 // x
-		500,                 // y
+		1465,                 // x
+		550,                 // y
 		100,                // width
 		35,                 // height
 		hwnd,               // parent window
@@ -660,7 +661,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
 		1420,                  // x
-		590,                  // y
+		450,                  // y
 		40,                  // width
 		30,                  // height
 		hwnd,
@@ -674,7 +675,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"Value 1",
 		WS_VISIBLE | WS_CHILD | SS_CENTER| SS_CENTERIMAGE,
 		1465,                  // x
-		590,                  // y
+		450,                  // y
 		100,                 // width
 		30,                  // height
 		hwnd,
@@ -692,7 +693,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
 		1570,                 // x
-		590,                  // y
+		450,                  // y
 		40,                  // width
 		30,                  // height
 		hwnd,
@@ -1055,7 +1056,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				bSliceUpdate = TRUE;
 
 				wchar_t text[64];
-				swprintf_s(text, 64, L"Effect : %d", iOption);
+
+				switch (iOption)
+				{
+				case 0:
+					swprintf_s(text, 64, L"Basic ");
+					break;
+				case 1:
+					swprintf_s(text, 64, L"RayCasting Method");
+					break;
+				case 2:
+					swprintf_s(text, 64, L"Pseudo IsoSurface with RayCasting");
+					break;
+				case 3:
+					swprintf_s(text, 64, L"Colormap Classification");
+					break;
+				}
+				
 				SetWindowText(hwndValueLabel, text);
 				SetFocus(hwnd);
 				break;
@@ -1068,7 +1085,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}
 				bSliceUpdate = TRUE;
 
-				swprintf_s(text, 64, L"Effect : %d", iOption);
+				switch (iOption)
+				{
+				case 0:
+					swprintf_s(text, 64, L"Basic ");
+					break;
+				case 1:
+					swprintf_s(text, 64, L"RayCasting");
+					break;
+				case 2:
+					swprintf_s(text, 64, L"Pseudo IsoSurface with RayCasting");
+					break;
+				case 3:
+					swprintf_s(text, 64, L"Colormap Classification");
+					break;
+				}
 				SetWindowText(hwndValueLabel, text);
 				SetFocus(hwnd);
 				break;

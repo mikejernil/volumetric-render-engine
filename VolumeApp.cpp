@@ -622,8 +622,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"BUTTON",  // Predefined class; Unicode assumed 
 		L"RESET",      // Button text 
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		20,                 // x
-		20,                 // y
+		1600,                 // x
+		500,                 // y
 		100,                // width
 		35,                 // height
 		hwnd,               // parent window
@@ -1046,6 +1046,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		{
 			oldX = GET_X_LPARAM(lParam);
 			oldY = GET_Y_LPARAM(lParam);
+
+			xMouseValue= GET_X_LPARAM(lParam);
+			yMouseValue= GET_Y_LPARAM(lParam);
 		}
 		break;
 
@@ -1874,12 +1877,12 @@ void display(void)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, giWinWidth, giWinHeight);
 
-	glDisable(GL_DEPTH_TEST);
-	draw_Quad_with_Texture(textureLeft,-0.25, -1.5f);
-	draw_Quad_with_Texture(textureRight, 0.25f, -1.5f);
-	glEnable(GL_DEPTH_TEST);
+	//****** Message / Options using 2D Texture always on Top can be added below ***********
+	////glDisable(GL_DEPTH_TEST);
+	////draw_Quad_with_Texture(textureLeft,-0.25, -1.5f);
+	////draw_Quad_with_Texture(textureRight, 0.25f, -1.5f);
+	////glEnable(GL_DEPTH_TEST);
 
-	// Debug Textures
 
 	wchar_t str[255];
 	if (bMouseClicked)

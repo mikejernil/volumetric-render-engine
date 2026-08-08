@@ -44,6 +44,18 @@ using namespace vmath;
 #define ID_RIGHT_ARROW_EFFECT 1003
 #define ID_LABEL_EFFECT   1004
 
+#define ID_FRONT_FACE_MINUS 1005
+#define ID_FRONT_FACE_PLUS 1006
+#define ID_LABEL_FRONT_FACE 1007
+
+#define ID_RIGHT_FACE_MINUS 1008
+#define ID_RIGHT_FACE_PLUS 1009
+#define ID_LABEL_RIGHT_FACE 1010
+
+#define ID_TOP_FACE_MINUS 1011
+#define ID_TOP_FACE_PLUS 1012
+#define ID_LABEL_TOP_FACE 1013
+
 
 const float EPSILON = 0.0001f;//for floating point inaccuracy
 
@@ -495,6 +507,7 @@ void LoadDebuGTex(void);
 
 
 HWND hwndValueLabel = NULL;
+HWND hLabel_FrontFace = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -639,13 +652,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 
-	//---------- EFFECTS ARROW Two Buttons and Label ----------------
+	// ------------------ EFFECTS ARROW Two Buttons and Label ------------------ 
 	HWND hwndLeftButton = CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-		20+1400,                  // x
-		70+520,                  // y
+		1420,                  // x
+		590,                  // y
 		40,                  // width
 		30,                  // height
 		hwnd,
@@ -658,8 +671,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"STATIC",
 		L"Value 1",
 		WS_VISIBLE | WS_CHILD | SS_CENTER| SS_CENTERIMAGE,
-		65+1400,                  // x
-		70+520,                  // y
+		1465,                  // x
+		590,                  // y
 		100,                 // width
 		30,                  // height
 		hwnd,
@@ -668,20 +681,69 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		NULL
 	);
 
-	wchar_t text[64];
-	swprintf_s(text, 64, L"Effect : %d", iOption);
-	SetWindowText(hwndValueLabel, text);
+	wchar_t text1[64];
+	swprintf_s(text1, 64, L"Effect : %d", iOption);
+	SetWindowText(hwndValueLabel, text1);
 
 	HWND hwndRightButton = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-		170+1400,                 // x
-		70+520,                  // y
+		1570,                 // x
+		590,                  // y
 		40,                  // width
 		30,                  // height
 		hwnd,
 		(HMENU)ID_RIGHT_ARROW_EFFECT,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+
+
+	// ------------------ FRONT FACE:  ARROW Two Buttons and Label ------------------ 
+	HWND hFrontClip_Minus= CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		630,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_FRONT_FACE_MINUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_FrontFace = CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		630,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_FRONT_FACE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text2[64];
+	swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
+	SetWindowText(hLabel_FrontFace, text2);
+
+	HWND hFrontClip_Plus = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		630,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_FRONT_FACE_PLUS,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
@@ -912,6 +974,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				swprintf_s(text, 64, L"Effect : %d", iOption);
 				SetWindowText(hwndValueLabel, text);
 				SetFocus(hwnd);
+				break;
+
+			case ID_FRONT_FACE_MINUS:
+
+				if (fZPlus_FrontFace >= -0.49f)
+				{
+					fZPlus_FrontFace -= 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				wchar_t text2[64];
+				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
+				SetWindowText(hLabel_FrontFace, text2);
+				SetFocus(hwnd);
+				break;
+
+			case ID_FRONT_FACE_PLUS:
+				if (fZPlus_FrontFace < 0.5f)
+				{
+					fZPlus_FrontFace += 0.01f;
+				}
+				bSliceUpdate = TRUE;
+				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
+				SetWindowText(hLabel_FrontFace, text2);
 				SetFocus(hwnd);
 				break;
 

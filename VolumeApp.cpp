@@ -1229,7 +1229,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					swprintf_s(text, 64, L"Pseudo IsoSurface with RayCasting");
 					break;
 				case 3:
-					swprintf_s(text, 64, L"Colormap Classification");
+					swprintf_s(text, 64, L"Colormap");
 					break;
 				}
 				
@@ -1257,7 +1257,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					swprintf_s(text, 64, L"Pseudo IsoSurface with RayCasting");
 					break;
 				case 3:
-					swprintf_s(text, 64, L"Colormap Classification");
+					swprintf_s(text, 64, L"Colormap");
 					break;
 				}
 				SetWindowText(hwndValueLabel, text);

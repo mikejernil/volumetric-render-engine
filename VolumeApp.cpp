@@ -126,7 +126,18 @@ void ToggleFullscreen(void);
 
 //! VOLUME RENDERING GLOBAL VARIABLES:
 
-int iOption = -1;
+int iEffectUsed= -1;
+
+const wchar_t* effectNames[] =
+{
+	L"Basic",
+	L"RayCasting Method",
+	L"Pseudo IsoSurface",
+	L"Colormap",
+	L"MarchingCubes Method",
+};
+
+const wchar_t* textHolder = L"";
 
 GLuint shaderProgramObject_Grid;
 GLuint mvpUniform_GridObject;
@@ -473,7 +484,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
 	
-	iOption = 3;
+	iEffectUsed = 3;
 	
 
 	// Reset button:
@@ -944,59 +955,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			/* Effect Switch Arrows */
 			case ID_LEFT_ARROW_EFFECT:
-				iOption -= 1;
-				if (iOption < 0)
+				iEffectUsed -= 1;
+				if (iEffectUsed < 0)
 				{
-					iOption = 3;
+					iEffectUsed = 4;
 				}
 				bSliceUpdate = TRUE;
 
-				wchar_t text[64];
-
-				switch (iOption)
-				{
-				case 0:
-					swprintf_s(text, 64, L"Basic ");
-					break;
-				case 1:
-					swprintf_s(text, 64, L"RayCasting Method");
-					break;
-				case 2:
-					swprintf_s(text, 64, L"Pseudo IsoSurface");
-					break;
-				case 3:
-					swprintf_s(text, 64, L"Colormap");
-					break;
-				}
-				
-				SetWindowText(hwndValueLabel, text);
+				textHolder = effectNames[iEffectUsed];
+				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
 				break;
 
 			case ID_RIGHT_ARROW_EFFECT:
-				iOption += 1;
-				if (iOption > 3)
+				iEffectUsed += 1;
+				if (iEffectUsed > 4)
 				{
-					iOption = 0;
+					iEffectUsed = 0;
 				}
 				bSliceUpdate = TRUE;
-
-				switch (iOption)
-				{
-				case 0:
-					swprintf_s(text, 64, L"Basic ");
-					break;
-				case 1:
-					swprintf_s(text, 64, L"RayCasting");
-					break;
-				case 2:
-					swprintf_s(text, 64, L"Pseudo IsoSurface");
-					break;
-				case 3:
-					swprintf_s(text, 64, L"Colormap");
-					break;
-				}
-				SetWindowText(hwndValueLabel, text);
+				textHolder = effectNames[iEffectUsed];
+				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
 				break;
 
@@ -1972,7 +1951,7 @@ void display(void)
 
 
 
-	switch (iOption)
+	switch (iEffectUsed)
 	{
 		case 0:
 			glClearColor(0.75f, 0.75f, 0.75f, 0.0f);

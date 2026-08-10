@@ -3,12 +3,11 @@
 #define _UNICODE
 
 //- Commmon Header Files -
-
 #include<Windows.h>
 #include<Windowsx.h>
-#include<stdio.h>// for FileIO
-#include<stdlib.h>// for exit(),malloc()
-#include <fstream> // FOR std::ifstream
+#include<stdio.h>
+#include<stdlib.h>
+#include <fstream>
 #include <iostream>
 #include<math.h>
 #include<stdarg.h>
@@ -33,11 +32,10 @@ using namespace vmath;
 #define STB_IMAGE_IMPLEMENTATION
 #include "./include/stb_image.h"
 
-// MACROS:
+// MACROS and 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
-#define MENU_OPEN_NEW_FILE 861
 #define ID_RESET_BUTTON 1001
 
 #define ID_LEFT_ARROW_EFFECT  1002
@@ -70,7 +68,7 @@ using namespace vmath;
 #define ID_LABEL_BOTTOM_FACE 1022
 
 
-const float EPSILON = 0.0001f;//for floating point inaccuracy
+#define EPSILON 0.0001f;//for floating point inaccuracy
 
 
 // Link with OpenGL Library:
@@ -122,9 +120,6 @@ enum
 // function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void ToggleFullscreen(void);
-BOOL LoadPNGImage(GLuint* texture, const char* imageFilePath);
-BOOL LoadPNGImage_New(GLuint* texture, const char* imageFilePath);
-BOOL LoadGLTexture(GLuint* Texture, TCHAR ImageResourceID[]);
 
 
 
@@ -200,35 +195,6 @@ const int XDIM = 256;
 const int YDIM = 256;
 const int ZDIM = 256;
 const std::string volume_file = "./resources/model/Engine256.raw";
-
-
-const int XDIM_2 = 256;
-const int YDIM_2 = 256;
-const int ZDIM_2 = 256;
-const std::string volume_file_2 = "./resources/model/skull_256x256x256_uint8.raw";
-
-
-const int XDIM_3 = 256;
-const int YDIM_3 = 256;
-const int ZDIM_3 = 256;
-const std::string volume_file_3 = "./resources/model/bonsai_256x256x256_uint8.raw";
-
-const int XDIM_4 = 256;
-const int YDIM_4 = 256;
-const int ZDIM_4 = 256;
-const std::string volume_file_4 = "./resources/model/head_256x256x256_uint8.raw";
-
-
-const int XDIM_5 = 64;
-const int YDIM_5 = 64;
-const int ZDIM_5 = 64;
-const std::string volume_file_5= "./resources/model/neghip_64x64x64_uint8.raw";
-
-
-const int XDIM_6 = 103;
-const int YDIM_6 = 94;
-const int ZDIM_6 = 161;
-const std::string volume_file_6= "./resources/model/tooth_103x94x161_uint8.raw";
 
 
 
@@ -372,7 +338,6 @@ void SetVolumeDimensions(const int xdim, const int ydim, const int zdim);//funct
 void SetNumSamplingVoxels(const int x, const int y, const int z);//function to set the total number of sampling voxels + more voxels will give a higher density mesh
 void SetIsosurfaceValue(const GLubyte value);//set the isosurface value
 bool LoadVolume(const std::string& filename);//load the volume dataset
-bool Load_New_Volume(const std::string& filename, int X_DIM, int Y_DIM, int Z_DIM);
 
 void MarchVolume();//march the volume dataset
 size_t GetTotalVertices_TM();//get the total number of vertices generated
@@ -389,7 +354,6 @@ void Uninitialize_MarchingTetrahedra(void);
 GLuint VAO_Volume_Axes;
 GLuint VBO_Volume_Axes;
 
-void Initialize_Volume_Box_Axes(void);
 void Update_Volume_Box_Axes(void);
 void Render_Volume_Box_Axes(glm::mat4);
 
@@ -1048,19 +1012,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				CheckMenuItem(GetMenu(hwnd), 9, MF_CHECKED | MF_BYCOMMAND);
 				break;
 
-			case MENU_OPEN_NEW_FILE:
-				{
-					//////std::wstring filePath = OpenRawFileDialog(hwnd);
 
-					//////if (!filePath.empty())
-					//////{
-					//////	char str[255];
-					//////	sprintf(str, " Path is not Empty");
-					//////	//MessageBox(hwnd, str,TEXT(" TITLE "), MB_ICONINFORMATION | MB_OK);
-					//////}
-
-				}
-				break;
 
 			case ID_RESET_BUTTON:
 				{
@@ -2061,24 +2013,24 @@ int initialize(void)
 	LoadTransferFunction();
 
 
-	//Initialize_TetrahedraMarcher_Constructor();
-	//SetVolumeDimensions(256, 256, 256);
-	//if (LoadVolume(volume_file))
-	//{
-	//	fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
-	//}
-	//else
-	//{
-	//	fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
-	//}
-	////set the isosurface value
-	//SetIsosurfaceValue(48);
-	////set the number of sampling voxels 
-	//SetNumSamplingVoxels(128, 128, 128);
-	////begin tetrahedra marching
-	//MarchVolume();
-	//Initialize_TetrahedraMarcher_Geomatry();
-	//Initialize_TetrahedraMarcher_Shaders();
+	Initialize_TetrahedraMarcher_Constructor();
+	SetVolumeDimensions(256, 256, 256);
+	if (LoadVolume(volume_file))
+	{
+		fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
+	}
+	//set the isosurface value
+	SetIsosurfaceValue(48);
+	//set the number of sampling voxels 
+	SetNumSamplingVoxels(128, 128, 128);
+	//begin tetrahedra marching
+	MarchVolume();
+	Initialize_TetrahedraMarcher_Geomatry();
+	Initialize_TetrahedraMarcher_Shaders();
 
 
 
@@ -4870,7 +4822,6 @@ void SetIsosurfaceValue(const GLubyte value)
 bool LoadVolume(const std::string& filename)
 {
 
-	//std::ifstream infile(filename.c_str(), std::ios_base::binary);
 	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
 
 	if (infile.good())
@@ -4884,102 +4835,6 @@ bool LoadVolume(const std::string& filename)
 	{
 		return false;
 	}
-}
-
-bool Load_New_Volume(const std::string& filename,int X_DIM,int Y_DIM,int Z_DIM)
-{
-
-	std::ifstream infile(filename.c_str(), std::ios_base::binary);
-
-
-	if (infile.good())
-	{
-		//read the volume data file
-		GLubyte* pData = new GLubyte[X_DIM * Y_DIM * Z_DIM];
-		infile.read(reinterpret_cast<char*>(pData), X_DIM * Y_DIM * Z_DIM * sizeof(GLubyte));
-		infile.close();
-
-
-		// 1. Generate and bind OpenGL Texture:
-		glGenTextures(1, &textureID);
-		glBindTexture(GL_TEXTURE_3D, textureID);
-		{
-			// set parameters for 'textureID'
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-			// set mipmap levers for base and max:
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 4);
-
-			// create 3D texture with pData : //allocate data with internal format and foramt as (GL_RED)	
-			glTexImage3D(
-				/*target*/GL_TEXTURE_3D,
-				/* level*/0,
-				/*internalFormat*/GL_R8,
-				/* width*/X_DIM,
-				/* height*/Y_DIM,
-				/* depth*/Z_DIM,
-				/* border*/0,
-				/* Format*/GL_RED,
-				/* type*/GL_UNSIGNED_BYTE,
-				/*pixel data*/pData
-			);
-
-			// generate mipmaps:
-			glGenerateMipmap(GL_TEXTURE_3D);
-
-
-		}
-		//glBindTexture(GL_TEXTURE_3D, 0);
-
-		fprintf(gpFile, "LoadVolumeData() Success Step1\n"); fflush(gpFile);
-
-		delete[] pData;
-	}
-	else
-	{
-		fprintf(gpFile, "LoadVolumeData() FAILED Step1\n"); fflush(gpFile);
-		uninitialize();
-		return (false);
-	}
-
-	glGenVertexArrays(1, &VAO_volume);
-	glBindVertexArray(VAO_volume);
-	{
-		glGenBuffers(1, &VBO_volume);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_volume);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vTextureSlices), 0, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-	glBindVertexArray(0);
-
-
-
-
-	//setup the current camera transform and get the view direction vector
-	glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-	glm::mat4 Rx = glm::rotate(T, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 Ry = glm::rotate(Rx, rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 MV = glm::rotate(Ry, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-
-	viewDirection = -glm::vec3(MV[0][2], MV[1][2], MV[2][2]);	//get the current view direction vector
-
-	vmath::mat4 T_mat = vmath::translate(0.0f, 0.0f, dist);
-	vmath::mat4 MV_mat = T_mat;
-
-	viewDirection_v3 = -(vmath::vec3(MV_mat[0][2], MV_mat[1][2], MV_mat[2][2]));
-
-
-	fprintf(gpFile, "LoadVolumeData() Success Step2 and Last\n"); fflush(gpFile);
-
-
-	return (true);
 }
 
 void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)

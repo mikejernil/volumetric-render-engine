@@ -407,7 +407,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	// code
 
 	// File IO code:
-
 	if (fopen_s(&gpFile, "Log.txt", "w") != 0)
 	{
 		MessageBox(NULL, TEXT("Failed to open Log File."), TEXT("File IO Error."), MB_ICONERROR | MB_OK);
@@ -423,7 +422,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
 	//to initialize members of wndclass
-
 	wndclass.cbSize = sizeof(wndclass);
 	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; //DeviceContext of our class will be in Class's OWNERSHIP.
 	wndclass.cbClsExtra = 0;
@@ -475,41 +473,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
 	
-	HMENU hMenuBar1 = CreateMenu();
-
-	// Object Types
-	HMENU hmenu_ObjType = CreatePopupMenu();
-	AppendMenuW(hmenu_ObjType, MF_STRING, 1, L"Option 1");
-	AppendMenuW(hmenu_ObjType, MF_STRING, 2, L"Option 2");
-	AppendMenuW(hmenu_ObjType, MF_STRING, 3, L"Option 3");
-	AppendMenuW(hMenuBar1, MF_POPUP, (UINT_PTR)hmenu_ObjType, L"ObjectType");
-
-	
-	// Shader Types
-	HMENU hmenu_ShaderType = CreatePopupMenu();
-	AppendMenuW(hmenu_ShaderType, MF_STRING, 4, L"Basic Shader");
-	AppendMenuW(hmenu_ShaderType, MF_STRING, 5, L"RayCasting");
-	AppendMenuW(hmenu_ShaderType, MF_STRING, 6, L"Pseudo IsoSurface with Ray casting");
-	AppendMenuW(hmenu_ShaderType, MF_STRING, 7, L"Colormap Classification");
-	AppendMenuW(hmenu_ShaderType, MF_STRING, 8, L"Marching Tetrahedra");
-	AppendMenuW(hmenu_ShaderType, MF_STRING, 9, L"Half Angle Slicing");
-	AppendMenuW(hMenuBar1, MF_POPUP, (UINT_PTR)hmenu_ShaderType, L"ShaderType");
-
-	CheckMenuItem(hmenu_ShaderType, 4, MF_CHECKED | MF_BYCOMMAND);
 	iOption = 3;
 	
-	// 2D View
-	HMENU hmenu_2DView = CreatePopupMenu();
-	AppendMenuW(hmenu_2DView, MF_STRING, 10, L"2D View");
-	AppendMenuW(hmenu_2DView, MF_STRING, 11, L"Slicer View");
-	AppendMenuW(hMenuBar1, MF_POPUP, (UINT_PTR)hmenu_2DView, L"2DView");
-
-	
-	// Help
-	HMENU hmenu_Help = CreatePopupMenu();
-	AppendMenuW(hmenu_Help, MF_STRING, 1, L"About");
-	AppendMenuW(hMenuBar1, MF_POPUP, (UINT_PTR)hmenu_Help, L"Help");
-
 
 	// Reset button:
 	HWND hResetButton = CreateWindow(
@@ -862,7 +827,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
 
-	//SetMenu(hwnd, hMenuBar1);
 	ShowWindow(hwnd, SW_MAXIMIZE);
 	SetForegroundWindow(hwnd);//Z-Order madhe Pudhe aan.
 	SetFocus(hwnd);//interally goes to WM_SETFOCUS.
@@ -958,75 +922,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
-			case 1:
-				{
-
-					std::wstring filePath = OpenRawFileDialog(hwnd);
-
-					if (!filePath.empty())
-					{
-						char str[255];
-						sprintf(str, " Path is not Empty");
-						//MessageBox(hwnd, str,TEXT(" TITLE "), MB_ICONINFORMATION | MB_OK);
-					}
-				}
-
-				break;
-			case 2:
-				break;
-			case 3:
-				break;
-			case 4:
-				iOption = 0;
-				for (int i=4;i<=9;i++)
-				{
-					CheckMenuItem(GetMenu(hwnd), i, MF_UNCHECKED | MF_BYCOMMAND);
-				}
-				CheckMenuItem(GetMenu(hwnd), 4, MF_CHECKED | MF_BYCOMMAND);
-				break;
-			case 5:
-				iOption = 1;
-				for (int i = 4; i <= 9; i++)
-				{
-					CheckMenuItem(GetMenu(hwnd), i, MF_UNCHECKED | MF_BYCOMMAND);
-				}
-				CheckMenuItem(GetMenu(hwnd), 5, MF_CHECKED | MF_BYCOMMAND);
-				break;
-			case 6:
-				iOption = 2;
-				for (int i = 4; i <= 9; i++)
-				{
-					CheckMenuItem(GetMenu(hwnd), i, MF_UNCHECKED | MF_BYCOMMAND);
-				}
-				CheckMenuItem(GetMenu(hwnd), 6, MF_CHECKED | MF_BYCOMMAND);
-				break;
-			case 7:
-				iOption = 3;
-				for (int i = 4; i <= 9; i++)
-				{
-					CheckMenuItem(GetMenu(hwnd), i, MF_UNCHECKED | MF_BYCOMMAND);
-				}
-				CheckMenuItem(GetMenu(hwnd), 7, MF_CHECKED | MF_BYCOMMAND);
-				break;
-			case 8:
-				iOption = 4;
-				for (int i = 4; i <= 9; i++)
-				{
-					CheckMenuItem(GetMenu(hwnd), i, MF_UNCHECKED | MF_BYCOMMAND);
-				}
-				CheckMenuItem(GetMenu(hwnd), 8, MF_CHECKED | MF_BYCOMMAND);
-				break;
-			case 9:
-				iOption = 5;
-				for (int i = 4; i <= 9; i++)
-				{
-					CheckMenuItem(GetMenu(hwnd), i, MF_UNCHECKED | MF_BYCOMMAND);
-				}
-				CheckMenuItem(GetMenu(hwnd), 9, MF_CHECKED | MF_BYCOMMAND);
-				break;
-
-
-
 			case ID_RESET_BUTTON:
 				{
 					bRotateX = FALSE;
@@ -1047,6 +942,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
+			/* Effect Switch Arrows */
 			case ID_LEFT_ARROW_EFFECT:
 				iOption -= 1;
 				if (iOption < 0)
@@ -1357,26 +1253,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CHAR:
 		switch (LOWORD(wParam))
 		{
-		case '1':
-			iOption = 0;
-			break;
-
-		case '3':
-			iOption = 1;
-			break;
-			
-		case '5':
-			iOption = 2;
-			break;
-			
-		case '7':
-			iOption = 3;
-			break;
-			
-		case '0':
-			iOption = 4;
-			break;
-
 		case 'f':
 		case 'F':
 			if (gbFullscreen == FALSE)

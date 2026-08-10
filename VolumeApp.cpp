@@ -225,17 +225,29 @@ GLfloat yMouseValue_NDC = 0.0f;
 
 
 //!  VOLUME RENDERING Function Prototypes:
-int Initialize_Slicing_shader(void);
-void Slice_Volume(void);
-int FindAbsMax(glm::vec3 v);
-int LoadVolumeData(void);
-void Uninitialize_Slicing_shader(void);
+
+
+// Grid and Axes Rendering Prototype:
 int LoadGridObject_Shader(int width, int depth);
 int GetTotalVertices(void);
 int GetTotalIndices(void);
 void FillIndexBuffer(GLuint* pBuffer);
 void FillVertexBuffer(GLfloat* pBuffer);
 int FindAbsMax(glm::vec3 v);
+
+
+
+// Shader Type 1: Basic Volume Render:
+
+
+int Initialize_Slicing_shader(void);
+void Slice_Volume(void);
+int FindAbsMax(glm::vec3 v);
+int LoadVolumeData(void);
+void Render_Basic_Volume(void);
+void Update_Basic_Volume(void);
+void Uninitialize_Slicing_shader(void);
+
 
 // Shader Type 2: Ray Casting Method : global variables:
 
@@ -248,6 +260,7 @@ GLuint step_size_Uniform = 0;
 GLuint VAO_cube_RayCastingCube;
 GLuint VBO_cube_ID_RayCastingCube;
 GLuint VBO_cube_Indices_RayCastingCube;
+
 
 // Shader Type 2: Ray Casting Method : prototypes:
 int Initialize_Raycasting_shader(void);
@@ -1459,7 +1472,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			int iWheelDelta= GET_WHEEL_DELTA_WPARAM(wParam);
 			char str[255];
 			sprintf(str, "Inside WM_MOUSEHWHEEL with value iWheelDelta=> %d", iWheelDelta);
-			//MessageBox(hwnd, str, TEXT("CAPTION"), MB_OK);
 			if (iWheelDelta > 0)
 			{
 				// WHEEL UP:
@@ -1580,38 +1592,6 @@ void ToggleFullscreen(void)
 	}
 
 }
-
-/*
-# Use Function : CreateWindowEx() with 1st Parameter ->WS_EX_APPWINDOW
-This style is on Top Of TASKBAR.
-
-1]IF NOT FULLSCREEN: Proceed with Following Steps:
-	A) Get the current Window style GetWindowStyle():
-		IF that WindowStyle "contains" WS_OVERLAPPEDWINDOW.
-		a) Get Current Window's Placement i.e Position,Length,Bredth, etc.
-		b) Get Monitor's Properties -> Width , Height:
-			for this you need MONITOR's HANDLE.
-		c) IF both (a) and (b) are Successful/TRUE then follow subsubsteps:
-
-			i) Remove WS_OVERLAPPEDWINDOW from Current Window Style.(we only need WS_OVERLAPPED out of this MACRO.)
-			ii) Set the New Fullscreened Window such that it will be Overlapped,
-			its ClientArea will Begin from LEFT TOP of the Monitor,its Width/Height will be WIDTH,HEIGHT of Monitor,
-			AND it will be at the TOP of the Z-ORDER.
-			[What is Z-ORDER = ]
-
-	B) Hide the Cursor, because Conventionally in FullscreenMode SystemCursor is Hidden.
-	[Window is Now Fullscreen-set the Flag to Fullscreen.]
-
-2] IF ALREADY in FULLSCREEN MODE: Proceed with Following Steps:
-
-	A) Set the Window Placement i.e Position,Width,Height as per previous state of Fullscreen.
-	B) Add/Set WindowStyle again just like WS_OVERLAPPEDWINDOW.
-	C) Set the WindowPosition such that it will be UnAffected by Parent's Z-ORDER ,Movement and RePaint,
-	i.e make the Window Normal Again.
-	D) Start showing CURSOR again.
-	[Window is Now back to normals -ReSet the Flag]
-
-*/
 
 int initialize(void)
 {
@@ -1930,11 +1910,6 @@ int initialize(void)
 
 
 	LoadVolumeData();
-	//Load_New_Volume(volume_file_2,XDIM_2,YDIM_2,ZDIM_2);
-	//Load_New_Volume(volume_file_3,XDIM_3,YDIM_3,ZDIM_3);
-	//Load_New_Volume(volume_file_4,XDIM_4,YDIM_4,ZDIM_4);
-	//Load_New_Volume(volume_file_5,XDIM_5,YDIM_5,ZDIM_5);
-	//Load_New_Volume(volume_file_6,XDIM_6,YDIM_6,ZDIM_6);
 
 
 	Initialize_Slicing_shader();
@@ -2034,7 +2009,6 @@ int initialize(void)
 
 
 
-
 	// Set the background color to BLUE.
 	glClearColor(0.75f, 0.75f, 0.75f, 0.0f);
 
@@ -2043,13 +2017,10 @@ int initialize(void)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
-	glEnable(GL_TEXTURE_2D);
-
-	glEnable(GL_TEXTURE_3D); //OPTIONAL
+	glEnable(GL_TEXTURE_3D);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
 	// No WarmUpResize in this version
 	perspectiveProjectionMatrix = vmath::mat4::identity();
@@ -2109,20 +2080,15 @@ void resize(int width, int height)
 		(GLsizei)height
 	);
 
-
 	
 	perspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height,0.1f,1000.0f);
-
 	perspectiveProjMatrix_glm = glm::perspective(glm::radians(60.0f), (GLfloat)width / (GLfloat)height, 0.1f, 1000.0f);
-
-
 }
 
 void display(void)
 {
 	// prototype:
-	void Render_Basic_Volume(void);
-	void Update_Basic_Volume(void);
+
 
 	// code:
 
@@ -2208,11 +2174,8 @@ void display(void)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, giWinWidth, giWinHeight);
 
-	//****** Message / Options using 2D Texture always on Top can be added below ***********
-	////glDisable(GL_DEPTH_TEST);
-	////draw_Quad_with_Texture(textureLeft,-0.25, -1.5f);
-	////draw_Quad_with_Texture(textureRight, 0.25f, -1.5f);
-	////glEnable(GL_DEPTH_TEST);
+
+	//****** Message using 2D Texture for always on Top can be added below with temporary disabled DEPTH for them ***********
 
 
 	wchar_t str[255];
@@ -2222,14 +2185,12 @@ void display(void)
 		yMouseValue_NDC = yMouseValue / giWinHeight * 2.0f;
 		xMouseValue_NDC = (xMouseValue_NDC - 1.0f);
 		yMouseValue_NDC = (1.0f - yMouseValue_NDC);
-
 		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y  ( %.2f ,%.2f )| Left Click DOWN xMouseValue_NDC,yMouseValue_NDC ( %.2f ,%.2f )  ", xMouseValue, yMouseValue, xMouseValue_NDC, yMouseValue_NDC);
 	}
 	else
 	{
 		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y ( %.2f ,%.2f )", xMouseValue, yMouseValue);
 	}
-	//SetWindowText(ghwnd, (LPCSTR)str);
 	SetWindowTextW(ghwnd, str);
 
 	SwapBuffers(ghdc);
@@ -3183,18 +3144,7 @@ void Render_Basic_Volume(void)
 
 	// code:
 
-	// Grid
-	//glUseProgram(shaderProgramObject_Grid);
-	//{
-	//	glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-	//	glUniform4f(glGetUniformLocation(shaderProgramObject_Grid,"u_Color"),1.0f,1.0f,0.0f,1.0f);
-	//	glBindVertexArray(vaoID);
-	//	glDrawElements(GL_LINES, totalIndices, GL_UNSIGNED_INT, 0);
-	//	glBindVertexArray(0);
-	//}
-	//glUseProgram(0);
-
-
+	// Grid or Axes Rendering 
 	Render_Volume_Box_Axes(modelViewProjectionMatrix);
 
 
@@ -3752,18 +3702,7 @@ void Render_Raycasting_Output(void)
 
 	// code:
 
-	// Grid drawing
-	///*glUseProgram(shaderProgramObject_Grid);
-	//{
-	//	glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-	//	glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 1.0f, 0.0f, 1.0f);
-	//	glBindVertexArray(vaoID);
-	//	glDrawElements(GL_LINES, totalIndices, GL_UNSIGNED_INT, 0);
-	//	glBindVertexArray(0);
-	//}
-	//glUseProgram(0);*/
-
-
+	// Grid or Axes Rendering 
 	Render_Volume_Box_Axes(modelViewProjectionMatrix);
 
 
@@ -4177,17 +4116,7 @@ void Render_IsoSurface_Output(void)
 	// code:
 
 
-	///*glUseProgram(shaderProgramObject_Grid);
-	//{
-	//	glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-	//	glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 1.0f, 0.0f, 1.0f);
-	//	glBindVertexArray(vaoID);
-	//	glDrawElements(GL_LINES, totalIndices, GL_UNSIGNED_INT, 0);
-	//	glBindVertexArray(0);
-	//}
-	//glUseProgram(0);*/
-
-
+	// Grid or Axes Rendering 
 	Render_Volume_Box_Axes(modelViewProjectionMatrix);
 
 
@@ -4517,17 +4446,7 @@ void Render_ColormapClassification_Output(void)
 
 	// code:
 
-	///*glUseProgram(shaderProgramObject_Grid);
-	//{
-	//	glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-	//	glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 1.0f, 0.0f, 1.0f);
-	//	glBindVertexArray(vaoID);
-	//	glDrawElements(GL_LINES, totalIndices, GL_UNSIGNED_INT, 0);
-	//	glBindVertexArray(0);
-	//}
-	//glUseProgram(0);*/
-
-
+	// Grid or Axes Rendering 
 	Render_Volume_Box_Axes(modelViewProjectionMatrix);
 
 
@@ -4976,18 +4895,7 @@ void Render_MarchingTetrahedra(void)
 	
 	// code:
 
-	////// # OPTIONAL BLOCK to draw  GRID LINES //////////
-	glUseProgram(shaderProgramObject_Grid);
-	{
-		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 1.0f, 0.0f, 1.0f);
-		glBindVertexArray(vaoID);
-		glDrawElements(/*Primitives*/GL_LINES, /*count*/totalIndices,/*Type*/GL_UNSIGNED_INT,/*void *indices*/0);
-		glBindVertexArray(0);
-	}
-	glUseProgram(0);
-
-
+	// Grid or Axes Rendering 
 	Render_Volume_Box_Axes(modelViewProjectionMatrix);
 
 

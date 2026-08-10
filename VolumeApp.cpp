@@ -678,7 +678,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-		1420,                  // x
+		1395,                  // x
 		450,                  // y
 		40,                  // width
 		30,                  // height
@@ -692,9 +692,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"STATIC",
 		L"Value 1",
 		WS_VISIBLE | WS_CHILD | SS_CENTER| SS_CENTERIMAGE,
-		1465,                  // x
+		1440,                  // x
 		450,                  // y
-		100,                 // width
+		150,                 // width
 		30,                  // height
 		hwnd,
 		(HMENU)ID_LABEL_EFFECT,
@@ -710,7 +710,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-		1570,                 // x
+		1595,                 // x
 		450,                  // y
 		40,                  // width
 		30,                  // height
@@ -1224,7 +1224,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					swprintf_s(text, 64, L"RayCasting Method");
 					break;
 				case 2:
-					swprintf_s(text, 64, L"Pseudo IsoSurface with RayCasting");
+					swprintf_s(text, 64, L"Pseudo IsoSurface");
 					break;
 				case 3:
 					swprintf_s(text, 64, L"Colormap");
@@ -1252,7 +1252,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					swprintf_s(text, 64, L"RayCasting");
 					break;
 				case 2:
-					swprintf_s(text, 64, L"Pseudo IsoSurface with RayCasting");
+					swprintf_s(text, 64, L"Pseudo IsoSurface");
 					break;
 				case 3:
 					swprintf_s(text, 64, L"Colormap");
@@ -3426,15 +3426,16 @@ void Render_Basic_Volume(void)
 
 	// code:
 
-	glUseProgram(shaderProgramObject_Grid);
-	{
-		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid,"u_Color"),1.0f,1.0f,0.0f,1.0f);
-		glBindVertexArray(vaoID);
-		glDrawElements(GL_LINES, totalIndices, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-	}
-	glUseProgram(0);
+	// Grid
+	//glUseProgram(shaderProgramObject_Grid);
+	//{
+	//	glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
+	//	glUniform4f(glGetUniformLocation(shaderProgramObject_Grid,"u_Color"),1.0f,1.0f,0.0f,1.0f);
+	//	glBindVertexArray(vaoID);
+	//	glDrawElements(GL_LINES, totalIndices, GL_UNSIGNED_INT, 0);
+	//	glBindVertexArray(0);
+	//}
+	//glUseProgram(0);
 
 
 	Render_Volume_Box_Axes(modelViewProjectionMatrix);
@@ -3994,6 +3995,7 @@ void Render_Raycasting_Output(void)
 
 	// code:
 
+	// Grid drawing
 	///*glUseProgram(shaderProgramObject_Grid);
 	//{
 	//	glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));

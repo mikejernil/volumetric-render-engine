@@ -703,7 +703,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 	wchar_t text1[64];
-	swprintf_s(text1, 64, L"Colomap");
+	swprintf_s(text1, 64, L"Colormap");
 	SetWindowText(hwndValueLabel, text1);
 
 	HWND hwndRightButton = CreateWindow(
@@ -1093,8 +1093,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	// local:
 
-	//int newX = 0;
-	//int newY = 0;
 
 	// code
 	switch (iMsg)
@@ -2204,7 +2202,7 @@ int initialize(void)
 
 	Update_Volume_Box_Axes();
 
-	//Slice_Volume();
+	Slice_Volume();
 
 	LoadGridObject_Shader(5,5);
 

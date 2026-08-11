@@ -3872,7 +3872,6 @@ void Initialize_TetrahedraMarcher_Shaders()
 			#version 460 core
 			
 			layout (location = 0) in vec3 aPosition; //object space vertex position
-			//layout (location = 1) in vec3 aColor_Dummy;
 			layout (location = 2) in vec3 aNormal; //object space vertex normal
 
 			uniform mat4 u_MVPMatrix;
@@ -3885,11 +3884,12 @@ void Initialize_TetrahedraMarcher_Shaders()
 				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
 
 
-				// step2: 
+				// step2: set normal attributes
 				oNormal = aNormal;
 				/* 	step 2 notes:
 				*/
 		
+
 			}
 	
 			)";
@@ -3936,7 +3936,6 @@ void Initialize_TetrahedraMarcher_Shaders()
 			{             
 
 				FragColor = vec4(oNormal,1.0);  	//output the object space normal as colour
-				//FragColor = vec4(1.0,0.5,1.0,1.0); //DEBUG
 			}
 	
 
@@ -4212,7 +4211,7 @@ void Render_MarchingTetrahedra(void)
 
 	// Grid or Axes Rendering 
 	Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
+	
 
 	if (bWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

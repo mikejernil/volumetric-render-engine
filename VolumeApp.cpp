@@ -139,17 +139,9 @@ const wchar_t* textHolder = L"";
 
 GLuint shaderProgramObject_Grid;
 GLuint mvpUniform_GridObject;
-int gridWidth=5;
-int gridDepth=5;
-int totalVertices;
-int totalIndices;
 
-GLuint vaoID;
-GLuint vboID_Vertices;
-GLuint vboID_Indices;
 glm::vec3 viewDirection;
 
-vmath::vec3 viewDirection_v3;
 
 GLuint shaderProgramObject_Slicer1;
 GLuint modelViewProjectionUniform_Slicer1 = 0;
@@ -238,11 +230,9 @@ GLfloat yMouseValue_NDC = 0.0f;
 
 // Grid and Axes Rendering Prototype:
 int LoadGridObject_Shader(int width, int depth);
-int GetTotalVertices(void);
-int GetTotalIndices(void);
-void FillIndexBuffer(GLuint* pBuffer);
-void FillVertexBuffer(GLfloat* pBuffer);
-int FindAbsMax(glm::vec3 v);
+void setup_Axes_BufferObjects(void);
+void Update_Volume_Box_Axes(void);
+void Uninitialize_Grid(void);
 
 
 
@@ -1523,76 +1513,21 @@ int initialize(void)
 	printGLInfo();
 
 
-
-
 	LoadVolumeData();
 
 
 	Initialize_Slicing_shader();
 
 
-	glGenVertexArrays(1, &VAO_Volume_Axes);
-	glBindVertexArray(VAO_Volume_Axes);
-	{
-		glm::vec3 vertexList[24] = {
-			//// Minus Z-Vertices
-			//glm::vec3(-0.5f,-0.5f,-0.5f), // 1. Left Bottom
-			//glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),  // 2. Right Bottom
-			//glm::vec3(fXPlus_SideFace, fYPlus_TopFace,-0.5f),  // 3. Right Top
-			//glm::vec3(-0.5f, fYPlus_TopFace,-0.5f), // 4. Left Top
 
-			// FRONT FACE: All Plus Z-Vertices
-			glm::vec3(-0.5f,-0.5f, fZPlus_FrontFace), // 5. Left Bottom
-			glm::vec3(fXPlus_SideFace,-0.5f, fZPlus_FrontFace),  // 6. Right Bottom
-			glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
-			glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace),  // 8. Left Top
 
-			// RIGHT SIDE FACE : All Plus X-Vertices:
-			glm::vec3(fXPlus_SideFace, 0.5f, 0.5f),
-			glm::vec3(fXPlus_SideFace, 0.5f,-0.5f),
-			glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),
-			glm::vec3(fXPlus_SideFace,-0.5f, 0.5f),
-
-			// TOP FACE : All Plus Y-Vertices:
-			glm::vec3(-0.5f, fYPlus_TopFace,-0.5f),
-			glm::vec3(0.5f, fYPlus_TopFace,-0.5f),
-			glm::vec3(0.5f, fYPlus_TopFace, 0.5f),
-			glm::vec3(-0.5f, fYPlus_TopFace, 0.5f),
-
-			// BOTTOM FACE : All Minus  Y-Vertices:
-			glm::vec3(-0.5f, fYMinus_BottomFace,-0.5f),
-			glm::vec3(0.5f, fYMinus_BottomFace,-0.5f),
-			glm::vec3(0.5f, fYMinus_BottomFace, 0.5f),
-			glm::vec3(-0.5f, fYMinus_BottomFace, 0.5f),
-
-			// BACK FACE: All Minus Z-Vertices
-			glm::vec3(-0.5f,-0.5f, fZMinus_BackFace),
-			glm::vec3(0.5f,-0.5f, fZMinus_BackFace),
-			glm::vec3(0.5f,  0.5f, fZMinus_BackFace),
-			glm::vec3(-0.5f,  0.5f, fZMinus_BackFace),
-
-			// LEFT SIDE FACE: All Minus X-Vertices
-			glm::vec3(fXMinus_SideFace, 0.5f, 0.5f),
-			glm::vec3(fXMinus_SideFace, 0.5f,-0.5f),
-			glm::vec3(fXMinus_SideFace,-0.5f,-0.5f),
-			glm::vec3(fXMinus_SideFace,-0.5f, 0.5f),
-
-		};
-
-		glGenBuffers(1, &VBO_Volume_Axes);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_Volume_Axes);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexList), NULL, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-	glBindVertexArray(0);
-
-	Update_Volume_Box_Axes();
 
 	Slice_Volume();
 
 	LoadGridObject_Shader(5,5);
+
+	setup_Axes_BufferObjects();
+	Update_Volume_Box_Axes();
 
 
 	Initialize_Raycasting_shader();
@@ -1831,6 +1766,8 @@ void uninitialize(void)
 	Uninitialize_IsoSurface_shader();
 	Uninitialize_Raycasting_shader();
 	Uninitialize_Slicing_shader();
+
+	Uninitialize_Grid();
 
 
 	if (gbFullscreen == TRUE)
@@ -2169,6 +2106,23 @@ void Render_Volume_Box_Axes(glm::mat4 MVPMatrix_)
 
 
 }
+void Uninitialize_Grid(void)
+{
+	// code:
+	if (VBO_Volume_Axes)
+	{
+		glDeleteBuffers(1, &VBO_Volume_Axes);
+		VBO_Volume_Axes  = 0;
+	}
+	if (VAO_Volume_Axes)
+	{
+		glDeleteVertexArrays(1, &VAO_Volume_Axes);
+		VAO_Volume_Axes = 0;
+	}
+
+	Uninitialize_ShaderProgramObject(shaderProgramObject_Grid);
+}
+
 
 //function to get the max (abs) dimension of the given vertex v
 int FindAbsMax(glm::vec3 v) 
@@ -2447,7 +2401,6 @@ int LoadVolumeData(void)
 	vmath::mat4 T_mat = vmath::translate(0.0f,0.0f,dist);
 	vmath::mat4 MV_mat = T_mat;
 
-	viewDirection_v3 = -(vmath::vec3(MV_mat[0][2],MV_mat[1][2],MV_mat[2][2]));
 
 
 	fprintf(gpFile, "LoadVolumeData() Success Step2 and Last\n"); fflush(gpFile);
@@ -2597,100 +2550,68 @@ int LoadGridObject_Shader(int width, int depth)
 
 	mvpUniform_GridObject = glGetUniformLocation(shaderProgramObject_Grid, "u_MVPMatrix");
 
-
-
-	if (vaoID)
-	{
-		fprintf(gpFile, "******* vaoID is NON - NULL *******  \n");
-	}
-
-	totalVertices = GetTotalVertices();
-	totalIndices = GetTotalIndices();
-
-	glGenVertexArrays(1, &vaoID);
-	glBindVertexArray(vaoID);
-	{
-		glGenBuffers(1, &vboID_Vertices);
-		glBindBuffer(GL_ARRAY_BUFFER, vboID_Vertices);
-		{
-			glBufferData(GL_ARRAY_BUFFER, totalVertices * sizeof(vmath::vec3), 0, GL_STATIC_DRAW);
-			GLfloat* pBuffer = static_cast<GLfloat*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-			FillVertexBuffer(pBuffer);
-			glUnmapBuffer(GL_ARRAY_BUFFER);
-			glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-			glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		}
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		glGenBuffers(1, &vboID_Indices);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID_Indices);
-		{
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, totalIndices * sizeof(GLuint), 0, GL_STATIC_DRAW);
-			GLuint* pIBuffer = static_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
-			FillIndexBuffer(pIBuffer);
-			glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-		}
-		//!!!!!! FIND RCA : Why uncommenting this causing CRASH //! glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-	glBindVertexArray(0);
-
-	if (vaoID)
-	{
-		fprintf(gpFile, "******* vaoID is NON - NULL *******  \n");
-	}
-
+	
 	return 0;
 }
 
 
-void FillIndexBuffer(GLuint* pBuffer) 
-{
-	// local:
-	int i = 0;
-	GLuint* id = pBuffer;
 
-	// code : //fill indices array
-	for (i = 0; i < gridWidth * gridDepth; i += 4) 
+void setup_Axes_BufferObjects(void)
+{
+	// code:
+
+
+	glGenVertexArrays(1, &VAO_Volume_Axes);
+	glBindVertexArray(VAO_Volume_Axes);
 	{
-		*id++ = i;
-		*id++ = i + 1;
-		*id++ = i + 2;
-		*id++ = i + 3;
+		glm::vec3 vertexList[24] = {
+			// FRONT FACE: All Plus Z-Vertices
+			glm::vec3(-0.5f,-0.5f, fZPlus_FrontFace), // 5. Left Bottom
+			glm::vec3(fXPlus_SideFace,-0.5f, fZPlus_FrontFace),  // 6. Right Bottom
+			glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
+			glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace),  // 8. Left Top
+
+			// RIGHT SIDE FACE : All Plus X-Vertices:
+			glm::vec3(fXPlus_SideFace, 0.5f, 0.5f),
+			glm::vec3(fXPlus_SideFace, 0.5f,-0.5f),
+			glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),
+			glm::vec3(fXPlus_SideFace,-0.5f, 0.5f),
+
+			// TOP FACE : All Plus Y-Vertices:
+			glm::vec3(-0.5f, fYPlus_TopFace,-0.5f),
+			glm::vec3(0.5f, fYPlus_TopFace,-0.5f),
+			glm::vec3(0.5f, fYPlus_TopFace, 0.5f),
+			glm::vec3(-0.5f, fYPlus_TopFace, 0.5f),
+
+			// BOTTOM FACE : All Minus  Y-Vertices:
+			glm::vec3(-0.5f, fYMinus_BottomFace,-0.5f),
+			glm::vec3(0.5f, fYMinus_BottomFace,-0.5f),
+			glm::vec3(0.5f, fYMinus_BottomFace, 0.5f),
+			glm::vec3(-0.5f, fYMinus_BottomFace, 0.5f),
+
+			// BACK FACE: All Minus Z-Vertices
+			glm::vec3(-0.5f,-0.5f, fZMinus_BackFace),
+			glm::vec3(0.5f,-0.5f, fZMinus_BackFace),
+			glm::vec3(0.5f,  0.5f, fZMinus_BackFace),
+			glm::vec3(-0.5f,  0.5f, fZMinus_BackFace),
+
+			// LEFT SIDE FACE: All Minus X-Vertices
+			glm::vec3(fXMinus_SideFace, 0.5f, 0.5f),
+			glm::vec3(fXMinus_SideFace, 0.5f,-0.5f),
+			glm::vec3(fXMinus_SideFace,-0.5f,-0.5f),
+			glm::vec3(fXMinus_SideFace,-0.5f, 0.5f),
+
+		};
+
+		glGenBuffers(1, &VBO_Volume_Axes);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_Volume_Axes);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexList), NULL, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
+	glBindVertexArray(0);
 }
-
-void FillVertexBuffer(GLfloat* pBuffer) 
-{
-	// local:
-	vmath::vec3 *vertices = (vmath::vec3 *)pBuffer;
-	int count = 0;
-	int width_2 = gridWidth / 2;
-	int depth_2 = gridDepth / 2;
-	int i = 0;
-
-	// code:
-	for (i = -width_2; i <= width_2; i++) {
-		vertices[count++] = vmath::vec3(i, 0, -depth_2);
-		vertices[count++] = vmath::vec3(i, 0, depth_2);
-
-		vertices[count++] = vmath::vec3(-width_2, 0, i);
-		vertices[count++] = vmath::vec3(width_2, 0, i);
-	}
-}
-
-
-int GetTotalVertices(void)
-{
-	// code:
-	return ((gridWidth + 1) + (gridDepth + 1)) * 2;
-}
-
-int GetTotalIndices(void)
-{
-	// code:
-	return (gridWidth*gridDepth);
-}
-
 
 
 void Render_Basic_Volume(void)
@@ -2710,7 +2631,6 @@ void Render_Basic_Volume(void)
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
 
 	vmath::mat4 ModelViewMatrix_mat4 = vmath::translate(0.0f, 0.0f, dist);
-	viewDirection_v3 =  -vmath::vec3(ModelViewMatrix_mat4[0][2], ModelViewMatrix_mat4[1][2], ModelViewMatrix_mat4[2][2]);
 
 
 	// code:
@@ -2778,48 +2698,7 @@ void Uninitialize_Slicing_shader(void)
 {
 	// code:
 	
-	if (vboID_Indices)
-	{
-		glDeleteBuffers(1, &vboID_Indices);
-		vboID_Indices = 0;
-	}
-
-	if (vboID_Vertices)
-	{
-		glDeleteBuffers(1, &vboID_Vertices);
-		vboID_Vertices = 0;
-	}
-	if (vaoID)
-	{
-		glDeleteVertexArrays(1, &vaoID);
-		vaoID = 0;
-	}
-
 	
-	if (shaderProgramObject_Grid)
-	{
-		glUseProgram(shaderProgramObject_Grid);
-		{
-			GLsizei numAttachedShaders;
-			glGetProgramiv(shaderProgramObject_Grid, GL_ATTACHED_SHADERS, &numAttachedShaders);
-			GLuint* shaderObjects = NULL;
-			shaderObjects = (GLuint*)malloc(numAttachedShaders * sizeof(GLuint));
-			glGetAttachedShaders(shaderProgramObject_Grid, numAttachedShaders, &numAttachedShaders, shaderObjects);
-			for (GLsizei i = 0; i < numAttachedShaders; i++)
-			{
-				glDetachShader(shaderProgramObject_Grid, shaderObjects[i]);
-				glDeleteShader(shaderObjects[i]);
-				shaderObjects[i] = 0;
-			}
-			free(shaderObjects);
-			shaderObjects = NULL;
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject_Grid);
-
-		shaderProgramObject_Grid = 0;
-	}
-
 	if (VBO_volume)
 	{
 		glDeleteBuffers(1, &VBO_volume);

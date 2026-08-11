@@ -1706,8 +1706,6 @@ void display(void)
 			if (bRotateX || bRotateY || bRotateZ || bMouseClicked || bSliceUpdate)
 			{
 				Update_Volume_Box_Axes();
-				Update_Raycasting_Cube_VBO();
-				//Update_MarchingTetrahedra_Cube();
 			}
 			break;
 		case 5:
@@ -2066,36 +2064,42 @@ void Render_Volume_Box_Axes(glm::mat4 MVPMatrix_)
 
 	glUseProgram(shaderProgramObject_Grid);
 	{
+		// Front Face
 		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
 		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 0.0f, 0.0f, 1.0f);
 		glBindVertexArray(VAO_Volume_Axes);
 		glDrawArrays(GL_LINE_LOOP, 0, 4);
 		glBindVertexArray(0);
 
+		// Right Face
 		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
 		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 0.0f, 1.0f, 0.0f, 1.0f);
 		glBindVertexArray(VAO_Volume_Axes);
 		glDrawArrays(GL_LINE_LOOP, 4, 4);
 		glBindVertexArray(0);
 
+		// Top Face
 		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
 		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 0.0f, 0.0f, 1.0f, 1.0f);
 		glBindVertexArray(VAO_Volume_Axes);
 		glDrawArrays(GL_LINE_LOOP, 8, 4);
 		glBindVertexArray(0);
 
+		// Bottom Face
 		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
 		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 1.0f, 0.0f, 1.0f);
 		glBindVertexArray(VAO_Volume_Axes);
 		glDrawArrays(GL_LINE_LOOP, 12, 4);
 		glBindVertexArray(0);
 
+		// Left Face
 		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
 		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 0.0f, 1.0f, 1.0f, 1.0f);
 		glBindVertexArray(VAO_Volume_Axes);
 		glDrawArrays(GL_LINE_LOOP, 16, 4);
 		glBindVertexArray(0);
 
+		// Back Face
 		glUniformMatrix4fv(mvpUniform_GridObject, 1, GL_FALSE, glm::value_ptr(MVPMatrix_));
 		glUniform4f(glGetUniformLocation(shaderProgramObject_Grid, "u_Color"), 1.0f, 0.0f, 1.0f, 1.0f);
 		glBindVertexArray(VAO_Volume_Axes);
@@ -4247,7 +4251,6 @@ void Render_MarchingTetrahedra(void)
 {
 	// local:
 
-	//set the modelling transform to move the marching result to origin
 	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -4275,7 +4278,6 @@ void Render_MarchingTetrahedra(void)
 		glBindVertexArray(volumeMarcherVAO);
 		glDrawArrays(GL_TRIANGLES, 0, GetTotalVertices_TM());
 		glBindVertexArray(0);
-		//glBindTexture(GL_TEXTURE_3D, 0);
 	}
 	glUseProgram(0);
 

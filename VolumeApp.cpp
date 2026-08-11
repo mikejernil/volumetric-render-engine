@@ -90,16 +90,7 @@ FILE* gpFile = NULL;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
-GLuint shaderProgramObject = 0;
 
-// CUBE
-GLuint VAO_Cube;
-GLuint VBO_Position_Cube;
-GLuint VBO_TexCoord_Cube;
-GLfloat fAngleCube = 0.0f;
-
-GLuint mvpMatrixUniform_vvg = 0;
-GLuint textureSamplerUniform_vvg = 0;
 
 glm::mat4 perspectiveProjMatrix_glm;
 vmath::mat4 perspectiveProjectionMatrix;
@@ -1474,14 +1465,13 @@ int initialize(void)
 	pfd.cGreenBits = 8;
 	pfd.cBlueBits = 8;
 	pfd.cAlphaBits = 8;
-	pfd.cDepthBits = 32; //FOR DEPTH
+	pfd.cDepthBits = 32;
 
-	// 2: Get the OS's HDC i.e specialist.
+	// 2: get HDC 
 	ghdc = GetDC(ghwnd);
 	if (ghdc == NULL)
 	{
-		// GetDC() Failed.
-		fprintf(gpFile, "\n# GetDC() Failed.");
+		fprintf(gpFile, "Error: GetDC() Failed.\n");
 		return (-1);
 	}
 
@@ -1489,14 +1479,14 @@ int initialize(void)
 	iPixelFormatIndex = ChoosePixelFormat(ghdc, &pfd);
 	if (iPixelFormatIndex == 0)
 	{
-		fprintf(gpFile, "\n# ChoosePixelFormat() Failed.");
+		fprintf(gpFile, "Error: ChoosePixelFormat() Failed.\n");
 		return (-2);
 	}
 
 	// 4: Set Pixel Format:
 	if (SetPixelFormat(ghdc, iPixelFormatIndex, &pfd) == FALSE)
 	{
-		fprintf(gpFile, "\n# SetPixelFormat() Failed.");
+		fprintf(gpFile, "SetPixelFormat() Failed.\n");
 		return (-3);
 	}
 
@@ -1504,14 +1494,14 @@ int initialize(void)
 	ghrc = wglCreateContext(ghdc);
 	if (ghrc == NULL)
 	{
-		fprintf(gpFile, "\n# wglCreateContext() Failed.");
+		fprintf(gpFile, "wglCreateContext() Failed.\n");
 		return (-4);
 	}
 
 	// 6: Make this Rendering Context of OpenGL 'ghrc' as Current Context.
 	if (wglMakeCurrent(ghdc, ghrc) == FALSE)
 	{
-		fprintf(gpFile, " wglMakeCurrent() Failed.\n");
+		fprintf(gpFile, "Error: wglMakeCurrent() Failed.\n");
 		return (-5);
 	}
 
@@ -1523,244 +1513,8 @@ int initialize(void)
 		return (-6);
 	}
 
-	// printGLInfo();
+	printGLInfo();
 
-	// VERTEX SHADER SECTION
-
-	const GLchar* vertexShaderSourceCode =
-		"#version 460 core" \
-		"\n" \
-		"in vec4 aPosition;" \
-		"in vec2 aTexCoord;" \
-		"uniform mat4 uMVPMatrix;" \
-		"out vec2 oTexCoord_OUT;" \
-		"void main(void)" \
-		"{" \
-			"gl_Position= uMVPMatrix * aPosition;" \
-			"oTexCoord_OUT=aTexCoord;" \
-		"}";
-
-	GLuint vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSourceCode, NULL);
-	glCompileShader(vertexShaderObject);
-
-	GLint status = 0;
-	GLint infoLogLength = 0;
-	GLchar* szInfoLog = NULL;
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			//szInfoLog=(GLchar *)malloc(infoLogLength);
-			szInfoLog = (GLchar*)malloc(infoLogLength + 1 * sizeof(GLchar));
-			if (szInfoLog != NULL)
-			{
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, NULL, szInfoLog);
-				fprintf(gpFile, "Error: Vertex Shader Compilation ErrorLog: %s \n", szInfoLog);
-				free(szInfoLog);
-				szInfoLog = NULL;
-			}
-		}
-		uninitialize();
-	}
-	else
-	{
-		fprintf(gpFile, "Vertex Shader Compilation Successful.   \n");
-	}
-
-
-	// FRAGMENT SHADER SECTION
-	const GLchar* fragmentShaderSourceCode =
-		"#version 460 core" \
-		"\n" \
-		"in vec2 oTexCoord_OUT;" \
-		"uniform sampler2D uTextureSampler;" \
-		"out vec4 FragColor;" \
-		"void main(void)" \
-		"{" \
-			"FragColor=texture(uTextureSampler,oTexCoord_OUT);" \
-		"}";
-
-	GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSourceCode, NULL);
-	glCompileShader(fragmentShaderObject);
-
-	status = 0;
-	infoLogLength = 0;
-	szInfoLog = NULL;
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			//szInfoLog = (char *)malloc(infoLogLength);
-			szInfoLog = (char*)malloc(infoLogLength + 1 * sizeof(GLchar));
-			if (szInfoLog != NULL)
-			{
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, NULL, szInfoLog);
-				fprintf(gpFile, "Error: Fragment Shader Compilation Error Log: %s \n", szInfoLog);
-				fflush(gpFile);
-				free(szInfoLog);
-				szInfoLog = NULL;
-			}
-		}
-		uninitialize();
-	}
-	else
-	{
-		fprintf(gpFile, "Fragment Shader Compilation Successful. status: %d \n", status);
-	}
-
-
-	// SHADER ProgramObject SECTION
-	shaderProgramObject = glCreateProgram();
-
-	glAttachShader(shaderProgramObject, vertexShaderObject);
-	glAttachShader(shaderProgramObject, fragmentShaderObject);
-
-	glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
-	glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_TEXCOORD, "aTexCoord");
-
-	glLinkProgram(shaderProgramObject);
-
-	status = 0;
-	infoLogLength = 0;
-	szInfoLog = NULL;
-
-	glGetProgramiv(shaderProgramObject, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
-	{
-		glGetProgramiv(shaderProgramObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			szInfoLog = (char*)malloc(infoLogLength);
-			if (szInfoLog != NULL)
-			{
-				glGetProgramInfoLog(shaderProgramObject, infoLogLength, NULL, szInfoLog);
-				fprintf(gpFile, "Error: shaderProgramObject Linking Error Log: %s \n", szInfoLog);
-				free(szInfoLog);
-				szInfoLog = NULL;
-			}
-		}
-		uninitialize();
-	}
-	else
-	{
-		fprintf(gpFile, "shaderProgramObject Linking Successful. status: %d \n", status);
-	}
-
-	// post link: uniform binding
-	mvpMatrixUniform_vvg = glGetUniformLocation(shaderProgramObject, "uMVPMatrix");
-	textureSamplerUniform_vvg = glGetUniformLocation(shaderProgramObject, "uTextureSampler");
-
-	const GLfloat cube_positions[] =
-	{
-
-		// front
-		 1.0f,  1.0f,  1.0f, // top-right of front
-		-1.0f,  1.0f,  1.0f, // top-left of front
-		-1.0f, -1.0f,  1.0f, // bottom-left of front
-		 1.0f, -1.0f,  1.0f, // bottom-right of front
-
-		 // right
-		  1.0f,  1.0f, -1.0f, // top-right of right
-		  1.0f,  1.0f,  1.0f, // top-left of right
-		  1.0f, -1.0f,  1.0f, // bottom-left of right
-		  1.0f, -1.0f, -1.0f, // bottom-right of right
-
-		  // back
-		   1.0f,  1.0f, -1.0f, // top-right of back
-		  -1.0f,  1.0f, -1.0f, // top-left of back
-		  -1.0f, -1.0f, -1.0f, // bottom-left of back
-		   1.0f, -1.0f, -1.0f, // bottom-right of back
-
-		   // left
-		   -1.0f,  1.0f,  1.0f, // top-right of left
-		   -1.0f,  1.0f, -1.0f, // top-left of left
-		   -1.0f, -1.0f, -1.0f, // bottom-left of left
-		   -1.0f, -1.0f,  1.0f, // bottom-right of left
-
-		   // top
-			1.0f,  1.0f, -1.0f, // top-right of top
-		   -1.0f,  1.0f, -1.0f, // top-left of top
-		   -1.0f,  1.0f,  1.0f, // bottom-left of top
-			1.0f,  1.0f,  1.0f, // bottom-right of top
-
-			// bottom
-			 1.0f, -1.0f,  1.0f, // top-right of bottom
-			-1.0f, -1.0f,  1.0f, // top-left of bottom
-			-1.0f, -1.0f, -1.0f, // bottom-left of bottom
-			 1.0f, -1.0f, -1.0f, // bottom-right of bottom
-
-	};
-
-
-	GLfloat cubeTexcoords[] =
-	{
-		// front
-		1.0f, 1.0f, // top-right of front
-		0.0f, 1.0f, // top-left of front
-		0.0f, 0.0f, // bottom-left of front
-		1.0f, 0.0f, // bottom-right of front
-
-		// right
-		1.0f, 1.0f, // top-right of right
-		0.0f, 1.0f, // top-left of right
-		0.0f, 0.0f, // bottom-left of right
-		1.0f, 0.0f, // bottom-right of right
-
-		// back
-		1.0f, 1.0f, // top-right of back
-		0.0f, 1.0f, // top-left of back
-		0.0f, 0.0f, // bottom-left of back
-		1.0f, 0.0f, // bottom-right of back
-
-		// left
-		1.0f, 1.0f, // top-right of left
-		0.0f, 1.0f, // top-left of left
-		0.0f, 0.0f, // bottom-left of left
-		1.0f, 0.0f, // bottom-right of left
-
-		// top
-		1.0f, 1.0f, // top-right of top
-		0.0f, 1.0f, // top-left of top
-		0.0f, 0.0f, // bottom-left of top
-		1.0f, 0.0f, // bottom-right of top
-
-		// bottom
-		1.0f, 1.0f, // top-right of bottom
-		0.0f, 1.0f, // top-left of bottom
-		0.0f, 0.0f, // bottom-left of bottom
-		1.0f, 0.0f, // bottom-right of bottom
-	};
-
-
-	// VAO and VBOs for CUBE
-	glGenVertexArrays(1, &VAO_Cube);
-	glBindVertexArray(VAO_Cube);
-	{
-		//VBO POSITION
-		glGenBuffers(1, &VBO_Position_Cube);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_Position_Cube);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cube_positions), cube_positions, GL_STATIC_DRAW);
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		//VBO TEXCOORDS
-		glGenBuffers(1, &VBO_TexCoord_Cube);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_TexCoord_Cube);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cubeTexcoords), cubeTexcoords, GL_STATIC_DRAW);
-		glVertexAttribPointer(AMC_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_TEXCOORD);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	}
-	glBindVertexArray(0);
 
 
 
@@ -2072,50 +1826,6 @@ void uninitialize(void)
 	Uninitialize_Raycasting_shader();
 	Uninitialize_Slicing_shader();
 
-	if (shaderProgramObject)
-	{
-		glUseProgram(shaderProgramObject);
-		GLint numShaders = 0;
-		glGetProgramiv(shaderProgramObject, GL_ATTACHED_SHADERS, &numShaders);
-		if (numShaders > 0)
-		{
-			GLuint* pShaders = (GLuint*)malloc(numShaders * sizeof(GLuint));
-			if (pShaders != NULL)
-			{
-				glGetAttachedShaders(shaderProgramObject, numShaders, &numShaders, pShaders);
-				for (GLint i = 0; i < numShaders; i++)
-				{
-					glDetachShader(shaderProgramObject, pShaders[i]);
-					glDeleteShader(pShaders[i]);
-					pShaders[i] = 0;
-				}
-				free(pShaders);
-			}
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject);
-		shaderProgramObject = 0;
-	}
-
-
-	// DELETE CUBE
-	if (VBO_TexCoord_Cube)
-	{
-		glDeleteBuffers(1, &VBO_TexCoord_Cube);
-		VBO_TexCoord_Cube = 0;
-	}
-	
-	if (VBO_Position_Cube)
-	{
-		glDeleteBuffers(1, &VBO_Position_Cube);
-		VBO_Position_Cube = 0;
-	}
-
-	if (VAO_Cube)
-	{
-		glDeleteVertexArrays(1, &VAO_Cube);
-		VAO_Cube = 0;
-	}
 
 	if (gbFullscreen == TRUE)
 	{

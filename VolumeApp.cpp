@@ -108,9 +108,10 @@ enum
 
 
 
-// function declarations
+// global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void ToggleFullscreen(void);
+void Uninitialize_ShaderProgramObject(GLuint );
 
 
 
@@ -1819,7 +1820,6 @@ void uninitialize(void)
 
 	// code:
 
-
 	Uninitialize_MarchingTetrahedra();
 	Uninitialize_ColormapClassification_shader();
 	Uninitialize_IsoSurface_shader();
@@ -2831,29 +2831,8 @@ void Uninitialize_Slicing_shader(void)
 		textureID = 0;
 	}
 
-	if (shaderProgramObject_Slicer1)
-	{
-		glUseProgram(shaderProgramObject_Slicer1);
-		{
-			GLsizei numAttachedShaders;
-			glGetProgramiv(shaderProgramObject_Slicer1, GL_ATTACHED_SHADERS, &numAttachedShaders);
-			GLuint* shaderObjects = NULL;
-			shaderObjects = (GLuint*)malloc(numAttachedShaders * sizeof(GLuint));
-			glGetAttachedShaders(shaderProgramObject_Slicer1, numAttachedShaders, &numAttachedShaders, shaderObjects);
-			for (GLsizei i = 0; i < numAttachedShaders; i++)
-			{
-				glDetachShader(shaderProgramObject_Slicer1, shaderObjects[i]);
-				glDeleteShader(shaderObjects[i]);
-				shaderObjects[i] = 0;
-			}
-			free(shaderObjects);
-			shaderObjects = NULL;
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject_Slicer1);
 
-		shaderProgramObject_Slicer1 = 0;
-	}
+	Uninitialize_ShaderProgramObject(shaderProgramObject_Slicer1);
 
 }
 
@@ -2917,7 +2896,7 @@ int Initialize_Raycasting_shader(void)
 				fprintf(gpFile, "Error in Raycating Vertex Shader .\n VS Compilation Log : %s\n", Log);
 				free(Log);
 				Log = NULL;
-				Uninitialize_Raycasting_shader();
+				uninitialize();
 			}
 		}
 	}
@@ -3024,7 +3003,7 @@ int Initialize_Raycasting_shader(void)
 				
 				free(Log);
 				Log = NULL;
-				Uninitialize_Raycasting_shader();
+				uninitialize();
 			}
 		}
 	}
@@ -3064,7 +3043,7 @@ int Initialize_Raycasting_shader(void)
 				fprintf(gpFile, "Error in RayCasting shaderObject Linking\nLinking Log : % s\n", Log);
 
 				free(Log);
-				Uninitialize_Raycasting_shader();
+				uninitialize();
 				return FALSE;
 			}
 		}
@@ -3305,7 +3284,6 @@ void Update_Raycasting_Output(void)
 
 void Uninitialize_Raycasting_shader(void)
 {
-	// local:
 
 	// code:
 
@@ -3326,29 +3304,7 @@ void Uninitialize_Raycasting_shader(void)
 		VAO_cube_RayCastingCube = 0;
 	}
 
-	if (shaderProgramObject_RayCasting)
-	{
-		glUseProgram(shaderProgramObject_RayCasting);
-		{
-			GLsizei numAttachedShaders;
-			glGetProgramiv(shaderProgramObject_RayCasting, GL_ATTACHED_SHADERS, &numAttachedShaders);
-			GLuint* shaderObjects = NULL;
-			shaderObjects = (GLuint*)malloc(numAttachedShaders * sizeof(GLuint));
-			glGetAttachedShaders(shaderProgramObject_RayCasting, numAttachedShaders, &numAttachedShaders, shaderObjects);
-			for (GLsizei i = 0; i < numAttachedShaders; i++)
-			{
-				glDetachShader(shaderProgramObject_RayCasting, shaderObjects[i]);
-				glDeleteShader(shaderObjects[i]);
-				shaderObjects[i] = 0;
-			}
-			free(shaderObjects);
-			shaderObjects = NULL;
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject_RayCasting);
-
-		shaderProgramObject_RayCasting = 0;
-	}
+	Uninitialize_ShaderProgramObject(shaderProgramObject_RayCasting);
 
 }
 
@@ -3413,7 +3369,7 @@ int Initialize_IsoSurface_shader(void)
 				fprintf(gpFile, "Error in IsoSurface Vertex Shader .\n VS Compilation Log : %s\n", Log);
 				free(Log);
 				Log = NULL;
-				Uninitialize_Raycasting_shader();
+				uninitialize();
 			}
 		}
 	}
@@ -3589,7 +3545,7 @@ int Initialize_IsoSurface_shader(void)
 
 				free(Log);
 				Log = NULL;
-				Uninitialize_Raycasting_shader();
+				uninitialize();
 			}
 		}
 	}
@@ -3629,7 +3585,7 @@ int Initialize_IsoSurface_shader(void)
 				fprintf(gpFile, "Error in IsoSurface shaderObject Linking\nLinking Log : % s\n", Log);
 
 				free(Log);
-				Uninitialize_Raycasting_shader();
+				uninitialize();
 				return FALSE;
 			}
 		}
@@ -3726,29 +3682,7 @@ void Uninitialize_IsoSurface_shader(void)
 
 	// code:
 
-	if (shaderProgramObject_IsoSurface)
-	{
-		glUseProgram(shaderProgramObject_IsoSurface);
-		{
-			GLsizei numAttachedShaders;
-			glGetProgramiv(shaderProgramObject_IsoSurface, GL_ATTACHED_SHADERS, &numAttachedShaders);
-			GLuint* shaderObjects = NULL;
-			shaderObjects = (GLuint*)malloc(numAttachedShaders * sizeof(GLuint));
-			glGetAttachedShaders(shaderProgramObject_IsoSurface, numAttachedShaders, &numAttachedShaders, shaderObjects);
-			for (GLsizei i = 0; i < numAttachedShaders; i++)
-			{
-				glDetachShader(shaderProgramObject_IsoSurface, shaderObjects[i]);
-				glDeleteShader(shaderObjects[i]);
-				shaderObjects[i] = 0;
-			}
-			free(shaderObjects);
-			shaderObjects = NULL;
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject_IsoSurface);
-
-		shaderProgramObject_IsoSurface = 0;
-	}
+	Uninitialize_ShaderProgramObject(shaderProgramObject_IsoSurface);
 
 }
 
@@ -4055,35 +3989,15 @@ void Uninitialize_ColormapClassification_shader(void)
 
 	// code:
 
+	Uninitialize_ShaderProgramObject(shaderProgramObject_Colormap);
+
 	if (texture_TransferFunction)
 	{
 		glDeleteTextures(1, &texture_TransferFunction);
 		texture_TransferFunction = 0;
 	}
 
-	if (shaderProgramObject_Colormap)
-	{
-		glUseProgram(shaderProgramObject_Colormap);
-		{
-			GLsizei numAttachedShaders;
-			glGetProgramiv(shaderProgramObject_Colormap, GL_ATTACHED_SHADERS, &numAttachedShaders);
-			GLuint* shaderObjects = NULL;
-			shaderObjects = (GLuint*)malloc(numAttachedShaders * sizeof(GLuint));
-			glGetAttachedShaders(shaderProgramObject_Colormap, numAttachedShaders, &numAttachedShaders, shaderObjects);
-			for (GLsizei i = 0; i < numAttachedShaders; i++)
-			{
-				glDetachShader(shaderProgramObject_Colormap, shaderObjects[i]);
-				glDeleteShader(shaderObjects[i]);
-				shaderObjects[i] = 0;
-			}
-			free(shaderObjects);
-			shaderObjects = NULL;
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject_Colormap);
-		shaderProgramObject_Colormap = 0;
-	}
-
+	
 }
 
 
@@ -4495,6 +4409,8 @@ void Uninitialize_MarchingTetrahedra(void)
 {
 	// code:
 
+	Uninitialize_ShaderProgramObject(shaderProgramObject_TM);
+
 
 	if (volumeMarcherVBO)
 	{
@@ -4506,30 +4422,6 @@ void Uninitialize_MarchingTetrahedra(void)
 	{
 		glDeleteVertexArrays(1, &volumeMarcherVAO);
 		volumeMarcherVAO = 0;
-	}
-
-	if (shaderProgramObject_TM)
-	{
-		glUseProgram(shaderProgramObject_TM);
-		{
-			GLsizei numAttachedShaders;
-			glGetProgramiv(shaderProgramObject_TM, GL_ATTACHED_SHADERS, &numAttachedShaders);
-			GLuint* shaderObjects = NULL;
-			shaderObjects = (GLuint*)malloc(numAttachedShaders * sizeof(GLuint));
-			glGetAttachedShaders(shaderProgramObject_TM, numAttachedShaders, &numAttachedShaders, shaderObjects);
-			for (GLsizei i = 0; i < numAttachedShaders; i++)
-			{
-				glDetachShader(shaderProgramObject_TM, shaderObjects[i]);
-				glDeleteShader(shaderObjects[i]);
-				shaderObjects[i] = 0;
-			}
-			free(shaderObjects);
-			shaderObjects = NULL;
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject_TM);
-
-		shaderProgramObject_TM = 0;
 	}
 
 	if (pVolume)

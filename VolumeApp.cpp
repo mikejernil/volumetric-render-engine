@@ -1269,6 +1269,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				swprintf_s(text2, 64, L"Top face: %.2f", fYPlus_TopFace);
 				SetWindowText(hLabel_TopFace, text2);
 				swprintf_s(text2, 64, L"Back face: %.2f", fZMinus_BackFace);
+				SetWindowText(hLabel_BackFace, text2);
 				swprintf_s(text2, 64, L"Left face: %.2f", fXMinus_SideFace);
 				SetWindowText(hLabel_LeftFace, text2);
 				swprintf_s(text2, 64, L"Bottom face: %.2f", fYMinus_BottomFace);

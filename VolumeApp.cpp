@@ -2079,40 +2079,40 @@ void Update_Volume_Box_Axes(void)
 	glm::vec3 vertexList[24] = {
 
 		// FRONT FACE: All Plus Z-Vertices
-		glm::vec3(-0.5f,fYMinus_BottomFace, fZPlus_FrontFace),				// 5. Left Bottom
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),				// 5. Left Bottom
 		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),	// 6. Right Bottom
 		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),		// 7. Right Top
-		glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace),					// 8. Left Top
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),					// 8. Left Top
 
 		// RIGHT FACE : All Plus X-Vertices:
-		glm::vec3(fXPlus_SideFace, 0.5f, 0.5f),
-		glm::vec3(fXPlus_SideFace, 0.5f,-0.5f),
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,-0.5f),
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, 0.5f),
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,fZMinus_BackFace),
+		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),
+		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),
 
 		// TOP FACE: All Plus Y-Vertices
-		glm::vec3(-0.5f, fYPlus_TopFace,-0.5f),
-		glm::vec3(0.5f, fYPlus_TopFace,-0.5f),
-		glm::vec3(0.5f, fYPlus_TopFace, 0.5f),
-		glm::vec3(-0.5f, fYPlus_TopFace, 0.5f),
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace,fZMinus_BackFace),
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,fZMinus_BackFace),
+		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),
 
 		// BOTTOM FACE: All Minus Y-Vertices
-		glm::vec3(-0.5f, fYMinus_BottomFace,-0.5f),
-		glm::vec3(0.5f, fYMinus_BottomFace,-0.5f),
-		glm::vec3(0.5f, fYMinus_BottomFace, 0.5f),
-		glm::vec3(-0.5f, fYMinus_BottomFace, 0.5f),
+		glm::vec3(fXMinus_SideFace, fYMinus_BottomFace,fZMinus_BackFace),
+		glm::vec3(fXPlus_SideFace, fYMinus_BottomFace,fZMinus_BackFace),
+		glm::vec3(fXPlus_SideFace, fYMinus_BottomFace, fZPlus_FrontFace),
+		glm::vec3(fXMinus_SideFace, fYMinus_BottomFace, fZPlus_FrontFace),
 
 		// LEFT FACE : All Minus X-Vertices:
-		glm::vec3(fXMinus_SideFace, 0.5f, 0.5f),
-		glm::vec3(fXMinus_SideFace, 0.5f,-0.5f),
-		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace,-0.5f),
-		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, 0.5f),
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace,fZMinus_BackFace),
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),
 
 		// BACK FACE: All Minus Z-Vertices
-		glm::vec3(-0.5f,fYMinus_BottomFace, fZMinus_BackFace),				// 5. Left Bottom
+		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, fZMinus_BackFace),				// 5. Left Bottom
 		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZMinus_BackFace),	// 6. Right Bottom
 		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZMinus_BackFace),		// 7. Right Top
-		glm::vec3(-0.5f, fYPlus_TopFace, fZMinus_BackFace),					// 8. Left Top
+		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZMinus_BackFace),					// 8. Left Top
 
 	};
 

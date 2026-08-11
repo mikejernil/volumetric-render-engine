@@ -932,6 +932,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					fXMinus_SideFace = -0.5f;
 					dist = -2.0f;
 					bSliceUpdate = TRUE;
+					// reset all labels:
+					wchar_t text2[64];
+					swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
+					SetWindowText(hLabel_FrontFace, text2);
+					swprintf_s(text2, 64, L"Right face: %.2f", fXPlus_SideFace);
+					SetWindowText(hLabel_RightFace, text2);
+					swprintf_s(text2, 64, L"Top face: %.2f", fYPlus_TopFace);
+					SetWindowText(hLabel_TopFace, text2);
+					swprintf_s(text2, 64, L"Back face: %.2f", fZMinus_BackFace);
+					SetWindowText(hLabel_BackFace, text2);
+					swprintf_s(text2, 64, L"Left face: %.2f", fXMinus_SideFace);
+					SetWindowText(hLabel_LeftFace, text2);
+					swprintf_s(text2, 64, L"Bottom face: %.2f", fYMinus_BottomFace);
+					SetWindowText(hLabel_BottomFace, text2);
+
 					SetFocus(hwnd);
 				}
 				break;
@@ -1245,6 +1260,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				fZMinus_BackFace= -0.5f;
 				fXMinus_SideFace = -0.5f;
 				dist = -2.0f;
+				// reset all labels:
+				wchar_t text2[64];
+				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
+				SetWindowText(hLabel_FrontFace, text2);
+				swprintf_s(text2, 64, L"Right face: %.2f", fXPlus_SideFace);
+				SetWindowText(hLabel_RightFace, text2);
+				swprintf_s(text2, 64, L"Top face: %.2f", fYPlus_TopFace);
+				SetWindowText(hLabel_TopFace, text2);
+				swprintf_s(text2, 64, L"Back face: %.2f", fZMinus_BackFace);
+				swprintf_s(text2, 64, L"Left face: %.2f", fXMinus_SideFace);
+				SetWindowText(hLabel_LeftFace, text2);
+				swprintf_s(text2, 64, L"Bottom face: %.2f", fYMinus_BottomFace);
+				SetWindowText(hLabel_BottomFace, text2);
 			}
 			break;
 		case 'w':
@@ -1315,7 +1343,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_LBUTTONUP:
 		bMouseClicked = FALSE;
-		ReleaseCapture();
+		if (GetCapture() == hwnd)
+			ReleaseCapture();
+		SetFocus(hwnd);
 		break;
 
 	case WM_SETFOCUS:
@@ -3886,9 +3916,6 @@ void Initialize_TetrahedraMarcher_Shaders()
 
 				// step2: set normal attributes
 				oNormal = aNormal;
-				/* 	step 2 notes:
-				*/
-		
 
 			}
 	

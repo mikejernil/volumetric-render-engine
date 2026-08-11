@@ -208,9 +208,7 @@ float rotationY = 0.0f;
 float rotationZ = 0.0f;
 
 
-BOOL bRotateX = FALSE;
-BOOL bRotateY = FALSE;
-BOOL bRotateZ = FALSE;
+
 BOOL bSliceUpdate = TRUE;
 
 BOOL bMouseClicked = FALSE;
@@ -923,9 +921,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		{
 			case ID_RESET_BUTTON:
 				{
-					bRotateX = FALSE;
-					bRotateY = FALSE;
-					bRotateZ = FALSE;
 					rotationX = 0.0f;
 					rotationY = 0.0f;
 					rotationZ = 0.0f;
@@ -1240,9 +1235,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case 'R':
 			// Reset All :
 			{
-				bRotateX = FALSE;
-				bRotateY = FALSE;
-				bRotateZ = FALSE;
 				rotationX = 0.0f;
 				rotationY = 0.0f;
 				rotationZ = 0.0f;
@@ -1259,22 +1251,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case 'W':
 			bWireframe = !bWireframe;
 			break;
-
-		case 'x':
-		case 'X':
-			bRotateX = !bRotateX;
-			break;
-
-		case 'y':
-		case 'Y':
-			bRotateY = !bRotateY;
-			break;
-
-		case 'z':
-			break;
-		case 'Z':
-			break;
-
 		default:
 			break;
 		}
@@ -1334,9 +1310,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_LBUTTONDOWN:
 		bMouseClicked = TRUE;
-		bRotateX = FALSE;
-		bRotateY = FALSE;
-		bRotateZ = FALSE;
 		SetCapture(hwnd);
 		break;
 
@@ -1653,7 +1626,7 @@ void display(void)
 			glClearColor(0.75f, 0.75f, 0.75f, 0.0f);
 			Render_Basic_Volume();
 			Update_Basic_Volume();
-			if (bRotateX || bRotateY || bRotateZ || bMouseClicked || bSliceUpdate)
+			if (bMouseClicked || bSliceUpdate)
 			{
 				Slice_Volume();
 				Update_Volume_Box_Axes();
@@ -1665,7 +1638,7 @@ void display(void)
 
 			Render_Raycasting_Output();
 			Update_Raycasting_Output();
-			if (bRotateX || bRotateY || bRotateZ || bMouseClicked || bSliceUpdate)
+			if (bMouseClicked || bSliceUpdate)
 			{
 				Update_Volume_Box_Axes();
 				Update_Raycasting_Cube_VBO();
@@ -1678,7 +1651,7 @@ void display(void)
 
 			Render_IsoSurface_Output();
 			Update_IsoSurface_Output();
-			if (bRotateX || bRotateY || bRotateZ || bMouseClicked || bSliceUpdate)
+			if (bMouseClicked || bSliceUpdate)
 			{
 				Update_Volume_Box_Axes();
 				Update_Raycasting_Cube_VBO();
@@ -1691,7 +1664,7 @@ void display(void)
 
 			Render_ColormapClassification_Output();
 			Update_ColormapClassification_Output();
-			if (bRotateX || bRotateY || bRotateZ || bMouseClicked || bSliceUpdate)
+			if (bMouseClicked || bSliceUpdate)
 			{
 				Slice_Volume();
 				Update_Volume_Box_Axes();
@@ -1703,7 +1676,7 @@ void display(void)
 
 			Render_MarchingTetrahedra();
 			Update_MarchingTetrahedra();
-			if (bRotateX || bRotateY || bRotateZ || bMouseClicked || bSliceUpdate)
+			if (bMouseClicked || bSliceUpdate)
 			{
 				Update_Volume_Box_Axes();
 			}
@@ -2670,31 +2643,6 @@ void Render_Basic_Volume(void)
 void Update_Basic_Volume(void)
 {
 	// code:
-
-	if (bRotateX)
-	{
-		rotationX += 0.01;
-		if (rotationX >= 360.0f)
-		{
-			rotationX -= 360.0f;
-		}
-	}
-	if (bRotateY)
-	{
-		rotationY += 0.01;
-		if (rotationY >= 360.0f)
-		{
-			rotationY -= 360.0f;
-		}
-	}
-	if (bRotateZ)
-	{
-		rotationZ += 0.01;
-		if (rotationZ >= 360.0f)
-		{
-			rotationZ -= 360.0f;
-		}
-	}
 
 }
 

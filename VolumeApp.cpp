@@ -2,6 +2,9 @@
 #define UNICODE
 #define _UNICODE
 
+#define KEYBOARD_SLICING_CONTROLS
+#undef KEYBOARD_SLICING_CONTROLS
+
 //- Commmon Header Files -
 #include<Windows.h>
 #include<Windowsx.h>
@@ -69,6 +72,9 @@ using namespace vmath;
 
 
 #define EPSILON 0.0001f;//for floating point inaccuracy
+
+
+
 
 
 // Link with OpenGL Library:
@@ -1124,11 +1130,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		bSliceUpdate = TRUE;
 		switch (LOWORD(wParam))
 		{
+#ifdef KEYBOARD_SLICING_CONTROLS
 		case VK_UP:
 			if (fZPlus_FrontFace >= -0.49f)
 			{
 				fZPlus_FrontFace -= 0.01f;
 			}
+
 			break;
 
 		case VK_DOWN:
@@ -1206,7 +1214,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				fXMinus_SideFace -= 0.01f;
 			}
 			break;
-
+#endif
 
 		case VK_ESCAPE:
 			DestroyWindow(hwnd);
@@ -1273,10 +1281,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case 'z':
-			dist -= 0.1f;
 			break;
 		case 'Z':
-			dist += 0.1f;
 			break;
 
 		default:

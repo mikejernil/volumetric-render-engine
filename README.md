@@ -10,7 +10,7 @@ Currently it has -
 We are planning to build more features and add support for more volumetric formats (like DICOM, VDB etc) soon!
 
 ### How to Run
-- Copy glew32.dll (OpenGL Prerequisite extension) from `dependencies\glew\bin\Release\x64\glew32.dll` to your `Windows/System32/` folder 
+- Copy glew32.dll (OpenGL Prerequisite extension) from Project folder `dependencies\glew\bin\Release\x64\glew32.dll` to your `Windows/System32/` folder 
 - Start Visual Studio 2022 x64 developer command prompt (Install VS 2022 or higher if not installed already)
 - Go to Project directory, and run `build.bat`
 

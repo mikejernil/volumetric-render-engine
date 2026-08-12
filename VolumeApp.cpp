@@ -411,7 +411,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	}
 	else
 	{
-		fprintf(gpFile, "Shree Gajanan Prasanna #\n");
 		fprintf(gpFile, "Log File Created Successfully.\n");
 		fprintf(gpFile, "Program started Successfully.\n");
 	}

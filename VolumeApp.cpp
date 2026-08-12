@@ -4365,9 +4365,10 @@ void Set_UI_Objects_Position(HWND hwnd)
 	int clientWidth = rc.right - rc.left;
 	int clientHeight = rc.bottom - rc.top;
 
-	// ration from original position x,y  i,e 155.0 and 620.0
-	int x = static_cast<int>(clientWidth * (1550.0f / (float)1920.0f));
-	int y = static_cast<int>(clientHeight * (620.0f / (float)1080.0f));
+	// ration from original position x,y  i,e 155.0 and 620.0 but using the 1/5 part of width from Right Side
+	int columnX = clientWidth *  1/5;
+	int columnWidth = clientWidth - columnX;
+
 	
 	const int buttonWidth = 40;
 	const int buttonHeight = 30;
@@ -4377,6 +4378,10 @@ void Set_UI_Objects_Position(HWND hwnd)
 
 	const int space = 50;
 	const int padding = 10;
+
+
+	int x = columnWidth + 20;
+	int y = clientHeight * (620.0f / 1080.0f);
 
 	/****** RESET Button *********/
 	SetWindowPos(

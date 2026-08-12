@@ -7,6 +7,7 @@ Currently it has -
 - Different types of rendering (Colormap, Iso-surface etc.)
 - Rotate & Zoom Controls (for easy navigation) 
 - 6 slicing planes to visualize cross-sections
+
 We are planning to build more features and add support for more volumetric formats (like DICOM, VDB etc) soon!
 
 ### How to Run

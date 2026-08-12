@@ -9,6 +9,12 @@ Currently it has -
 - 6 slicing planes to visualize cross-sections
 We are planning to build more features and add support for more volumetric formats (like DICOM, VDB etc) soon!
 
+### How to Run
+- Copy glew32.dll (OpenGL Prerequisite extension) from `dependencies\glew\bin\Release\x64\glew32.dll` to your `Windows/System32/` folder 
+- Start Visual Studio 2022 x64 developer command prompt (Install VS 2022 or higher if not installed already)
+- Go to Project directory, and run `build.bat`
+
+
 <img width="2220" height="2550" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />
 
 ### Rendering Effects

@@ -370,7 +370,7 @@ void Render_Volume_Box_Axes(glm::mat4);
 
 
 
-// Handle to Button Labels
+// Handle to UI Buttons and  Labels
 HWND hwndValueLabel = NULL;
 
 HWND hLabel_FrontFace = NULL;
@@ -380,6 +380,22 @@ HWND hLabel_TopFace = NULL;
 HWND hLabel_BackFace = NULL;
 HWND hLabel_LeftFace = NULL;
 HWND hLabel_BottomFace = NULL;
+
+HWND hResetButton = NULL;
+HWND hwndLeftButton = NULL;
+HWND hwndRightButton = NULL;
+HWND hFrontClip_Minus = NULL;
+HWND hFrontClip_Plus = NULL;
+HWND hRightClip_Minus = NULL;
+HWND hRightClip_Plus = NULL;
+HWND hTopClip_Minus = NULL;
+HWND hTopClip_Plus = NULL;
+HWND hBackClip_Minus = NULL;
+HWND hBackClip_Plus = NULL;
+HWND hLeftClip_Minus = NULL;
+HWND hLeftClip_Plus = NULL;
+HWND hBottomClip_Minus = NULL;
+HWND hBottomClip_Plus = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -437,6 +453,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	iWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 	iHeight = GetSystemMetrics(SM_CYSCREEN);
+	fprintf(gpFile, "Message: iWidth : %d \n", iWidth);
+	fprintf(gpFile, "Message: iHeight: %d \n", iHeight);
 
 	// code to create window
 	hwnd = CreateWindowEx(WS_EX_APPWINDOW,
@@ -473,7 +491,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 
 	// Reset button:
-	HWND hResetButton = CreateWindow(
+	hResetButton = CreateWindow(
 		L"BUTTON",  // Predefined class; Unicode assumed 
 		L"RESET",      // Button text 
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
@@ -489,7 +507,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
 	// ------------------ EFFECTS ARROW Two Buttons and Label ------------------ 
-	HWND hwndLeftButton = CreateWindow(
+	hwndLeftButton = CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -521,7 +539,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	swprintf_s(text1, 64, L"Colormap");
 	SetWindowText(hwndValueLabel, text1);
 
-	HWND hwndRightButton = CreateWindow(
+	hwndRightButton = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -538,7 +556,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
 	// ------------------ FRONT FACE:  ARROW Two Buttons and Label ------------------ 
-	HWND hFrontClip_Minus= CreateWindow(
+	hFrontClip_Minus= CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -570,7 +588,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
 	SetWindowText(hLabel_FrontFace, text2);
 
-	HWND hFrontClip_Plus = CreateWindow(
+	hFrontClip_Plus = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -585,8 +603,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 
-	// ------------------ RIGHT FACE:  ARROW Two Buttons and Label ------------------ 
-	HWND hRightClip_Minus = CreateWindow(
+	//// ------------------ RIGHT FACE:  ARROW Two Buttons and Label ------------------ 
+	hRightClip_Minus = CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -618,7 +636,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	swprintf_s(text3, 64, L"Right face: %.2f", fXPlus_SideFace);
 	SetWindowText(hLabel_RightFace, text3);
 
-	HWND hRightClip_Plus = CreateWindow(
+	hRightClip_Plus = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -633,7 +651,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 	// ------------------ TOP FACE:  ARROW Two Buttons and Label ------------------ 
-	HWND hTopClip_Minus = CreateWindow(
+	hTopClip_Minus = CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -665,7 +683,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	swprintf_s(text4, 64, L"Top face: %.2f", fYPlus_TopFace);
 	SetWindowText(hLabel_TopFace, text4);
 
-	HWND hTopClip_Plus = CreateWindow(
+	hTopClip_Plus = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -680,7 +698,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 	// ------------------ BACK FACE:  ARROW Two Buttons and Label ------------------ 
-	HWND hBackClip_Minus = CreateWindow(
+	hBackClip_Minus = CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -712,7 +730,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	swprintf_s(text5, 64, L"Back face: %.2f", fZMinus_BackFace);
 	SetWindowText(hLabel_BackFace, text5);
 
-	HWND hBackClip_Plus = CreateWindow(
+	hBackClip_Plus = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -728,7 +746,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
 	// ------------------ LEFT FACE:  ARROW Two Buttons and Label ------------------ 
-	HWND hLeftClip_Minus = CreateWindow(
+	hLeftClip_Minus = CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -760,7 +778,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	swprintf_s(text6, 64, L"Left face: %.2f", fXMinus_SideFace);
 	SetWindowText(hLabel_LeftFace, text6);
 
-	HWND hLeftClip_Plus = CreateWindow(
+	hLeftClip_Plus = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -775,7 +793,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 	
 	// ------------------ BOTTOM FACE:  ARROW Two Buttons and Label ------------------ 
-	HWND hBottomClip_Minus = CreateWindow(
+	hBottomClip_Minus = CreateWindow(
 		L"BUTTON",
 		L"<",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -807,7 +825,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	swprintf_s(text7, 64, L"Bottom : %.2f",fYMinus_BottomFace);
 	SetWindowText(hLabel_BottomFace, text7);
 
-	HWND hBottomClip_Plus = CreateWindow(
+	hBottomClip_Plus = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -902,6 +920,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	//function declarations:
 	void resize(int, int);
+	void Set_UI_Objects_Position(HWND hwnd);
 	void uninitialize(void);
 	void ToggleFullscreen(void);
 
@@ -1358,6 +1377,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 		resize(LOWORD(lParam), HIWORD(lParam));
+		Set_UI_Objects_Position(hwnd);
 		break;
 
 	case WM_ERASEBKGND:
@@ -4331,3 +4351,256 @@ void Uninitialize_ShaderProgramObject(GLuint shaderProgramObject_)
 
 }
 
+// to Update UI Button and Label Position on resize():
+
+void Set_UI_Objects_Position(HWND hwnd)
+{
+	// local:
+	RECT rc;
+
+	// code:
+
+	GetClientRect(hwnd, &rc);
+
+	int clientWidth = rc.right - rc.left;
+	int clientHeight = rc.bottom - rc.top;
+
+	// ration from original position x,y  i,e 155.0 and 620.0
+	int x = static_cast<int>(clientWidth * (1550.0f / (float)1920.0f));
+	int y = static_cast<int>(clientHeight * (620.0f / (float)1080.0f));
+	
+	const int buttonWidth = 40;
+	const int buttonHeight = 30;
+	
+	const int labelWidth = 100;
+	const int labelHeight = 30;
+
+	const int space = 50;
+	const int padding = 10;
+
+	/****** RESET Button *********/
+	SetWindowPos(
+		hResetButton,
+		NULL,
+		x+space, y-space,
+		buttonWidth*2, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	/********* Effects Buttons ********/
+	SetWindowPos(
+		hwndLeftButton,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hwndValueLabel,
+		NULL,
+		x+space, 
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hwndRightButton,
+		NULL,
+		x+buttonWidth+ padding+labelWidth+ padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+
+	/********* FRONT   FACE ********/
+	y = y + 40;
+	SetWindowPos(
+		hFrontClip_Minus,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_FrontFace,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hFrontClip_Plus,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	
+	/********* RIGHT   FACE ********/
+	y = y + 40;
+	SetWindowPos(
+		hRightClip_Minus,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_RightFace,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hRightClip_Plus,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	/********* TOP  FACE ********/
+	y = y + 40;
+	SetWindowPos(
+		hTopClip_Minus,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_TopFace,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hTopClip_Plus,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	/********* BACK FACE ********/
+	y = y + 40;
+	SetWindowPos(
+		hBackClip_Minus,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_BackFace,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hBackClip_Plus,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	/********* LEFT FACE ********/
+	y = y + 40;
+	SetWindowPos(
+		hLeftClip_Minus,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_LeftFace,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLeftClip_Plus,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	/********* BOTTOM FACE ********/
+	y = y + 40;
+	SetWindowPos(
+		hBottomClip_Minus,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_BottomFace,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hBottomClip_Plus,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+
+}

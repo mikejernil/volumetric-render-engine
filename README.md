@@ -1,6 +1,6 @@
 # Volumetric Render Engine
 
-A Volumetric Render Engine 🧊 for Windows (Native). It's being built with OpenGL & C++ 💻 so you all can try it out and use it for your own applications. ✨
+A Volumetric Render Engine 🧊 for Windows (Native). It's being built with OpenGL & C++ 💻 and you can try it out and integrate it into your own applications. ✨
 
 Currently it has -
 - Volumetric RAW format support 📺

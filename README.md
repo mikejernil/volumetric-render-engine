@@ -1,6 +1,6 @@
 # Volumetric Render Engine
 
-A Volumetric Render Engine 🧊 for Windows (Native). It's being built with OpenGL & C++ 💻 and you can try it out and integrate it into your own applications. ✨
+A Volumetric Render Engine 🧊 for Windows (Native). It's being built with OpenGL & C++ 💻 and you can try it out and integrate it into your own applications.
 
 <img width="600" height="380" alt="volume_engine_day2_post (1)" src="https://github.com/user-attachments/assets/74f362ae-9ff0-4ba9-8ad8-d7cbb7f8eda0" />
 

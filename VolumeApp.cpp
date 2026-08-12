@@ -99,7 +99,6 @@ HGLRC ghrc = NULL;
 
 
 glm::mat4 perspectiveProjMatrix_glm;
-vmath::mat4 perspectiveProjectionMatrix;
 
 GLuint giWinWidth=0;
 GLuint giWinHeight = 0;
@@ -411,7 +410,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	WNDCLASSEX wndclass;
 	HWND hwnd;
 	MSG msg;
-	TCHAR szAppName[] = TEXT("Window by Varun Vijay Gajre");
+	TCHAR szAppName[] = TEXT("Win32 SDK Window");
 	int iHeight;
 	int iWidth;
 	BOOL bDone = FALSE;
@@ -880,39 +879,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	uninitialize();
 
 	return ((int)msg.wParam);
-}
-
-std::wstring OpenRawFileDialog(HWND hwnd_);
-
-std::wstring OpenRawFileDialog(HWND hwnd_)
-{
-	// local:
-	
-	wchar_t fileName[MAX_PATH] = L"Engine256.raw";
-
-	// code:
-
-	OPENFILENAME openFileName = {};
-
-	// initialize members of openFileName:
-	openFileName.lStructSize = sizeof(openFileName);
-	openFileName.hwndOwner = hwnd_;
-	openFileName.lpstrFilter = L"RAW Files (*.raw)\0*.raw\0All Files (*.*)\0*.*\0";
-	openFileName.lpstrFile = fileName;
-	openFileName.nMaxFile = MAX_PATH;
-	openFileName.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-	openFileName.lpstrDefExt = L"raw";
-
-	// call to GetOepnFileNames:
-
-	BOOL bResult = GetOpenFileNameW(&openFileName);
-	if (bResult != FALSE)
-	{
-		return (std::wstring(fileName));
-	}
-
-
-	return (L"");
 }
 
 
@@ -1597,7 +1563,7 @@ int initialize(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// No WarmUpResize in this version
-	perspectiveProjectionMatrix = vmath::mat4::identity();
+
 	perspectiveProjMatrix_glm = glm::identity<glm::mat4>();
 
 	resize(WIN_WIDTH, WIN_HEIGHT);
@@ -1655,7 +1621,6 @@ void resize(int width, int height)
 	);
 
 	
-	perspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height,0.1f,1000.0f);
 	perspectiveProjMatrix_glm = glm::perspective(glm::radians(60.0f), (GLfloat)width / (GLfloat)height, 0.1f, 1000.0f);
 }
 
@@ -2747,20 +2712,12 @@ int Initialize_Raycasting_shader(void)
 			
 			layout (location = 0) in vec3 aPosition;
 			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords; //3D texture coordinates for texture lookup in the fragment shader
+			smooth out vec3 oTexCoords;
 			void main()
 			{
-				// step1: // to get the Clipspace position
 				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
 
-				// step2: //get the 3D texture coordinates from vertex position from step1
 				oTexCoords = aPosition + vec3(0.5);
-
-
-				/* 	step 2 notes:
-				we will get the 3D texture coordinates by adding (0.5,0.5,0.5) to the object space vertex position. 
-				Since the unit cube is at origin (min: (-0.5,-0.5,-0.5) and max: (0.5,0.5,0.5)), by adding (0.5,0.5,0.5) to the unit cube object space position gives us values from (0,0,0) to (1,1,1)
-				*/
 			}
 			)";
 
@@ -2799,25 +2756,24 @@ int Initialize_Raycasting_shader(void)
 			
 			#version 460 core
 
-			smooth in vec3 oTexCoords; //3D texture coordinates form vertex shader, interpolated by rasterizer
+			smooth in vec3 oTexCoords;
 
-			uniform sampler3D u_Volume3DSampler; //volume dataset
-			uniform vec3 u_cameraPosition; //camera or eye position // 27August2024: VVG: SinglePass GPU_RayCasting :
-			uniform vec3 u_stepSize; //ray step size // 27August2024: VVG: SinglePass GPU_RayCasting :
+			uniform sampler3D u_Volume3DSampler;
+			uniform vec3 u_cameraPosition;
+			uniform vec3 u_stepSize;
 
-			// 27August2024: VVG: SinglePass GPU_RayCasting : Adding 3 new constants below:
-			const int MAX_SAMPLES = 300;	//total samples for each ray march step
-			const vec3 texMin = vec3(0);	//minimum texture access coordinate
-			const vec3 texMax = vec3(1);	//maximum texture access coordinate
+			const int MAX_SAMPLES = 300;
+			const vec3 texMin = vec3(0);
+			const vec3 texMax = vec3(1);
 
 			out vec4 FragColor;		
 			void main(void)
 			{             
 
-				// step 1: // 27August2024: VVG: SinglePass GPU_RayCasting : save texcoords to local
+				// step 1:
 				vec3 dataPosition = oTexCoords; 
 
-				// step 2: // 27August2024: VVG: SinglePass GPU_RayCasting : Getting the ray marching direction:
+				// step 2: 
 				/*
 				get the object space position by subracting 0.5 from the 3D texture coordinates.
 				Then subtraact it from camera position and normalize to get the ray marching direction
@@ -2826,11 +2782,7 @@ int Initialize_Raycasting_shader(void)
 				vec3 geomatryDirection = normalize((oTexCoords - vec3(0.5)) - u_cameraPosition);
 
 
-				// step 3: // 27August2024: VVG: SinglePass GPU_RayCasting : calculate sub-step size for each Ray marching step
-				/*
-				multiply the raymarching direction with the step size to get the sub-step size we need to take at each raymarching step
-				*/
-
+				// step 3: multiply the raymarching direction with the step size to get the sub-step size we need to take at each raymarching step
 				vec3 directionStep = geomatryDirection * u_stepSize;
 
 				//flag to indicate if the raymarch loop should terminate
@@ -2853,21 +2805,15 @@ int Initialize_Raycasting_shader(void)
 					FragColor.rgb = prev_alpha * vec3(fSample) + FragColor.rgb; 
 					FragColor.a += prev_alpha; 
 
-					// Early Ray Termination : if the currently composited colour alpha is already fully saturated,we terminated the loop
+					//Ray Termination : if the currently composited colour alpha is already fully saturated,we terminated the loop
 					if(FragColor.a > 0.99)
 						break;
 
 				}
 
-				//FragColor = texture(u_Volume3DSampler, oTexCoords).rrrr; // 27August2024: VVG: SinglePass GPU_RayCasting : original line ,rest is new calculation
-				//FragColor = vec4(1.0,0.5,1.0,1.0); //DEBUG
 
 			}
 
-			//Here we sample the volume dataset using the 3D texture coordinates from the vertex shader.
-			//Note that since at the time of texture creation, we gave the internal format as GL_RED
-			//we can get the sample value from the texture using the red channel. Here, we set all 4
-			//components as the sample value in the texture which gives us a shader of grey.
 	
 			)";
 	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
@@ -3499,7 +3445,6 @@ int Initialize_IsoSurface_shader(void)
 	return (0);
 }
 
-
 void Initialize_IsoSurface_Geomatry(void)
 {
 	// local:
@@ -3507,7 +3452,6 @@ void Initialize_IsoSurface_Geomatry(void)
 	// code:
 
 }
-
 
 void Render_IsoSurface_Output(void)
 {
@@ -3600,18 +3544,13 @@ int Initialize_ColormapClassification_shader(void)
 
 			layout (location = 0) in vec3 aPosition;
 			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords; //3D texture coordinates for texture lookup in the fragment shader
+			smooth out vec3 oTexCoords;
 
 			void main()
 			{
 				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
 
 				oTexCoords = aPosition + vec3(0.5);
-
-				//get the 3D texture coordinates by adding (0.5,0.5,0.5) to the object space 
-				//vertex position. Since the unit cube is at origin (min: (-0.5,-0.5,-0.5) and max: (0.5,0.5,0.5))
-				//adding (0.5,0.5,0.5) to the unit cube object space position gives us values from (0,0,0) to 
-				//(1,1,1)
 
 			}
 
@@ -3652,9 +3591,9 @@ int Initialize_ColormapClassification_shader(void)
 			
 			#version 460 core
 
-			smooth in vec3 oTexCoords; //3D texture coordinates form vertex shader, interpolated by rasterizer
-			uniform sampler3D u_Volume3DSampler; //volume dataset
-			uniform sampler1D u_LevelOfDetail;  //transfer function (lookup table) texture
+			smooth in vec3 oTexCoords;
+			uniform sampler3D u_Volume3DSampler;
+			uniform sampler1D u_LevelOfDetail;
 
 			out vec4 FragColor;		
 			void main(void)
@@ -3662,14 +3601,6 @@ int Initialize_ColormapClassification_shader(void)
 
 				FragColor = texture(u_LevelOfDetail, texture(u_Volume3DSampler,oTexCoords).r);
 			}
-
-			//Here we sample the volume dataset using the 3D texture coordinates from the vertex shader.
-			//Note that since at the time of texture creation, we gave the internal format as GL_RED
-			//we can get the sample value from the texture using the red channel. 
-
-			//Then we can use the Density Value obtained from the Volume dataset and Lookup the Colour From the transfer Function texture
-			// By doing a Dependent Texture Lookup.		
-	
 			)";
 	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
@@ -3921,22 +3852,17 @@ void Initialize_TetrahedraMarcher_Shaders()
 			
 			#version 460 core
 			
-			layout (location = 0) in vec3 aPosition; //object space vertex position
-			layout (location = 2) in vec3 aNormal; //object space vertex normal
+			layout (location = 0) in vec3 aPosition;
+			layout (location = 2) in vec3 aNormal;
 
 			uniform mat4 u_MVPMatrix;
 
-			smooth out vec3 oNormal;  //output object space normal
+			smooth out vec3 oNormal;
 
 			void main()
 			{
-				// step1: // to get the Clipspace position
 				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-
-
-				// step2: set normal attributes
 				oNormal = aNormal;
-
 			}
 	
 			)";
@@ -3976,13 +3902,13 @@ void Initialize_TetrahedraMarcher_Shaders()
 			
 			#version 460 core
 
-			smooth in vec3 oNormal; //varying input from the vertex shader  interpolated by rasterizer
+			smooth in vec3 oNormal;
 			out vec4 FragColor;
 
 			void main(void)
 			{             
 
-				FragColor = vec4(oNormal,1.0);  	//output the object space normal as colour
+				FragColor = vec4(oNormal,1.0);
 			}
 	
 
@@ -4415,7 +4341,6 @@ void Set_UI_Objects_Position(HWND hwnd)
 	SetWindowPos(
 		hwndRightButton,
 		NULL,
-		x+buttonWidth+ padding+labelWidth+ padding,
 		y,
 		buttonWidth, buttonHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE

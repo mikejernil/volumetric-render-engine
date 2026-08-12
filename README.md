@@ -2,6 +2,8 @@
 
 A Volumetric Render Engine 🧊 for Windows (Native). It's being built with OpenGL & C++ 💻 and you can try it out and integrate it into your own applications. ✨
 
+<img width="600" height="380" alt="volume_engine_day2_post (1)" src="https://github.com/user-attachments/assets/74f362ae-9ff0-4ba9-8ad8-d7cbb7f8eda0" />
+
 Currently it has -
 - Volumetric RAW format support 📺
 - Different types of rendering (Colormap, Iso-surface etc.)
@@ -9,6 +11,9 @@ Currently it has -
 - 6 slicing planes to visualize cross-sections
 
 We are planning to build more features and add support for more volumetric formats (like DICOM, VDB etc) soon!
+
+
+
 
 ### How to Run
 - Copy glew32.dll (OpenGL Prerequisite extension) from Project folder `dependencies\glew\bin\Release\x64\glew32.dll` to your `Windows/System32/` folder 

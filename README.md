@@ -17,15 +17,28 @@ We are planning to build more features and add support for more volumetric forma
 
 <img width="2220" height="2550" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />
 
-### Rendering Effects
-**Colormap Classification**:
+### Rendering Effects ##
+
+
+**Colormap Classification** ( We have set this as default)
 Here we can see the volume data with color values mapped to its density.
 As per our current Colormap we can see the Red is Higher density whereas blue is Low density Noise.
+
+** Ray Casting Method **
+Ray Casting is using a virtual light ray which marches through volume data to find and map the scalar value we need to visualize.
+We are using single pass GPU Ray casting.
+
 
 **Pseudo Iso Surface Rendering using Ray Casting**:
 This gives our volumetric data an approximate Surface without having to extract polygonal surface .
 Its done using Ray Casting method which visualizes our objects/volumes  by traversing rays through data.
 Iso Surface value helps us set filter as per Density and remove Noise.
+
+** Basic Method (3D Texture Slicing) **
+It is one of the simplest method in which we can generate a 3D Texture from Volume Data.
+It uses volume data values to approximate slices of data and make 3D Texture of it.
+
+
  
 **Applications** 
 1. Medical imaging

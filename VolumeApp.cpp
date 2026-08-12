@@ -974,7 +974,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				iEffectUsed -= 1;
 				if (iEffectUsed < 0)
 				{
-					iEffectUsed = 4;
+					iEffectUsed = 3;
 				}
 				bSliceUpdate = TRUE;
 
@@ -985,7 +985,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			case ID_RIGHT_ARROW_EFFECT:
 				iEffectUsed += 1;
-				if (iEffectUsed > 4)
+				if (iEffectUsed > 3)
 				{
 					iEffectUsed = 0;
 				}
@@ -4373,8 +4373,8 @@ void Set_UI_Objects_Position(HWND hwnd)
 	const int buttonWidth = 40;
 	const int buttonHeight = 30;
 	
-	const int labelWidth = 100;
-	const int labelHeight = 30;
+	int labelWidth = 150;
+	int labelHeight = 30;
 
 	const int space = 50;
 	const int padding = 10;
@@ -4422,6 +4422,9 @@ void Set_UI_Objects_Position(HWND hwnd)
 	);
 
 
+
+	labelWidth = 100;
+	labelHeight = 30;
 
 	/********* FRONT   FACE ********/
 	y = y + 40;

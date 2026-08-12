@@ -20,7 +20,7 @@ We are planning to build more features and add support for more volumetric forma
 ### Rendering Effects ##
 
 
-**Colormap Classification** ( We have set this as default)
+**Colormap Classification** (Our Default):
 Here we can see the volume data with color values mapped to its density.
 As per our current Colormap we can see the Red is Higher density whereas blue is Low density Noise.
 

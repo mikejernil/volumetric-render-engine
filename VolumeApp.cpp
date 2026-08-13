@@ -338,6 +338,25 @@ GLuint volumeMarcherVAO;
 //flag to set wireframe rendering mode
 BOOL bWireframe = FALSE;
 
+// clipping plane members:
+GLuint clipFrontFace_uniform = 0;
+float fClipPlane_Front = 1.0f;
+
+GLuint clipBackFace_uniform = 0;
+float fClipPlane_Back= 0.0f;
+
+GLuint clipRight_uniform = 0;
+float fClipPlane_Right= 1.0f;
+
+GLuint clipLeft_uniform = 0;
+float fClipPlane_Left= 0.0f;
+
+GLuint clipTop_uniform = 0;
+float fClipPlane_Top= 1.0f;
+
+GLuint clipBottom_uniform = 0;
+float fClipPlane_Bottom= 0.0f;
+
 
 //! Shader Type 5: Marching Tetrahedra Method : prototypes:
 void Initialize_TetrahedraMarcher_Constructor(void);
@@ -915,6 +934,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					fZMinus_BackFace = -0.5f;
 					fXMinus_SideFace = -0.5f;
 					dist = -2.0f;
+					
+					fClipPlane_Front = 1.0f;
+					fClipPlane_Back = 0.0f;
+					fClipPlane_Right = 1.0f;
+					fClipPlane_Left = 0.0f;
+					fClipPlane_Top = 1.0f;
+					fClipPlane_Bottom = 0.0f;
+
 					bSliceUpdate = TRUE;
 					// reset all labels:
 					wchar_t text2[64];
@@ -940,7 +967,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				iEffectUsed -= 1;
 				if (iEffectUsed < 0)
 				{
-					iEffectUsed = 3;
+					iEffectUsed = 4;
 				}
 				bSliceUpdate = TRUE;
 
@@ -951,7 +978,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			case ID_RIGHT_ARROW_EFFECT:
 				iEffectUsed += 1;
-				if (iEffectUsed > 3)
+				if (iEffectUsed > 4)
 				{
 					iEffectUsed = 0;
 				}
@@ -968,6 +995,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				{
 					fZPlus_FrontFace -= 0.01f;
 				}
+
+				if (fClipPlane_Front >= 0.0001f)
+				{
+					fClipPlane_Front -= 0.01f;
+				}
 				bSliceUpdate = TRUE;
 				wchar_t text2[64];
 				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
@@ -979,6 +1011,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				if (fZPlus_FrontFace < 0.5f)
 				{
 					fZPlus_FrontFace += 0.01f;
+				}
+
+				if (fClipPlane_Front < 1.0f)
+				{
+					fClipPlane_Front += 0.01f;
 				}
 				bSliceUpdate = TRUE;
 				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
@@ -993,6 +1030,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				{
 					fXPlus_SideFace -= 0.01f;
 				}
+
+				if (fClipPlane_Right >= 0.0001f)
+				{
+					fClipPlane_Right -= 0.01f;
+				}
 				bSliceUpdate = TRUE;
 				wchar_t text3[64];
 				swprintf_s(text3, 64, L"Right face: %.2f", fXPlus_SideFace);
@@ -1004,6 +1046,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				if (fXPlus_SideFace < 0.5f)
 				{
 					fXPlus_SideFace += 0.01f;
+				}
+
+				if (fClipPlane_Right < 1.0f)
+				{
+					fClipPlane_Right += 0.01f;
 				}
 				bSliceUpdate = TRUE;
 				swprintf_s(text3, 64, L"Right face: %.2f", fXPlus_SideFace);
@@ -1017,6 +1064,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				{
 					fYPlus_TopFace -= 0.01f;
 				}
+
+				if (fClipPlane_Top >= 0.0001f)
+				{
+					fClipPlane_Top -= 0.01f;
+				}
 				bSliceUpdate = TRUE;
 				wchar_t text4[64];
 				swprintf_s(text4, 64, L"Top face: %.2f", fYPlus_TopFace);
@@ -1028,6 +1080,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				if (fYPlus_TopFace < 0.5f)
 				{
 					fYPlus_TopFace += 0.01f;
+				}
+
+				if (fClipPlane_Top < 1.0f)
+				{
+					fClipPlane_Top += 0.01f;
 				}
 				bSliceUpdate = TRUE;
 				swprintf_s(text4, 64, L"Top face: %.2f", fYPlus_TopFace);
@@ -1041,6 +1098,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				{
 					fZMinus_BackFace -= 0.01f;
 				}
+
+				if (fClipPlane_Back >= 0.0001f)
+				{
+					fClipPlane_Back -= 0.01f;
+				}
 				bSliceUpdate = TRUE;
 				wchar_t text5[64];
 				swprintf_s(text5, 64, L"Back face: %.2f", fZMinus_BackFace);
@@ -1051,6 +1113,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				if (fZMinus_BackFace < 0.5f)
 				{
 					fZMinus_BackFace += 0.01f;
+				}
+
+				if (fClipPlane_Back < 1.0f)
+				{
+					fClipPlane_Back += 0.01f;
 				}
 				bSliceUpdate = TRUE;
 				swprintf_s(text5, 64, L"Back face: %.2f", fZMinus_BackFace);
@@ -1064,6 +1131,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				{
 					fXMinus_SideFace -= 0.01f;
 				}
+
+				if (fClipPlane_Left >= 0.0001f)
+				{
+					fClipPlane_Left -= 0.01f;
+				}
 				bSliceUpdate = TRUE;
 				wchar_t text6[64];
 				swprintf_s(text6, 64, L"Left face: %.2f", fXMinus_SideFace);
@@ -1075,6 +1147,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				if (fXMinus_SideFace < 0.5f)
 				{
 					fXMinus_SideFace += 0.01f;
+				}
+
+				if (fClipPlane_Left < 1.0f)
+				{
+					fClipPlane_Left += 0.01f;
 				}
 				bSliceUpdate = TRUE;
 				swprintf_s(text6, 64, L"Left face: %.2f", fXMinus_SideFace);
@@ -1088,6 +1165,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				{
 					fYMinus_BottomFace -= 0.01f;
 				}
+
+				if (fClipPlane_Bottom >= 0.0001f)
+				{
+					fClipPlane_Bottom -= 0.01f;
+				}
 				bSliceUpdate = TRUE;
 				wchar_t text7[64];
 				swprintf_s(text7, 64, L"Bottom : %.2f", fYMinus_BottomFace);
@@ -1099,6 +1181,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				if (fYMinus_BottomFace < 0.5f)
 				{
 					fYMinus_BottomFace += 0.01f;
+				}
+
+				if (fClipPlane_Bottom < 1.0f)
+				{
+					fClipPlane_Bottom += 0.01f;
 				}
 				bSliceUpdate = TRUE;
 				swprintf_s(text7, 64, L"Bottom : %.2f", fYMinus_BottomFace);
@@ -3856,6 +3943,12 @@ void Initialize_TetrahedraMarcher_Shaders()
 			layout (location = 2) in vec3 aNormal;
 
 			uniform mat4 u_MVPMatrix;
+			uniform vec4 u_clippingPlane1;
+			uniform vec4 u_clippingPlane2;
+			uniform vec4 u_clippingPlane3;
+			uniform vec4 u_clippingPlane4;
+			uniform vec4 u_clippingPlane5;
+			uniform vec4 u_clippingPlane6;
 
 			smooth out vec3 oNormal;
 
@@ -3863,6 +3956,13 @@ void Initialize_TetrahedraMarcher_Shaders()
 			{
 				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
 				oNormal = aNormal;
+
+				gl_ClipDistance[0]= dot(u_clippingPlane1.xyz,aPosition)+u_clippingPlane1.w;
+				gl_ClipDistance[1]= dot(u_clippingPlane2.xyz,aPosition)+u_clippingPlane2.w;
+				gl_ClipDistance[2]= dot(u_clippingPlane3.xyz,aPosition)+u_clippingPlane3.w;
+				gl_ClipDistance[3]= dot(u_clippingPlane4.xyz,aPosition)+u_clippingPlane4.w;
+				gl_ClipDistance[4]= dot(u_clippingPlane5.xyz,aPosition)+u_clippingPlane5.w;
+				gl_ClipDistance[5]= dot(u_clippingPlane6.xyz,aPosition)+u_clippingPlane6.w;
 			}
 	
 			)";
@@ -3977,6 +4077,16 @@ void Initialize_TetrahedraMarcher_Shaders()
 	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_POSITION, "aPosition");
 	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_NORMAL, "aNormal");
 	modelViewProjectionUniform_TM = glGetUniformLocation(shaderProgramObject_TM, "u_MVPMatrix");
+
+	clipFrontFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane1");
+	clipBackFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane2");
+
+	clipRight_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane3");
+	clipLeft_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane4");
+
+	clipTop_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane5");
+	clipBottom_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane6");
+
 	glUseProgram(0);
 
 }
@@ -4179,7 +4289,17 @@ void Render_MarchingTetrahedra(void)
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
 	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
+
+
+	glm::vec4 clipPlane_Front = glm::vec4(0.0f, 0.0f, -1.0f, fClipPlane_Front);
+	glm::vec4 clipPlane_Back = glm::vec4(0.0f, 0.0f, 1.0f, -fClipPlane_Back);
 	
+	glm::vec4 clipPlane_Right= glm::vec4(-1.0f, 0.0f, 0.0f, fClipPlane_Right);
+	glm::vec4 clipPlane_Left = glm::vec4(1.0f, 0.0f, 0.0f, -fClipPlane_Left);
+	
+	glm::vec4 clipPlane_Top = glm::vec4(0.0f, -1.0f, 0.0f, fClipPlane_Top);
+	glm::vec4 clipPlane_Bottom = glm::vec4(0.0f, 1.0f, 0.0f, -fClipPlane_Bottom);
+
 	// code:
 
 	// Grid or Axes Rendering 
@@ -4191,15 +4311,36 @@ void Render_MarchingTetrahedra(void)
 
 	glm::mat4 TranslationMatrix_2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, -0.5f));
 
+	glEnable(GL_CLIP_DISTANCE0);
+	glEnable(GL_CLIP_DISTANCE1);
+	glEnable(GL_CLIP_DISTANCE2);
+	glEnable(GL_CLIP_DISTANCE3);
+	glEnable(GL_CLIP_DISTANCE4);
+	glEnable(GL_CLIP_DISTANCE5);
 	glUseProgram(shaderProgramObject_TM);
 	{
 		glUniformMatrix4fv(modelViewProjectionUniform_TM, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix * TranslationMatrix_2));//pass the shader uniform
+
+		glUniform4fv(clipFrontFace_uniform,1,glm::value_ptr(clipPlane_Front));
+		glUniform4fv(clipBackFace_uniform,1,glm::value_ptr(clipPlane_Back));
+
+		glUniform4fv(clipRight_uniform,1,glm::value_ptr(clipPlane_Right));
+		glUniform4fv(clipLeft_uniform,1,glm::value_ptr(clipPlane_Left));
+
+		glUniform4fv(clipTop_uniform,1,glm::value_ptr(clipPlane_Top));
+		glUniform4fv(clipBottom_uniform,1,glm::value_ptr(clipPlane_Bottom));
 
 		glBindVertexArray(volumeMarcherVAO);
 		glDrawArrays(GL_TRIANGLES, 0, GetTotalVertices_TM());
 		glBindVertexArray(0);
 	}
 	glUseProgram(0);
+	glDisable(GL_CLIP_DISTANCE5);
+	glDisable(GL_CLIP_DISTANCE4);
+	glDisable(GL_CLIP_DISTANCE3);
+	glDisable(GL_CLIP_DISTANCE2);
+	glDisable(GL_CLIP_DISTANCE1);
+	glDisable(GL_CLIP_DISTANCE0);
 
 	//restore the default polygon mode
 	if (bWireframe)

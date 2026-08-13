@@ -10,9 +10,7 @@ Currently it has -
 - Rotate & Zoom Controls (for easy navigation) 
 - 6 slicing planes to visualize cross-sections
 
-We are planning to build more features and add support for more volumetric formats (like DICOM, VDB etc) soon!
-
-
+This repo is at it's very early stages of development, and is not a fully-featured Engine yet. We are planning to build more features like custom file loading & more volumetric formats support (like DICOM, VDB etc) soon!
 
 
 ### How to Run

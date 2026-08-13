@@ -10,7 +10,8 @@ Currently it has -
 - Rotate & Zoom Controls (for easy navigation) 
 - 6 slicing planes to visualize cross-sections
 
-This repo is at it's very early stages of development, and is not a fully-featured Engine yet. We are planning to build more features like custom file loading & more volumetric formats support (like DICOM, VDB etc) soon!
+> [!NOTE]
+> This repo is at it's very early stages of development and its basically an OpenGL Volumetric demo at this point, it is not a fully-featured Engine yet. We are planning to build more features like custom file loading, more volumetric FX & additional formats support (like DICOM, VDB etc) soon!
 
 
 ### How to Run

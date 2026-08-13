@@ -4341,6 +4341,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 	SetWindowPos(
 		hwndRightButton,
 		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
 		y,
 		buttonWidth, buttonHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE

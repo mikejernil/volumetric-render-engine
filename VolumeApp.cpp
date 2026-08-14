@@ -131,7 +131,7 @@ const wchar_t* effectNames[] =
 	L"RayCasting Method",
 	L"Pseudo IsoSurface",
 	L"Colormap",
-	L"MarchingCubes Method",
+	L"MarchingTetrahedra",
 };
 
 const wchar_t* textHolder = L"";

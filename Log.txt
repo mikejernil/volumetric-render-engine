@@ -1,9 +1,423 @@
-Shree Gajanan Prasanna #
 Log File Created Successfully.
 Program started Successfully.
-Vertex Shader Compilation Successful.   
-Fragment Shader Compilation Successful. status: 1 
-shaderProgramObject Linking Successful. status: 1 
+Message: iWidth : 1707 
+Message: iHeight: 1067 
+=======================================================
+OpenGL Vendor: NVIDIA Corporation 
+=======================================================
+OpenGL Renderer: NVIDIA GeForce RTX 4070 Laptop GPU/PCIe/SSE2 
+=======================================================
+OpenGL Version: 4.6.0 NVIDIA 576.52 
+=======================================================
+OpenGL GLSL Version: 4.60 NVIDIA 
+=======================================================
+OpenGL No of Supported Extenstions: 404 
+=======================================================
+0]  GL_AMD_multi_draw_indirect 
+1]  GL_AMD_seamless_cubemap_per_texture 
+2]  GL_AMD_vertex_shader_viewport_index 
+3]  GL_AMD_vertex_shader_layer 
+4]  GL_ARB_arrays_of_arrays 
+5]  GL_ARB_base_instance 
+6]  GL_ARB_bindless_texture 
+7]  GL_ARB_blend_func_extended 
+8]  GL_ARB_buffer_storage 
+9]  GL_ARB_clear_buffer_object 
+10]  GL_ARB_clear_texture 
+11]  GL_ARB_clip_control 
+12]  GL_ARB_color_buffer_float 
+13]  GL_ARB_compatibility 
+14]  GL_ARB_compressed_texture_pixel_storage 
+15]  GL_ARB_conservative_depth 
+16]  GL_ARB_compute_shader 
+17]  GL_ARB_compute_variable_group_size 
+18]  GL_ARB_conditional_render_inverted 
+19]  GL_ARB_copy_buffer 
+20]  GL_ARB_copy_image 
+21]  GL_ARB_cull_distance 
+22]  GL_ARB_debug_output 
+23]  GL_ARB_depth_buffer_float 
+24]  GL_ARB_depth_clamp 
+25]  GL_ARB_depth_texture 
+26]  GL_ARB_derivative_control 
+27]  GL_ARB_direct_state_access 
+28]  GL_ARB_draw_buffers 
+29]  GL_ARB_draw_buffers_blend 
+30]  GL_ARB_draw_indirect 
+31]  GL_ARB_draw_elements_base_vertex 
+32]  GL_ARB_draw_instanced 
+33]  GL_ARB_enhanced_layouts 
+34]  GL_ARB_ES2_compatibility 
+35]  GL_ARB_ES3_compatibility 
+36]  GL_ARB_ES3_1_compatibility 
+37]  GL_ARB_ES3_2_compatibility 
+38]  GL_ARB_explicit_attrib_location 
+39]  GL_ARB_explicit_uniform_location 
+40]  GL_ARB_fragment_coord_conventions 
+41]  GL_ARB_fragment_layer_viewport 
+42]  GL_ARB_fragment_program 
+43]  GL_ARB_fragment_program_shadow 
+44]  GL_ARB_fragment_shader 
+45]  GL_ARB_fragment_shader_interlock 
+46]  GL_ARB_framebuffer_no_attachments 
+47]  GL_ARB_framebuffer_object 
+48]  GL_ARB_framebuffer_sRGB 
+49]  GL_ARB_geometry_shader4 
+50]  GL_ARB_get_program_binary 
+51]  GL_ARB_get_texture_sub_image 
+52]  GL_ARB_gl_spirv 
+53]  GL_ARB_gpu_shader5 
+54]  GL_ARB_gpu_shader_fp64 
+55]  GL_ARB_gpu_shader_int64 
+56]  GL_ARB_half_float_pixel 
+57]  GL_ARB_half_float_vertex 
+58]  GL_ARB_imaging 
+59]  GL_ARB_indirect_parameters 
+60]  GL_ARB_instanced_arrays 
+61]  GL_ARB_internalformat_query 
+62]  GL_ARB_internalformat_query2 
+63]  GL_ARB_invalidate_subdata 
+64]  GL_ARB_map_buffer_alignment 
+65]  GL_ARB_map_buffer_range 
+66]  GL_ARB_multi_bind 
+67]  GL_ARB_multi_draw_indirect 
+68]  GL_ARB_multisample 
+69]  GL_ARB_multitexture 
+70]  GL_ARB_occlusion_query 
+71]  GL_ARB_occlusion_query2 
+72]  GL_ARB_parallel_shader_compile 
+73]  GL_ARB_pipeline_statistics_query 
+74]  GL_ARB_pixel_buffer_object 
+75]  GL_ARB_point_parameters 
+76]  GL_ARB_point_sprite 
+77]  GL_ARB_polygon_offset_clamp 
+78]  GL_ARB_post_depth_coverage 
+79]  GL_ARB_program_interface_query 
+80]  GL_ARB_provoking_vertex 
+81]  GL_ARB_query_buffer_object 
+82]  GL_ARB_robust_buffer_access_behavior 
+83]  GL_ARB_robustness 
+84]  GL_ARB_sample_locations 
+85]  GL_ARB_sample_shading 
+86]  GL_ARB_sampler_objects 
+87]  GL_ARB_seamless_cube_map 
+88]  GL_ARB_seamless_cubemap_per_texture 
+89]  GL_ARB_separate_shader_objects 
+90]  GL_ARB_shader_atomic_counter_ops 
+91]  GL_ARB_shader_atomic_counters 
+92]  GL_ARB_shader_ballot 
+93]  GL_ARB_shader_bit_encoding 
+94]  GL_ARB_shader_clock 
+95]  GL_ARB_shader_draw_parameters 
+96]  GL_ARB_shader_group_vote 
+97]  GL_ARB_shader_image_load_store 
+98]  GL_ARB_shader_image_size 
+99]  GL_ARB_shader_objects 
+100]  GL_ARB_shader_precision 
+101]  GL_ARB_shader_storage_buffer_object 
+102]  GL_ARB_shader_subroutine 
+103]  GL_ARB_shader_texture_image_samples 
+104]  GL_ARB_shader_texture_lod 
+105]  GL_ARB_shading_language_100 
+106]  GL_ARB_shader_viewport_layer_array 
+107]  GL_ARB_shading_language_420pack 
+108]  GL_ARB_shading_language_include 
+109]  GL_ARB_shading_language_packing 
+110]  GL_ARB_shadow 
+111]  GL_ARB_sparse_buffer 
+112]  GL_ARB_sparse_texture 
+113]  GL_ARB_sparse_texture2 
+114]  GL_ARB_sparse_texture_clamp 
+115]  GL_ARB_spirv_extensions 
+116]  GL_ARB_stencil_texturing 
+117]  GL_ARB_sync 
+118]  GL_ARB_tessellation_shader 
+119]  GL_ARB_texture_barrier 
+120]  GL_ARB_texture_border_clamp 
+121]  GL_ARB_texture_buffer_object 
+122]  GL_ARB_texture_buffer_object_rgb32 
+123]  GL_ARB_texture_buffer_range 
+124]  GL_ARB_texture_compression 
+125]  GL_ARB_texture_compression_bptc 
+126]  GL_ARB_texture_compression_rgtc 
+127]  GL_ARB_texture_cube_map 
+128]  GL_ARB_texture_cube_map_array 
+129]  GL_ARB_texture_env_add 
+130]  GL_ARB_texture_env_combine 
+131]  GL_ARB_texture_env_crossbar 
+132]  GL_ARB_texture_env_dot3 
+133]  GL_ARB_texture_filter_anisotropic 
+134]  GL_ARB_texture_filter_minmax 
+135]  GL_ARB_texture_float 
+136]  GL_ARB_texture_gather 
+137]  GL_ARB_texture_mirror_clamp_to_edge 
+138]  GL_ARB_texture_mirrored_repeat 
+139]  GL_ARB_texture_multisample 
+140]  GL_ARB_texture_non_power_of_two 
+141]  GL_ARB_texture_query_levels 
+142]  GL_ARB_texture_query_lod 
+143]  GL_ARB_texture_rectangle 
+144]  GL_ARB_texture_rg 
+145]  GL_ARB_texture_rgb10_a2ui 
+146]  GL_ARB_texture_stencil8 
+147]  GL_ARB_texture_storage 
+148]  GL_ARB_texture_storage_multisample 
+149]  GL_ARB_texture_swizzle 
+150]  GL_ARB_texture_view 
+151]  GL_ARB_timer_query 
+152]  GL_ARB_transform_feedback2 
+153]  GL_ARB_transform_feedback3 
+154]  GL_ARB_transform_feedback_instanced 
+155]  GL_ARB_transform_feedback_overflow_query 
+156]  GL_ARB_transpose_matrix 
+157]  GL_ARB_uniform_buffer_object 
+158]  GL_ARB_vertex_array_bgra 
+159]  GL_ARB_vertex_array_object 
+160]  GL_ARB_vertex_attrib_64bit 
+161]  GL_ARB_vertex_attrib_binding 
+162]  GL_ARB_vertex_buffer_object 
+163]  GL_ARB_vertex_program 
+164]  GL_ARB_vertex_shader 
+165]  GL_ARB_vertex_type_10f_11f_11f_rev 
+166]  GL_ARB_vertex_type_2_10_10_10_rev 
+167]  GL_ARB_viewport_array 
+168]  GL_ARB_window_pos 
+169]  GL_ATI_draw_buffers 
+170]  GL_ATI_texture_float 
+171]  GL_ATI_texture_mirror_once 
+172]  GL_S3_s3tc 
+173]  GL_EXT_texture_env_add 
+174]  GL_EXT_abgr 
+175]  GL_EXT_bgra 
+176]  GL_EXT_bindable_uniform 
+177]  GL_EXT_blend_color 
+178]  GL_EXT_blend_equation_separate 
+179]  GL_EXT_blend_func_separate 
+180]  GL_EXT_blend_minmax 
+181]  GL_EXT_blend_subtract 
+182]  GL_EXT_compiled_vertex_array 
+183]  GL_EXT_Cg_shader 
+184]  GL_EXT_depth_bounds_test 
+185]  GL_EXT_direct_state_access 
+186]  GL_EXT_draw_buffers2 
+187]  GL_EXT_draw_instanced 
+188]  GL_EXT_draw_range_elements 
+189]  GL_EXT_fog_coord 
+190]  GL_EXT_framebuffer_blit 
+191]  GL_EXT_framebuffer_multisample 
+192]  GL_EXTX_framebuffer_mixed_formats 
+193]  GL_EXT_framebuffer_multisample_blit_scaled 
+194]  GL_EXT_framebuffer_object 
+195]  GL_EXT_framebuffer_sRGB 
+196]  GL_EXT_geometry_shader4 
+197]  GL_EXT_gpu_program_parameters 
+198]  GL_EXT_gpu_shader4 
+199]  GL_EXT_multi_draw_arrays 
+200]  GL_EXT_multiview_texture_multisample 
+201]  GL_EXT_multiview_timer_query 
+202]  GL_EXT_packed_depth_stencil 
+203]  GL_EXT_packed_float 
+204]  GL_EXT_packed_pixels 
+205]  GL_EXT_pixel_buffer_object 
+206]  GL_EXT_point_parameters 
+207]  GL_EXT_polygon_offset_clamp 
+208]  GL_EXT_post_depth_coverage 
+209]  GL_EXT_provoking_vertex 
+210]  GL_EXT_raster_multisample 
+211]  GL_EXT_rescale_normal 
+212]  GL_EXT_secondary_color 
+213]  GL_EXT_separate_shader_objects 
+214]  GL_EXT_separate_specular_color 
+215]  GL_EXT_shader_image_load_formatted 
+216]  GL_EXT_shader_image_load_store 
+217]  GL_EXT_shader_integer_mix 
+218]  GL_EXT_shadow_funcs 
+219]  GL_EXT_sparse_texture2 
+220]  GL_EXT_stencil_two_side 
+221]  GL_EXT_stencil_wrap 
+222]  GL_EXT_texture3D 
+223]  GL_EXT_texture_array 
+224]  GL_EXT_texture_buffer_object 
+225]  GL_EXT_texture_compression_dxt1 
+226]  GL_EXT_texture_compression_latc 
+227]  GL_EXT_texture_compression_rgtc 
+228]  GL_EXT_texture_compression_s3tc 
+229]  GL_EXT_texture_cube_map 
+230]  GL_EXT_texture_edge_clamp 
+231]  GL_EXT_texture_env_combine 
+232]  GL_EXT_texture_env_dot3 
+233]  GL_EXT_texture_filter_anisotropic 
+234]  GL_EXT_texture_filter_minmax 
+235]  GL_EXT_texture_integer 
+236]  GL_EXT_texture_lod 
+237]  GL_EXT_texture_lod_bias 
+238]  GL_EXT_texture_mirror_clamp 
+239]  GL_EXT_texture_object 
+240]  GL_EXT_texture_shadow_lod 
+241]  GL_EXT_texture_shared_exponent 
+242]  GL_EXT_texture_sRGB 
+243]  GL_EXT_texture_sRGB_R8 
+244]  GL_EXT_texture_sRGB_decode 
+245]  GL_EXT_texture_storage 
+246]  GL_EXT_texture_swizzle 
+247]  GL_EXT_timer_query 
+248]  GL_EXT_transform_feedback2 
+249]  GL_EXT_vertex_array 
+250]  GL_EXT_vertex_array_bgra 
+251]  GL_EXT_vertex_attrib_64bit 
+252]  GL_EXT_window_rectangles 
+253]  GL_EXT_import_sync_object 
+254]  GL_IBM_rasterpos_clip 
+255]  GL_IBM_texture_mirrored_repeat 
+256]  GL_KHR_context_flush_control 
+257]  GL_KHR_debug 
+258]  GL_EXT_memory_object 
+259]  GL_EXT_memory_object_win32 
+260]  GL_NV_memory_object_sparse 
+261]  GL_EXT_win32_keyed_mutex 
+262]  GL_KHR_parallel_shader_compile 
+263]  GL_KHR_no_error 
+264]  GL_KHR_robust_buffer_access_behavior 
+265]  GL_KHR_robustness 
+266]  GL_EXT_semaphore 
+267]  GL_EXT_semaphore_win32 
+268]  GL_NV_timeline_semaphore 
+269]  GL_KHR_shader_subgroup 
+270]  GL_KTX_buffer_region 
+271]  GL_NV_alpha_to_coverage_dither_control 
+272]  GL_NV_bindless_multi_draw_indirect 
+273]  GL_NV_bindless_multi_draw_indirect_count 
+274]  GL_NV_bindless_texture 
+275]  GL_NV_blend_equation_advanced 
+276]  GL_NV_blend_equation_advanced_coherent 
+277]  GL_NVX_blend_equation_advanced_multi_draw_buffers 
+278]  GL_NV_blend_minmax_factor 
+279]  GL_NV_blend_square 
+280]  GL_NV_clip_space_w_scaling 
+281]  GL_NV_command_list 
+282]  GL_NV_compute_program5 
+283]  GL_NV_compute_shader_derivatives 
+284]  GL_NV_conditional_render 
+285]  GL_NV_conservative_raster 
+286]  GL_NV_conservative_raster_dilate 
+287]  GL_NV_conservative_raster_pre_snap 
+288]  GL_NV_conservative_raster_pre_snap_triangles 
+289]  GL_NV_conservative_raster_underestimation 
+290]  GL_NV_copy_depth_to_color 
+291]  GL_NV_copy_image 
+292]  GL_NV_depth_buffer_float 
+293]  GL_NV_depth_clamp 
+294]  GL_NV_draw_texture 
+295]  GL_NV_draw_vulkan_image 
+296]  GL_NV_ES1_1_compatibility 
+297]  GL_NV_ES3_1_compatibility 
+298]  GL_NV_explicit_multisample 
+299]  GL_NV_feature_query 
+300]  GL_NV_fence 
+301]  GL_NV_fill_rectangle 
+302]  GL_NV_float_buffer 
+303]  GL_NV_fog_distance 
+304]  GL_NV_fragment_coverage_to_color 
+305]  GL_NV_fragment_program 
+306]  GL_NV_fragment_program_option 
+307]  GL_NV_fragment_program2 
+308]  GL_NV_fragment_shader_barycentric 
+309]  GL_NV_fragment_shader_interlock 
+310]  GL_NV_framebuffer_mixed_samples 
+311]  GL_NV_framebuffer_multisample_coverage 
+312]  GL_NV_geometry_shader4 
+313]  GL_NV_geometry_shader_passthrough 
+314]  GL_NV_gpu_program4 
+315]  GL_NV_internalformat_sample_query 
+316]  GL_NV_gpu_program4_1 
+317]  GL_NV_gpu_program5 
+318]  GL_NV_gpu_program5_mem_extended 
+319]  GL_NV_gpu_program_fp64 
+320]  GL_NV_gpu_program_multiview 
+321]  GL_NV_gpu_shader5 
+322]  GL_NV_half_float 
+323]  GL_NV_light_max_exponent 
+324]  GL_NV_memory_attachment 
+325]  GL_NV_mesh_shader 
+326]  GL_NV_multisample_coverage 
+327]  GL_NV_multisample_filter_hint 
+328]  GL_NV_occlusion_query 
+329]  GL_NV_packed_depth_stencil 
+330]  GL_NV_parameter_buffer_object 
+331]  GL_NV_parameter_buffer_object2 
+332]  GL_NV_path_rendering 
+333]  GL_NV_path_rendering_shared_edge 
+334]  GL_NV_pixel_data_range 
+335]  GL_NV_point_sprite 
+336]  GL_NV_primitive_restart 
+337]  GL_NV_primitive_shading_rate 
+338]  GL_NV_query_resource 
+339]  GL_NV_query_resource_tag 
+340]  GL_NV_register_combiners 
+341]  GL_NV_register_combiners2 
+342]  GL_NV_representative_fragment_test 
+343]  GL_NV_sample_locations 
+344]  GL_NV_sample_mask_override_coverage 
+345]  GL_NV_scissor_exclusive 
+346]  GL_NV_shader_atomic_counters 
+347]  GL_NV_shader_atomic_float 
+348]  GL_NV_shader_atomic_float64 
+349]  GL_NV_shader_atomic_fp16_vector 
+350]  GL_NV_shader_atomic_int64 
+351]  GL_NV_shader_buffer_load 
+352]  GL_NV_shader_storage_buffer_object 
+353]  GL_NV_shader_subgroup_partitioned 
+354]  GL_NV_shader_texture_footprint 
+355]  GL_NV_shading_rate_image 
+356]  GL_NV_stereo_view_rendering 
+357]  GL_NV_texgen_reflection 
+358]  GL_NV_texture_barrier 
+359]  GL_NV_texture_compression_vtc 
+360]  GL_NV_texture_dirty_tile_map 
+361]  GL_NV_texture_env_combine4 
+362]  GL_NV_texture_multisample 
+363]  GL_NV_texture_rectangle 
+364]  GL_NV_texture_rectangle_compressed 
+365]  GL_NV_texture_shader 
+366]  GL_NV_texture_shader2 
+367]  GL_NV_texture_shader3 
+368]  GL_NV_transform_feedback 
+369]  GL_NV_transform_feedback2 
+370]  GL_NV_uniform_buffer_unified_memory 
+371]  GL_NV_uniform_buffer_std430_layout 
+372]  GL_NV_vertex_array_range 
+373]  GL_NV_vertex_array_range2 
+374]  GL_NV_vertex_attrib_integer_64bit 
+375]  GL_NV_vertex_buffer_unified_memory 
+376]  GL_NV_vertex_program 
+377]  GL_NV_vertex_program1_1 
+378]  GL_NV_vertex_program2 
+379]  GL_NV_vertex_program2_option 
+380]  GL_NV_vertex_program3 
+381]  GL_NV_viewport_array2 
+382]  GL_NV_viewport_swizzle 
+383]  GL_NVX_conditional_render 
+384]  GL_NVX_linked_gpu_multicast 
+385]  GL_NV_gpu_multicast 
+386]  GL_NVX_gpu_multicast2 
+387]  GL_NVX_progress_fence 
+388]  GL_NVX_gpu_memory_info 
+389]  GL_NVX_multigpu_info 
+390]  GL_NVX_nvenc_interop 
+391]  GL_NV_shader_thread_group 
+392]  GL_NV_shader_thread_shuffle 
+393]  GL_KHR_blend_equation_advanced 
+394]  GL_KHR_blend_equation_advanced_coherent 
+395]  GL_OVR_multiview 
+396]  GL_OVR_multiview2 
+397]  GL_SGIS_generate_mipmap 
+398]  GL_SGIS_texture_lod 
+399]  GL_SGIX_depth_texture 
+400]  GL_SGIX_shadow 
+401]  GL_SUN_slice_accum 
+402]  GL_WIN_swap_hint 
+403]  WGL_EXT_swap_control 
+=======================================================
 LoadVolumeData() Success Step1
 LoadVolumeData() Success Step2 and Last
 Slicer1  Success at  Vertex Shader Compilation 
@@ -12,7 +426,6 @@ Slicer1  shaderProgramObject_Slicer1 Linking Successful
 GridObject Success at  Vertex Shader Compilation 
 GridObject Success at  FRAGMENT Shader Compilation 
 GridObject  Linking Successful 
-******* vaoID is NON - NULL *******  
 Success in Raycating  Vertex Shader Compilation 
 Success  in Raycating FRAGMENT Shader Compilation 
 RayCasting shaderObject Linking Successful 
@@ -26,18 +439,6 @@ Success in Colormap shaderObject Linking
 Success in MarchingTetrahedra Vertex Shader.
 Success in MarchingTetrahedra Fragment Shader.
 Success in MarchingTetrahedra shaderObject Linking
-SUCCESS: Splatting Vertex Shader Compilation 
-SUCCESS: Splatting FRAGMENT Shader Compilation 
-SUCCESS: Splatting ShaderProgram ObjectLinking Successful 
-SUCCESS: Gaussian_H Vertex Shader Compilation 
-SUCCESS: Gaussian_H FRAGMENT Shader Compilation 
-SUCCESS: Gaussian_H ShaderProgram ObjectLinking Successful 
-SUCCESS: Pass Through VS for Gaussian_V Compilation 
-SUCCESS: Gaussian_V FRAGMENT Shader Compilation 
-SUCCESS: Gaussian_V ShaderProgram ObjectLinking Successful 
-SUCCESS: Splatting Quad Vertex Shader Compilation 
-SUCCESS: Splatting Quad FRAGMENT Shader Compilation 
-SUCCESS: Splatting Quad ShaderProgram ObjectLinking Successful 
 Message: initialize() successful.
 Inside uninitialize().
 Closing the LogFile.

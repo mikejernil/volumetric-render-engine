@@ -2,4 +2,4 @@
 
 #include "OGL.h"
 
-MYICON ICON "Logo.ico"
+MYICON ICON "./resources/Logo.ico"

@@ -17,23 +17,23 @@
 #include <commdlg.h>
 
 #include "OGL.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "./src/include/glm/glm.hpp"
+#include "./src/include/glm/gtc/matrix_transform.hpp"
+#include "./src/include/glm/gtc/type_ptr.hpp"
 
 
 // -OpenGL Header Files-
 #include "dependencies/glew/include/GL/glew.h"			//! Must be before gl.h
 #include<gl/GL.h>
 
-#include "vmath.h"
+#include "./src/include/vmath.h"
 using namespace vmath;
 
-#include "Tables.h"
+#include "./src/include/Tables.h"
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "./include/stb_image.h"
+#include "./src/include/stb_image.h"
 
 // MACROS and 
 #define WIN_WIDTH 800

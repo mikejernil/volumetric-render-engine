@@ -42,6 +42,12 @@ This gives our volumetric data an approximate Surface without having to extract 
 Its done using Ray Casting method which visualizes our objects/volumes  by traversing rays through data.
 Iso Surface value helps us set filter as per Density and remove Noise.
 
+**Marching Tetrahedra Method**:
+This is an algorithm in which we  can Render our Volume data as a set of Polygon meshes by extracting  'iso surface'.
+It goes through whole dataset and tries to fit a polygon based on data values to calculate a polygonal mesh from the volume dataset.
+It is called 'Marching Tetrahedra' because the cube is split in half three times, along diagonals which forms six irregular tetrahedra shapes. Here the intersection of the edges along isosurface is used for further calculation of grid points
+ 
+
 **Applications** 
 1. Medical imaging
 2. Industrial machinery testing

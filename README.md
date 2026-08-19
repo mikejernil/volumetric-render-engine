@@ -24,7 +24,7 @@ Currently it has -
 - Go to Project directory, and run `build.bat`
 
 
-<img width="2220" height="2550" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />
+<img width="780" height="900" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />
 
 ### Rendering Effects ##
 

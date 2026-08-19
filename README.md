@@ -2,16 +2,20 @@
 
 A Volumetric Render Engine 🧊 for Windows (Native). It's being built with OpenGL & C++ 💻 and you can try it out and integrate it into your own applications.
 
+> [!NOTE]
+> This repo is at it's very early stages of development and its an OpenGL Volumetric Demo, it is not a fully-featured Engine yet. We are planning to build more features like custom file loading, more volumetric FX & additional formats support (like DICOM, VDB etc) soon!
+
+
+>[!Input Volume Data]
+> Current output is of Engine256.raw which is a sample volume dataset of scalar values (unsigned byte) in voxel grid of 256*256*256.It has no header.Dataset is acquired by CT scan of small engine block.Commonly used in simple volume rendering tutorials. You can try other datasets from the /resources/models/ directory.
+
 <img width="600" height="380" alt="volume_engine_day2_post (1)" src="https://github.com/user-attachments/assets/74f362ae-9ff0-4ba9-8ad8-d7cbb7f8eda0" />
 
 Currently it has -
-- Volumetric RAW format support 📺
+- Volumetric RAW format support 
 - Different types of rendering (Colormap, Iso-surface etc.)
 - Rotate & Zoom Controls (for easy navigation) 
 - 6 slicing planes to visualize cross-sections
-
-> [!NOTE]
-> This repo is at it's very early stages of development and its an OpenGL Volumetric Demo, it is not a fully-featured Engine yet. We are planning to build more features like custom file loading, more volumetric FX & additional formats support (like DICOM, VDB etc) soon!
 
 
 ### How to Run

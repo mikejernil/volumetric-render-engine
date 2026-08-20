@@ -17,6 +17,7 @@ float fXMinus_SideFace = -0.5f;
 float fYMinus_BottomFace = -0.5f;
 float fZMinus_BackFace = -0.5f;
 
+BOOL bWireframe = FALSE;
 
 glm::vec3 viewDirection = glm::vec3(1.0f);
 

@@ -3,13 +3,10 @@
 #include "./OpenGL/GLHeadersAndMacros.h"
 #include "./OpenGL/GLLog.h"
 
-//#include "../include/vmath.h"
-#include "../include/stb_image.h"
 
 
 #define EPSILON 0.0001f;//for floating point inaccuracy
 
-//using namespace vmath;
 
 
 // variable declarations:
@@ -45,6 +42,9 @@ extern float dist;
 extern float rotationX;
 extern float rotationY;
 extern float rotationZ;
+
+
+extern BOOL bWireframe;
 
 extern glm::mat4 perspectiveProjMatrix_glm;
 

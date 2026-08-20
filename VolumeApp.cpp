@@ -24,12 +24,11 @@
 
 #include "./src/effects/Basic_TextureSlicing/BasicTextureSlicing.h"
 #include "./src/effects/RayCasting/RayCasting.h"
+#include "./src/effects/MarchingTetrahedra/MarchingTetrahedra.h"
 
 
 
 
-#include "./src/include/Tables.h"
-#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "./src/include/stb_image.h"
@@ -195,73 +194,13 @@ void Uninitialize_Grid(void);
 
 
 
-//! Shader Type 5: Marching Tetrahedra Method : global variables:
-struct Vertex
-{
-	glm::vec3 pos, normal;  //our vertex struct stores the position and normals
-};
-
-int XDIM_TM, YDIM_TM, ZDIM_TM;//the volume dataset dimensions and inverse volume dimensions
-
-GLuint shaderProgramObject_TM;
-GLuint modelViewProjectionUniform_TM = 0;
-
-glm::vec3 invDim;
-int X_SAMPLING_DIST;
-int Y_SAMPLING_DIST;
-int Z_SAMPLING_DIST;
-
-//volume data pointer
-GLubyte* pVolume;
-GLubyte isoValue;
-//vertices vector storing positions and normals
-std::vector<Vertex> vertices;
-GLuint volumeMarcherVBO;
-GLuint volumeMarcherVAO;
 
 
-//flag to set wireframe rendering mode
-BOOL bWireframe = FALSE;
-
-// clipping plane members:
-GLuint clipFrontFace_uniform = 0;
-float fClipPlane_Front = 1.0f;
-
-GLuint clipBackFace_uniform = 0;
-float fClipPlane_Back= 0.0f;
-
-GLuint clipRight_uniform = 0;
-float fClipPlane_Right= 1.0f;
-
-GLuint clipLeft_uniform = 0;
-float fClipPlane_Left= 0.0f;
-
-GLuint clipTop_uniform = 0;
-float fClipPlane_Top= 1.0f;
-
-GLuint clipBottom_uniform = 0;
-float fClipPlane_Bottom= 0.0f;
 
 
-//! Shader Type 5: Marching Tetrahedra Method : prototypes:
-void Initialize_TetrahedraMarcher_Constructor(void);
-void Initialize_TetrahedraMarcher_Shaders(void);
-void Initialize_TetrahedraMarcher_Geomatry(void);
-void SetVolumeDimensions(const int xdim, const int ydim, const int zdim);//function to set the volume dimension
-void SetNumSamplingVoxels(const int x, const int y, const int z);//function to set the total number of sampling voxels + more voxels will give a higher density mesh
-void SetIsosurfaceValue(const GLubyte value);//set the isosurface value
-bool LoadVolume(const std::string& filename);//load the volume dataset
 
-void MarchVolume();//march the volume dataset
-size_t GetTotalVertices_TM();//get the total number of vertices generated
-Vertex* GetVertexPointer_TM();//get the pointer to the vertex buffer
-GLubyte SampleVolume(const int x, const int y, const int z);
-glm::vec3 GetNormal(const int x, const int y, const int z);//get the normal at the given location using center finite difference approximation
-void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale);//samples a voxel at the given location and scale
-float GetOffset(const GLubyte v1, const GLubyte v2);//returns the offset between the two sample values
-void Render_MarchingTetrahedra(void);
-void Update_MarchingTetrahedra(void);
-void Uninitialize_MarchingTetrahedra(void);
+
+
 
 
 GLuint VAO_Volume_Axes;
@@ -1501,24 +1440,24 @@ int initialize(void)
 	LoadTransferFunction();
 
 
-	//Initialize_TetrahedraMarcher_Constructor();
-	//SetVolumeDimensions(256, 256, 256);
-	//if (LoadVolume(volume_file))
-	//{
-	//	fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
-	//}
-	//else
-	//{
-	//	fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
-	//}
-	////set the isosurface value
-	//SetIsosurfaceValue(48);
-	////set the number of sampling voxels 
-	//SetNumSamplingVoxels(128, 128, 128);
-	////begin tetrahedra marching
-	//MarchVolume();
-	//Initialize_TetrahedraMarcher_Geomatry();
-	//Initialize_TetrahedraMarcher_Shaders();
+	Initialize_TetrahedraMarcher_Constructor();
+	SetVolumeDimensions(256, 256, 256);
+	if (LoadVolume_MT())
+	{
+		fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
+	}
+	//set the isosurface value
+	SetIsosurfaceValue(48);
+	//set the number of sampling voxels 
+	SetNumSamplingVoxels(128, 128, 128);
+	//begin tetrahedra marching
+	MarchVolume();
+	Initialize_TetrahedraMarcher_Geomatry();
+	Initialize_TetrahedraMarcher_Shaders();
 
 
 
@@ -1659,7 +1598,7 @@ void display(void)
 				Update_Volume_Box_Axes();
 			}
 			break;
-		/*
+
 		case 4:
 			glClearColor(0.75f, 0.75f, 0.75f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1669,7 +1608,8 @@ void display(void)
 			if (bMouseClicked || bSliceUpdate)
 			{
 				Update_Volume_Box_Axes();
-			}*/
+			}
+
 			break;
 		case 5:
 			glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
@@ -1724,8 +1664,8 @@ void uninitialize(void)
 
 	// code:
 
-	//Uninitialize_MarchingTetrahedra();
-	//Uninitialize_ColormapClassification_shader();
+	Uninitialize_MarchingTetrahedra();
+	Uninitialize_ColormapClassification_shader();
 	Uninitialize_IsoSurface_shader();
 	Uninitialize_Raycasting_shader();
 	Uninitialize_Slicing_shader();
@@ -2205,546 +2145,23 @@ void setup_Axes_BufferObjects(void)
 }
 
 
+bool LoadVolume_MT(void)
+{
 
-//
-//void Update_MarchingTetrahedra_Cube(void)
-//{
-//	// code:
-//
-//
-//	glm::vec3 vertices[8] =
-//	{
-//		// Minus Z-Vertices
-//		glm::vec3(-0.5f,-0.5f,-0.5f), // 1. Left Bottom
-//		glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),  // 2. Right Bottom
-//		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,-0.5f),  // 3. Right Top
-//		glm::vec3(-0.5f, fYPlus_TopFace,-0.5f), // 4. Left Top
-//
-//		// Plus Z-Vertices
-//		glm::vec3(-0.5f,-0.5f, fZPlus_FrontFace), // 5. Left Bottom
-//		glm::vec3(fXPlus_SideFace,-0.5f, fZPlus_FrontFace),  // 6. Right Bottom
-//		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
-//		glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace)  // 8. Left Top
-//	};
-//
-//	//unit cube indices
-//	GLushort cubeIndices[36] =
-//	{
-//		0,5,4,
-//		5,0,1,
-//		3,7,6,
-//		3,6,2,
-//		7,4,6,
-//		6,4,5,
-//		2,1,3,
-//		3,1,0,
-//		3,0,7,
-//		7,0,4,
-//		6,5,2,
-//		2,5,1
-//	};
-//
-//	glBindVertexArray(volumeMarcherVAO);
-//	glBindBuffer(GL_ARRAY_BUFFER, volumeMarcherVBO);
-//	{
-//		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
-//		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
-//		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);//enable vertex attribute array for position
-//		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-//
-//		//enable vertex attribute array for normals
-//		glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
-//		glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, normal));
-//
-//	}
-//	glBindBuffer(GL_ARRAY_BUFFER, 0);
-//	glBindVertexArray(0);
-//}
-//
+	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
 
-
-
-
-
-//! Shader Type 5: Marching Tetrahedra Method Definitions:
-//
-//
-//void Initialize_TetrahedraMarcher_Constructor()
-//{
-//	XDIM_TM = 256;
-//	YDIM_TM = 256;
-//	ZDIM_TM = 256;
-//	pVolume = NULL;
-//}
-//
-//void Initialize_TetrahedraMarcher_Shaders()
-//{
-//	// prototype:
-//	void uninitialize(void);
-//
-//	// local:
-//
-//	GLuint vertexShaderObject;
-//	GLuint fragmentShaderObject;
-//
-//	GLint status;
-//	GLint infoLogLength;
-//	char* Log = NULL;
-//
-//	// code:
-//
-//
-//	/////////////////////// # VERTEX SHADER # ////////////////////////
-//	const GLchar* vertexShaderSource = R"(
-//			
-//			#version 460 core
-//			
-//			layout (location = 0) in vec3 aPosition;
-//			layout (location = 2) in vec3 aNormal;
-//
-//			uniform mat4 u_MVPMatrix;
-//			uniform vec4 u_clippingPlane1;
-//			uniform vec4 u_clippingPlane2;
-//			uniform vec4 u_clippingPlane3;
-//			uniform vec4 u_clippingPlane4;
-//			uniform vec4 u_clippingPlane5;
-//			uniform vec4 u_clippingPlane6;
-//
-//			smooth out vec3 oNormal;
-//
-//			void main()
-//			{
-//				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-//				oNormal = aNormal;
-//
-//				gl_ClipDistance[0]= dot(u_clippingPlane1.xyz,aPosition)+u_clippingPlane1.w;
-//				gl_ClipDistance[1]= dot(u_clippingPlane2.xyz,aPosition)+u_clippingPlane2.w;
-//				gl_ClipDistance[2]= dot(u_clippingPlane3.xyz,aPosition)+u_clippingPlane3.w;
-//				gl_ClipDistance[3]= dot(u_clippingPlane4.xyz,aPosition)+u_clippingPlane4.w;
-//				gl_ClipDistance[4]= dot(u_clippingPlane5.xyz,aPosition)+u_clippingPlane5.w;
-//				gl_ClipDistance[5]= dot(u_clippingPlane6.xyz,aPosition)+u_clippingPlane6.w;
-//			}
-//	
-//			)";
-//
-//	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-//	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-//
-//	glCompileShader(vertexShaderObject);
-//	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-//
-//	if (status == GL_FALSE)
-//	{
-//		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-//		if (infoLogLength > 0)
-//		{
-//			Log = (char*)malloc(infoLogLength);
-//			if (Log != NULL)
-//			{
-//				GLsizei written;
-//				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-//				fprintf(gpFile, "Error in MarchingTetrahedra Vertex Shader.\nVS Compilation Log : %s\n", Log);
-//				free(Log);
-//				Log = NULL;
-//				uninitialize();
-//			}
-//		}
-//	}
-//	else
-//	{
-//		fprintf(gpFile, "Success in MarchingTetrahedra Vertex Shader.\n");
-//	}
-//
-//
-//
-//	/////////////////////// # FRAGMENT SHADER # ////////////////////////
-//	const GLchar* fragmentShaderSource = R"(
-//			
-//			#version 460 core
-//
-//			smooth in vec3 oNormal;
-//			out vec4 FragColor;
-//
-//			void main(void)
-//			{             
-//
-//				FragColor = vec4(oNormal,1.0);
-//			}
-//	
-//
-//			)";
-//	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-//	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-//
-//	glCompileShader(fragmentShaderObject);
-//	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-//
-//	if (status == GL_FALSE)
-//	{
-//		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-//		if (infoLogLength > 0)
-//		{
-//			Log = (char*)malloc(infoLogLength);
-//			if (Log != NULL)
-//			{
-//				GLsizei written;
-//				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-//				fprintf(gpFile, "Error in MarchingTetrahedra Fragment Shader.\nFS Compilation Log : %s\n", Log);
-//				free(Log);
-//				Log = NULL;
-//				uninitialize();
-//			}
-//		}
-//	}
-//	else
-//	{
-//		fprintf(gpFile, "Success in MarchingTetrahedra Fragment Shader.\n");
-//	}
-//
-//	shaderProgramObject_TM = glCreateProgram();
-//
-//	glAttachShader(shaderProgramObject_TM, vertexShaderObject);
-//	glAttachShader(shaderProgramObject_TM, fragmentShaderObject);
-//
-//	// pre Linking binding code has been MOVED BELOW
-//
-//	Log = NULL;
-//	
-//	glLinkProgram(shaderProgramObject_TM);
-//	glGetProgramiv(shaderProgramObject_TM, GL_LINK_STATUS, &status);
-//	if (status == GL_FALSE)
-//	{
-//		glGetProgramiv(shaderProgramObject_TM, GL_INFO_LOG_LENGTH, &infoLogLength);
-//		if (infoLogLength > 0)
-//		{
-//			Log = (char*)malloc(infoLogLength);
-//			if (Log != NULL)
-//			{
-//				GLsizei written;
-//				glGetProgramInfoLog(shaderProgramObject_TM, infoLogLength, &written, Log);
-//				fprintf(gpFile, "Error in MarchingTetrahedra shaderObject Linking\nLinking Log : % s\n", Log);
-//				free(Log);
-//				uninitialize();
-//			}
-//		}
-//	}
-//	else
-//	{
-//		fprintf(gpFile, "Success in MarchingTetrahedra shaderObject Linking\n");
-//	}
-//
-//	glUseProgram(shaderProgramObject_TM);
-//	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_POSITION, "aPosition");
-//	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_NORMAL, "aNormal");
-//	modelViewProjectionUniform_TM = glGetUniformLocation(shaderProgramObject_TM, "u_MVPMatrix");
-//
-//	clipFrontFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane1");
-//	clipBackFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane2");
-//
-//	clipRight_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane3");
-//	clipLeft_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane4");
-//
-//	clipTop_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane5");
-//	clipBottom_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane6");
-//
-//	glUseProgram(0);
-//
-//}
-//
-//void Initialize_TetrahedraMarcher_Geomatry(void)
-//{
-//	// code:
-//
-//	// VAO + VBO CODE for MarchingTetrahedra
-//	glGenVertexArrays(1, &volumeMarcherVAO);
-//	glBindVertexArray(volumeMarcherVAO);
-//	glGenBuffers(1, &volumeMarcherVBO);
-//	glBindBuffer(GL_ARRAY_BUFFER, volumeMarcherVBO);
-//	{
-//		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
-//		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
-//		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);//enable vertex attribute array for position
-//		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-//
-//		//enable vertex attribute array for normals
-//		glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
-//		glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, normal));
-//
-//	}
-//	glBindBuffer(GL_ARRAY_BUFFER, 0);
-//	glBindVertexArray(0);
-//
-//}
-//
-//void SetVolumeDimensions(const int xdim, const int ydim, const int zdim)
-//{
-//	XDIM_TM = xdim;
-//	YDIM_TM = ydim;
-//	ZDIM_TM = zdim;
-//	invDim.x = 1.0f / XDIM_TM;
-//	invDim.y = 1.0f / YDIM_TM;
-//	invDim.z = 1.0f / ZDIM_TM;
-//}
-//void SetNumSamplingVoxels(const int x, const int y, const int z)
-//{
-//	X_SAMPLING_DIST = x;
-//	Y_SAMPLING_DIST = y;
-//	Z_SAMPLING_DIST = z;
-//}
-//void SetIsosurfaceValue(const GLubyte value)
-//{
-//	isoValue = value;
-//}
-//
-//bool LoadVolume(const std::string& filename)
-//{
-//
-//	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
-//
-//	if (infile.good())
-//	{
-//		pVolume = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
-//		infile.read(reinterpret_cast<char*>(pVolume), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
-//		infile.close();
-//		return true;
-//	}
-//	else
-//	{
-//		return false;
-//	}
-//}
-//
-//void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)
-//{
-//	GLubyte cubeCornerValues[8];
-//	int flagIndex, edgeFlags, i;
-//	glm::vec3 edgeVertices[12];
-//	glm::vec3 edgeNormals[12];
-//
-//	//Make a local copy of the values at the cube's corners
-//	for (i = 0; i < 8; i++)
-//	{
-//		cubeCornerValues[i] = SampleVolume(x + (int)(a2fVertexOffset[i][0] * scale.x),
-//			y + (int)(a2fVertexOffset[i][1] * scale.y),
-//			z + (int)(a2fVertexOffset[i][2] * scale.z));
-//	}
-//
-//	//Find which vertices are inside of the surface and which are outside
-//	//Obtain a flagIndex based on if the value at the cube vertex is less 
-//	//than the given isovalue
-//	flagIndex = 0;
-//	for (i = 0; i < 8; i++)
-//	{
-//		if (cubeCornerValues[i] <= isoValue)
-//			flagIndex |= 1 << i;
-//	}
-//
-//	//Find which edges are intersected by the surface
-//	edgeFlags = aiCubeEdgeFlags[flagIndex];
-//
-//	//If the cube is entirely inside or outside of the surface, then there will be no intersections
-//	if (edgeFlags == 0)
-//	{
-//		return;
-//	}
-//
-//	//for all edges
-//	for (i = 0; i < 12; i++)
-//	{
-//		//if there is an intersection on this edge
-//		if (edgeFlags & (1 << i))
-//		{
-//			//get the offset 
-//			float offset = GetOffset(cubeCornerValues[a2iEdgeConnection[i][0]], cubeCornerValues[a2iEdgeConnection[i][1]]);
-//
-//			//use offset to get the vertex position
-//			edgeVertices[i].x = x + (a2fVertexOffset[a2iEdgeConnection[i][0]][0] + offset * a2fEdgeDirection[i][0]) * scale.x;
-//			edgeVertices[i].y = y + (a2fVertexOffset[a2iEdgeConnection[i][0]][1] + offset * a2fEdgeDirection[i][1]) * scale.y;
-//			edgeVertices[i].z = z + (a2fVertexOffset[a2iEdgeConnection[i][0]][2] + offset * a2fEdgeDirection[i][2]) * scale.z;
-//
-//			//use the vertex position to get the normal
-//			edgeNormals[i] = GetNormal((int)edgeVertices[i].x, (int)edgeVertices[i].y, (int)edgeVertices[i].z);
-//		}
-//	}
-//
-//	//Draw the triangles that were found.  There can be up to five per cube
-//	for (i = 0; i < 5; i++)
-//	{
-//		if (a2iTriangleConnectionTable[flagIndex][3 * i] < 0)
-//			break;
-//
-//		for (int j = 0; j < 3; j++)
-//		{
-//			int vertex = a2iTriangleConnectionTable[flagIndex][3 * i + j];
-//			Vertex v;
-//			v.normal = (edgeNormals[vertex]);
-//			v.pos = (edgeVertices[vertex]) * invDim;
-//			vertices.push_back(v);
-//		}
-//	}
-//}
-//
-//void MarchVolume()
-//{
-//	vertices.clear();
-//	int dx = XDIM_TM / X_SAMPLING_DIST;
-//	int dy = YDIM_TM / Y_SAMPLING_DIST;
-//	int dz = ZDIM_TM / Z_SAMPLING_DIST;
-//	glm::vec3 scale = glm::vec3(dx, dy, dz);
-//	for (int z = 0; z < ZDIM_TM; z += dz)
-//	{
-//		for (int y = 0; y < YDIM_TM; y += dy)
-//		{
-//			for (int x = 0; x < XDIM_TM; x += dx)
-//			{
-//				SampleVoxel(x, y, z, scale);
-//			}
-//		}
-//	}
-//}
-//
-//size_t GetTotalVertices_TM()
-//{
-//	return vertices.size();
-//}
-//
-//Vertex* GetVertexPointer_TM()
-//{
-//	return  &vertices[0];
-//}
-//
-//GLubyte SampleVolume(const int x, const int y, const int z) {
-//	int index = (x + (y * XDIM_TM)) + z * (XDIM_TM * YDIM_TM);
-//	if (index < 0)
-//		index = 0;
-//	if (index >= XDIM_TM * YDIM_TM * ZDIM_TM)
-//		index = (XDIM_TM * YDIM_TM * ZDIM_TM) - 1;
-//	return pVolume[index];
-//}
-//
-//glm::vec3 GetNormal(const int x, const int y, const int z) {
-//	glm::vec3 N;
-//	N.x = (SampleVolume(x - 1, y, z) - SampleVolume(x + 1, y, z)) * 0.5f;
-//	N.y = (SampleVolume(x, y - 1, z) - SampleVolume(x, y + 1, z)) * 0.5f;
-//	N.z = (SampleVolume(x, y, z - 1) - SampleVolume(x, y, z + 1)) * 0.5f;
-//	return glm::normalize(N);
-//}
-//float GetOffset(const GLubyte v1, const GLubyte v2) {
-//	float delta = (float)(v2 - v1);
-//	if (delta == 0)
-//		return 0.5f;
-//	else
-//		return (isoValue - v1) / delta;
-//}
-//
-//void Render_MarchingTetrahedra(void)
-//{
-//	// local:
-//
-//	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-//
-//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-//	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-//
-//	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
-//	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
-//
-//
-//	glm::vec4 clipPlane_Front = glm::vec4(0.0f, 0.0f, -1.0f, fClipPlane_Front);
-//	glm::vec4 clipPlane_Back = glm::vec4(0.0f, 0.0f, 1.0f, -fClipPlane_Back);
-//	
-//	glm::vec4 clipPlane_Right= glm::vec4(-1.0f, 0.0f, 0.0f, fClipPlane_Right);
-//	glm::vec4 clipPlane_Left = glm::vec4(1.0f, 0.0f, 0.0f, -fClipPlane_Left);
-//	
-//	glm::vec4 clipPlane_Top = glm::vec4(0.0f, -1.0f, 0.0f, fClipPlane_Top);
-//	glm::vec4 clipPlane_Bottom = glm::vec4(0.0f, 1.0f, 0.0f, -fClipPlane_Bottom);
-//
-//	// code:
-//
-//	// Grid or Axes Rendering 
-//	Render_Volume_Box_Axes(modelViewProjectionMatrix);
-//	
-//
-//	if (bWireframe)
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//
-//	glm::mat4 TranslationMatrix_2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, -0.5f));
-//
-//	glEnable(GL_CLIP_DISTANCE0);
-//	glEnable(GL_CLIP_DISTANCE1);
-//	glEnable(GL_CLIP_DISTANCE2);
-//	glEnable(GL_CLIP_DISTANCE3);
-//	glEnable(GL_CLIP_DISTANCE4);
-//	glEnable(GL_CLIP_DISTANCE5);
-//	glUseProgram(shaderProgramObject_TM);
-//	{
-//		glUniformMatrix4fv(modelViewProjectionUniform_TM, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix * TranslationMatrix_2));//pass the shader uniform
-//
-//		glUniform4fv(clipFrontFace_uniform,1,glm::value_ptr(clipPlane_Front));
-//		glUniform4fv(clipBackFace_uniform,1,glm::value_ptr(clipPlane_Back));
-//
-//		glUniform4fv(clipRight_uniform,1,glm::value_ptr(clipPlane_Right));
-//		glUniform4fv(clipLeft_uniform,1,glm::value_ptr(clipPlane_Left));
-//
-//		glUniform4fv(clipTop_uniform,1,glm::value_ptr(clipPlane_Top));
-//		glUniform4fv(clipBottom_uniform,1,glm::value_ptr(clipPlane_Bottom));
-//
-//		glBindVertexArray(volumeMarcherVAO);
-//		glDrawArrays(GL_TRIANGLES, 0, GetTotalVertices_TM());
-//		glBindVertexArray(0);
-//	}
-//	glUseProgram(0);
-//	glDisable(GL_CLIP_DISTANCE5);
-//	glDisable(GL_CLIP_DISTANCE4);
-//	glDisable(GL_CLIP_DISTANCE3);
-//	glDisable(GL_CLIP_DISTANCE2);
-//	glDisable(GL_CLIP_DISTANCE1);
-//	glDisable(GL_CLIP_DISTANCE0);
-//
-//	//restore the default polygon mode
-//	if (bWireframe)
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//
-//}
-//
-//void Update_MarchingTetrahedra()
-//{
-//	// code:
-//}
-//
-//void Uninitialize_MarchingTetrahedra(void)
-//{
-//	// code:
-//
-//	Uninitialize_ShaderProgramObject(shaderProgramObject_TM);
-//
-//
-//	if (volumeMarcherVBO)
-//	{
-//		glDeleteBuffers(1, &volumeMarcherVBO);
-//		volumeMarcherVBO = 0;
-//	}
-//
-//	if (volumeMarcherVAO)
-//	{
-//		glDeleteVertexArrays(1, &volumeMarcherVAO);
-//		volumeMarcherVAO = 0;
-//	}
-//
-//	if (pVolume)
-//	{
-//		free(pVolume);
-//		pVolume = NULL;
-//	}
-//
-//	if (!vertices.empty())
-//	{
-//		vertices.clear();
-//	}
-//}
-//
-
+	if (infile.good())
+	{
+		pVolume = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+		infile.read(reinterpret_cast<char*>(pVolume), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
+		infile.close();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 
 void Uninitialize_ShaderProgramObject(GLuint shaderProgramObject_)

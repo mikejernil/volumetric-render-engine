@@ -5,6 +5,8 @@
 
 #include "GLHeadersAndMacros.h"
 
+#include <vector>
+
 
 BOOL CreateLogFile(void);
 void PrintGLInfo(void);

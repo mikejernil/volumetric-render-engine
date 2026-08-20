@@ -17,14 +17,21 @@
 #include <commdlg.h>
 
 #include "OGL.h"
-#include "./src/include/glm/glm.hpp"
-#include "./src/include/glm/gtc/matrix_transform.hpp"
-#include "./src/include/glm/gtc/type_ptr.hpp"
+
+
+#include "./src/utils/common.h"
+
+//#include "./src/include/glm/glm.hpp"
+//#include "./src/include/glm/gtc/matrix_transform.hpp"
+//#include "./src/include/glm/gtc/type_ptr.hpp"
+
+
+#include "./src/effects/Basic_TextureSlicing/BasicTextureSlicing.h"
 
 
 // -OpenGL Header Files-
-#include "dependencies/glew/include/GL/glew.h"			//! Must be before gl.h
-#include<gl/GL.h>
+//#include "dependencies/glew/include/GL/glew.h"			//! Must be before gl.h
+//#include<gl/GL.h>
 
 #include "./src/include/vmath.h"
 using namespace vmath;
@@ -71,15 +78,14 @@ using namespace vmath;
 #define ID_LABEL_BOTTOM_FACE 1022
 
 
-#define EPSILON 0.0001f;//for floating point inaccuracy
 
 
 
 
 
 // Link with OpenGL Library:
-#pragma comment(lib,"dependencies/glew/lib/Release/x64/glew32")
-#pragma comment(lib,"OpenGL32")
+//#pragma comment(lib,"dependencies/glew/lib/Release/x64/glew32")
+//#pragma comment(lib,"OpenGL32")
 #pragma comment(lib, "Comdlg32")
 
 // global variable declarations:
@@ -98,7 +104,7 @@ HGLRC ghrc = NULL;
 
 
 
-glm::mat4 perspectiveProjMatrix_glm;
+//glm::mat4 perspectiveProjMatrix_glm;
 
 GLuint giWinWidth=0;
 GLuint giWinHeight = 0;
@@ -139,39 +145,27 @@ const wchar_t* textHolder = L"";
 GLuint shaderProgramObject_Grid;
 GLuint mvpUniform_GridObject;
 
-glm::vec3 viewDirection;
+//glm::vec3 viewDirection;
 
 
-GLuint shaderProgramObject_Slicer1;
-GLuint modelViewProjectionUniform_Slicer1 = 0;
-GLuint textureVolumeUniform_Slicer1 = 0;
-
-GLuint VBO_volume;
-GLuint VAO_volume;
-GLuint textureID = 0;
-
-
-//unit cube edges
-int edgeList[8][12] = {
-	{ 0,1,5,6,   4,8,11,9,  3,7,2,10 }, // v0 is front
-	{ 0,4,3,11,  1,2,6,7,   5,9,8,10 }, // v1 is 
-	{ 1,5,0,8,   2,3,7,4,   6,10,9,11}, // v2 is 
-	{ 7,11,10,8, 2,6,1,9,   3,0,4,5  }, // v3 is 
-	{ 8,5,9,1,   11,10,7,6, 4,3,0,2  }, // v4 is 
-	{ 9,6,10,2,  8,11,4,7,  5,0,1,3  }, // v5 is 
-	{ 9,8,5,4,   6,1,2,0,   10,7,11,3}, // v6 is 
-	{ 10,9,6,5,  7,2,3,1,   11,4,8,0 }  // v7 is 
-};
-const int edges[12][2] = { {0,1},{1,2},{2,3},{3,0},{0,4},{1,5},{2,6},{3,7},{4,5},{5,6},{6,7},{7,4} };
+//GLuint shaderProgramObject_Slicer1;
+//GLuint modelViewProjectionUniform_Slicer1 = 0;
+//GLuint textureVolumeUniform_Slicer1 = 0;
+//
+//GLuint VBO_volume;
+//GLuint VAO_volume;
+//GLuint textureID = 0;
 
 
-float fZPlus_FrontFace = 0.5f;
-float fYPlus_TopFace = 0.5f;
-float fXPlus_SideFace = 0.5f;
 
-float fXMinus_SideFace = -0.5f;
-float fYMinus_BottomFace = -0.5f;
-float fZMinus_BackFace = -0.5f;
+
+//float fZPlus_FrontFace = 0.5f;
+//float fYPlus_TopFace = 0.5f;
+//float fXPlus_SideFace = 0.5f;
+//
+//float fXMinus_SideFace = -0.5f;
+//float fYMinus_BottomFace = -0.5f;
+//float fZMinus_BackFace = -0.5f;
 
 glm::vec3 vertexList[8] = { 
 						   // Minus Z-Vertices
@@ -198,13 +192,9 @@ const std::string volume_file = "./resources/model/Engine256.raw";
 
 
 
-glm::vec3 vTextureSlices[MAX_SLICES * 12];
-int num_slices = 256;
-float dist = -2.0f;
 
-float rotationX = 0.0f;
-float rotationY = 0.0f;
-float rotationZ = 0.0f;
+
+
 
 
 
@@ -235,14 +225,6 @@ void Uninitialize_Grid(void);
 
 // Shader Type 1: Basic Volume Render:
 
-
-int Initialize_Slicing_shader(void);
-void Slice_Volume(void);
-int FindAbsMax(glm::vec3 v);
-int LoadVolumeData(void);
-void Render_Basic_Volume(void);
-void Update_Basic_Volume(void);
-void Uninitialize_Slicing_shader(void);
 
 
 // Shader Type 2: Ray Casting Method : global variables:
@@ -450,6 +432,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	}
 
 
+	CreateLogFile();
 
 	//to initialize members of wndclass
 	wndclass.cbSize = sizeof(wndclass);
@@ -1606,33 +1589,31 @@ int initialize(void)
 	Update_Volume_Box_Axes();
 
 
-	Initialize_Raycasting_shader();
-	Initialize_Raycasting_Geomatry();
-
-	Initialize_IsoSurface_shader();
-
-	Initialize_ColormapClassification_shader();
-	LoadTransferFunction();
+	//Initialize_Raycasting_shader();
+	//Initialize_Raycasting_Geomatry();
+	//Initialize_IsoSurface_shader();
+	//Initialize_ColormapClassification_shader();
+	//LoadTransferFunction();
 
 
-	Initialize_TetrahedraMarcher_Constructor();
-	SetVolumeDimensions(256, 256, 256);
-	if (LoadVolume(volume_file))
-	{
-		fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
-	}
-	else
-	{
-		fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
-	}
-	//set the isosurface value
-	SetIsosurfaceValue(48);
-	//set the number of sampling voxels 
-	SetNumSamplingVoxels(128, 128, 128);
-	//begin tetrahedra marching
-	MarchVolume();
-	Initialize_TetrahedraMarcher_Geomatry();
-	Initialize_TetrahedraMarcher_Shaders();
+	//Initialize_TetrahedraMarcher_Constructor();
+	//SetVolumeDimensions(256, 256, 256);
+	//if (LoadVolume(volume_file))
+	//{
+	//	fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
+	//}
+	//else
+	//{
+	//	fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
+	//}
+	////set the isosurface value
+	//SetIsosurfaceValue(48);
+	////set the number of sampling voxels 
+	//SetNumSamplingVoxels(128, 128, 128);
+	////begin tetrahedra marching
+	//MarchVolume();
+	//Initialize_TetrahedraMarcher_Geomatry();
+	//Initialize_TetrahedraMarcher_Shaders();
 
 
 
@@ -1734,6 +1715,7 @@ void display(void)
 				Update_Volume_Box_Axes();
 			}
 			break;
+			/*
 		case 1:
 			glClearColor(0.75f, 0.75f, 0.75f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1781,7 +1763,7 @@ void display(void)
 			if (bMouseClicked || bSliceUpdate)
 			{
 				Update_Volume_Box_Axes();
-			}
+			}*/
 			break;
 		case 5:
 			glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
@@ -1789,6 +1771,8 @@ void display(void)
 			break;
 
 		default:
+			glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			break;
 	}
 
@@ -1834,10 +1818,10 @@ void uninitialize(void)
 
 	// code:
 
-	Uninitialize_MarchingTetrahedra();
-	Uninitialize_ColormapClassification_shader();
-	Uninitialize_IsoSurface_shader();
-	Uninitialize_Raycasting_shader();
+	//Uninitialize_MarchingTetrahedra();
+	//Uninitialize_ColormapClassification_shader();
+	//Uninitialize_IsoSurface_shader();
+	//Uninitialize_Raycasting_shader();
 	Uninitialize_Slicing_shader();
 
 	Uninitialize_Grid();
@@ -1874,6 +1858,9 @@ void uninitialize(void)
 		ghwnd = NULL;
 	}
 
+	
+	CloseLogFile();
+
 	// close the Log File:
 	if (gpFile)
 	{
@@ -1885,202 +1872,6 @@ void uninitialize(void)
 	}
 }
 
-
-void Slice_Volume(void)
-{
-	// local:
-
-
-	glm::vec3 vertexList[8] = {
-
-		// Minus Z-Vertices
-		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),			// 1. Left Bottom
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),				// 2. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,fZMinus_BackFace),				// 3. Right Top
-		glm::vec3(fXMinus_SideFace, fYPlus_TopFace,fZMinus_BackFace),				// 4. Left Top
-
-		// Plus Z-Vertices
-		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),			// 5. Left Bottom
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),			// 6. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),				// 7. Right Top
-		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZPlus_FrontFace)				// 8. Left Top
-	};
-
-	// get the max and min distance of each vertex of the unit cube in the viewing direction
-	float maxDistance = glm::dot(viewDirection, vertexList[0]);
-
-	float minDistance = maxDistance;
-	int maxIndex = 0;
-	int count = 0;
-
-	// code:
-
-	// # 1 : get the distance between the current unit cube vertex and the view vector by dot product
-
-	for (int i = 1; i < 8; i++)
-	{
-		// 1:
-		float fDistance = glm::dot(viewDirection, vertexList[i]);
-
-		// 2:
-		if (fDistance > maxDistance)
-		{
-			maxDistance = fDistance;
-			maxIndex = i;
-		}
-
-		// 3 : 
-		if (fDistance < minDistance)
-			minDistance = fDistance;
-
-	}
-	// 4 : //find tha abs maximum of the view direction vector
-	int max_dim = FindAbsMax(viewDirection);
-
-	minDistance -= EPSILON;
-	maxDistance  += EPSILON;
-
-	//local variables to store the start, direction vectors, 
-	//lambda intersection values
-	glm::vec3 vecStart[12];
-	glm::vec3 vecDir[12];
-	float lambda[12];
-	float lambda_inc[12];
-	float denom = 0;
-
-	//set the minimum distance as the plane_dist
-	//subtract the max and min distances and divide by the 
-	//total number of slices to get the plane increment
-	float plane_dist = minDistance;
-	float plane_dist_inc = (maxDistance - minDistance) / float(num_slices);
-
-	//for all edges
-	for (int i = 0; i < 12; i++) 
-	{
-		//get the start position vertex by table lookup
-		vecStart[i] = vertexList[edges[edgeList[maxIndex][i]][0]];
-
-		//get the direction by table lookup
-		vecDir[i] = vertexList[edges[edgeList[maxIndex][i]][1]] - vecStart[i];
-
-		//do a dot of vecDir with the view direction vector
-		denom = glm::dot(vecDir[i], viewDirection);
-
-		//determine the plane intersection parameter (lambda) and 
-		//plane intersection parameter increment (lambda_inc)
-		if (1.0 + denom != 1.0) {
-			lambda_inc[i] = plane_dist_inc / denom;
-			lambda[i] = (plane_dist - glm::dot(vecStart[i], viewDirection)) / denom;
-		}
-		else {
-			lambda[i] = -1.0;
-			lambda_inc[i] = 0.0;
-		}
-	}
-
-
-	// local variables to store the intesected points
-	//note that for a plane and sub intersection, we can have 
-	//a minimum of 3 and a maximum of 6 vertex polygon
-	glm::vec3 intersection[6];
-
-	float dL[12];
-
-	//loop through all slices
-	for (int i = num_slices - 1; i >= 0; i--) {
-
-		//determine the lambda value for all edges
-		for (int e = 0; e < 12; e++)
-		{
-			dL[e] = lambda[e] + i * lambda_inc[e];
-		}
-
-		//if the values are between 0-1, we have an intersection at the current edge
-		//repeat the same for all 12 edges
-		if ((dL[0] >= 0.0) && (dL[0] < 1.0)) {
-			intersection[0] = vecStart[0] + dL[0] * vecDir[0];
-		}
-		else if ((dL[1] >= 0.0) && (dL[1] < 1.0)) {
-			intersection[0] = vecStart[1] + dL[1] * vecDir[1];
-		}
-		else if ((dL[3] >= 0.0) && (dL[3] < 1.0)) {
-			intersection[0] = vecStart[3] + dL[3] * vecDir[3];
-		}
-		else continue;
-
-		if ((dL[2] >= 0.0) && (dL[2] < 1.0)) {
-			intersection[1] = vecStart[2] + dL[2] * vecDir[2];
-		}
-		else if ((dL[0] >= 0.0) && (dL[0] < 1.0)) {
-			intersection[1] = vecStart[0] + dL[0] * vecDir[0];
-		}
-		else if ((dL[1] >= 0.0) && (dL[1] < 1.0)) {
-			intersection[1] = vecStart[1] + dL[1] * vecDir[1];
-		}
-		else {
-			intersection[1] = vecStart[3] + dL[3] * vecDir[3];
-		}
-
-		if ((dL[4] >= 0.0) && (dL[4] < 1.0)) {
-			intersection[2] = vecStart[4] + dL[4] * vecDir[4];
-		}
-		else if ((dL[5] >= 0.0) && (dL[5] < 1.0)) {
-			intersection[2] = vecStart[5] + dL[5] * vecDir[5];
-		}
-		else {
-			intersection[2] = vecStart[7] + dL[7] * vecDir[7];
-		}
-		if ((dL[6] >= 0.0) && (dL[6] < 1.0)) {
-			intersection[3] = vecStart[6] + dL[6] * vecDir[6];
-		}
-		else if ((dL[4] >= 0.0) && (dL[4] < 1.0)) {
-			intersection[3] = vecStart[4] + dL[4] * vecDir[4];
-		}
-		else if ((dL[5] >= 0.0) && (dL[5] < 1.0)) {
-			intersection[3] = vecStart[5] + dL[5] * vecDir[5];
-		}
-		else {
-			intersection[3] = vecStart[7] + dL[7] * vecDir[7];
-		}
-		if ((dL[8] >= 0.0) && (dL[8] < 1.0)) {
-			intersection[4] = vecStart[8] + dL[8] * vecDir[8];
-		}
-		else if ((dL[9] >= 0.0) && (dL[9] < 1.0)) {
-			intersection[4] = vecStart[9] + dL[9] * vecDir[9];
-		}
-		else {
-			intersection[4] = vecStart[11] + dL[11] * vecDir[11];
-		}
-
-		if ((dL[10] >= 0.0) && (dL[10] < 1.0)) {
-			intersection[5] = vecStart[10] + dL[10] * vecDir[10];
-		}
-		else if ((dL[8] >= 0.0) && (dL[8] < 1.0)) {
-			intersection[5] = vecStart[8] + dL[8] * vecDir[8];
-		}
-		else if ((dL[9] >= 0.0) && (dL[9] < 1.0)) {
-			intersection[5] = vecStart[9] + dL[9] * vecDir[9];
-		}
-		else {
-			intersection[5] = vecStart[11] + dL[11] * vecDir[11];
-		}
-
-		//after all 6 possible intersection vertices are obtained,
-		//we calculated the proper polygon indices by using indices of a triangular fan
-		int indices[] = { 0,1,2, 0,2,3, 0,3,4, 0,4,5 };
-
-		//! //Using the indices, pass the intersection vertices to the vTextureSlices vector
-		for (int i = 0; i < 12; i++)
-			vTextureSlices[count++] = intersection[indices[i]];
-	}
-
-	//update volume VBO with the new vertices
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_volume);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vTextureSlices), &(vTextureSlices[0].x));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-}
 
 void Update_Volume_Box_Axes(void)
 {
@@ -2203,189 +1994,8 @@ void Uninitialize_Grid(void)
 }
 
 
-//function to get the max (abs) dimension of the given vertex v
-int FindAbsMax(glm::vec3 v) 
-{
-	// code:
-	
-	v = glm::abs(v);
-	int max_dim = 0;
-
-	float val = v.x;
-	if (v.y > val) {
-		val = v.y;
-		max_dim = 1;
-	}
-	if (v.z > val) {
-		val = v.z;
-		max_dim = 2;
-	}
-
-	return max_dim;
-}
-
-int Initialize_Slicing_shader(void)
-{
-	// prototype:
-	void uninitialize(void);
-
-	// local:
-
-	GLuint vertexShaderObject;
-	GLuint fragmentShaderObject;
-
-	GLint status;
-	GLint infoLogLength;
-	char *Log = NULL;
-
-	// code:
-
-	//* ///////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar *vertexShaderSource = R"(
-			
-			#version 460 core
-			layout (location = 0) in vec3 aPosition;
-			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords; //3D texture coordinates for texture lookup in the fragment shader
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-				oTexCoords = aPosition + vec3(0.5);
-
-				//get the 3D texture coordinates by adding (0.5,0.5,0.5) to the object space 
-				//vertex position. Since the unit cube is at origin (min: (-0.5,-0.5,-0.5) and max: (0.5,0.5,0.5))
-				//adding (0.5,0.5,0.5) to the unit cube object space position gives us values from (0,0,0) to 
-				//(1,1,1)
-			}
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char *)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Slicer1 Vertex Shader Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Slicer1  Success at  Vertex Shader Compilation \n");
-	}
 
 
-
-	//* ///////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar *fragmentShaderSource = R"(
-			
-			#version 460 core
-			smooth in vec3 oTexCoords; //3D texture coordinates form vertex shader, interpolated by rasterizer
-			uniform sampler3D u_Volume3DSampler; //volume dataset
-
-			out vec4 FragColor;		
-			void main(void)
-			{             
-				FragColor = texture(u_Volume3DSampler, oTexCoords).rrrr;
-			}
-
-			//Here we sample the volume dataset using the 3D texture coordinates from the vertex shader.
-			//Note that since at the time of texture creation, we gave the internal format as GL_RED
-			//we can get the sample value from the texture using the red channel. Here, we set all 4
-			//components as the sample value in the texture which gives us a shader of grey.
-	
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-
-	status = 0;
-	infoLogLength=0;
-	Log=NULL;
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char *)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Slicer1  FRAGMENT Shader Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Slicer1 Success at NEW FRAGMENT Shader Compilation \n");
-	}
-
-	shaderProgramObject_Slicer1 = glCreateProgram();
-
-
-	glAttachShader(shaderProgramObject_Slicer1, vertexShaderObject);
-	glAttachShader(shaderProgramObject_Slicer1, fragmentShaderObject);
-
-	// MOVED BELOW
-
-	status = 0;
-	infoLogLength=0;
-	Log=NULL;
-	glLinkProgram(shaderProgramObject_Slicer1);
-	glGetProgramiv(shaderProgramObject_Slicer1, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
-	{
-		glGetProgramiv(shaderProgramObject_Slicer1, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_Slicer1, infoLogLength, &written, Log);
-				fprintf(gpFile, "Slicer1  SHADEROBJECT  Linking Log : %s\n", Log);
-				free(Log);
-				uninitialize();
-				return FALSE;
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Slicer1  shaderProgramObject_Slicer1 Linking Successful \n");
-	}
-
-	glUseProgram(shaderProgramObject_Slicer1);
-	
-	glBindAttribLocation(shaderProgramObject_Slicer1, AMC_ATTRIBUTE_POSITION, "aPosition");
-	modelViewProjectionUniform_Slicer1 = glGetUniformLocation(shaderProgramObject_Slicer1, "u_MVPMatrix");
-	textureVolumeUniform_Slicer1= glGetUniformLocation(shaderProgramObject_Slicer1, "u_Volume3DSampler");
-	glUniform1i(textureVolumeUniform_Slicer1, 0);
-	glUseProgram(0);
-
-
-	return (0);
-}
 
 int LoadVolumeData(void)
 {
@@ -2693,1697 +2303,1614 @@ void setup_Axes_BufferObjects(void)
 }
 
 
-void Render_Basic_Volume(void)
-{
-	// local:
-	
-	//setup the camera transform
-	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-
-
-	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);
-
-	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
-
-	vmath::mat4 ModelViewMatrix_mat4 = vmath::translate(0.0f, 0.0f, dist);
-
-
-	// code:
-
-	// Grid or Axes Rendering 
-	Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
-
-	glUseProgram(shaderProgramObject_Slicer1);
-	{
-		glUniformMatrix4fv(modelViewProjectionUniform_Slicer1, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_3D, textureID);
-		glUniform1i(textureVolumeUniform_Slicer1, 0);
-		glBindVertexArray(VAO_volume);
-		glDrawArrays(GL_TRIANGLES, 0, sizeof(vTextureSlices) / sizeof(vTextureSlices[0]));
-		glBindTexture(GL_TEXTURE_3D, 0);
-		glBindVertexArray(0);
-	}
-	glUseProgram(0);
-	glDisable(GL_BLEND);
-
-
-
-}
-
-void Update_Basic_Volume(void)
-{
-	// code:
-
-}
-
-void Uninitialize_Slicing_shader(void)
-{
-	// code:
-	
-	
-	if (VBO_volume)
-	{
-		glDeleteBuffers(1, &VBO_volume);
-		VBO_volume = 0;
-	}
-	if (VAO_volume)
-	{
-		glDeleteVertexArrays(1, &VAO_volume);
-		VAO_volume = 0;
-	}
-
-	if (textureID)
-	{
-		glDeleteTextures(1, &textureID);
-		textureID = 0;
-	}
-
-
-	Uninitialize_ShaderProgramObject(shaderProgramObject_Slicer1);
-
-}
-
-
 //! Shader Type 2: RAY CASTING METHOD Method Definitions:
-
-int Initialize_Raycasting_shader(void)
-{
-
-	// local:
-
-	GLuint vertexShaderObject;
-	GLuint fragmentShaderObject;
-
-	GLint status;
-	GLint infoLogLength;
-	char* Log = NULL;
-
-	// code:
-
-	/////////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-			
-			layout (location = 0) in vec3 aPosition;
-			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords;
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-
-				oTexCoords = aPosition + vec3(0.5);
-			}
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in Raycating Vertex Shader .\n VS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in Raycating  Vertex Shader Compilation \n");
-	}
-
-
-
-	/////////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-
-			smooth in vec3 oTexCoords;
-
-			uniform sampler3D u_Volume3DSampler;
-			uniform vec3 u_cameraPosition;
-			uniform vec3 u_stepSize;
-
-			const int MAX_SAMPLES = 300;
-			const vec3 texMin = vec3(0);
-			const vec3 texMax = vec3(1);
-
-			out vec4 FragColor;		
-			void main(void)
-			{             
-
-				// step 1:
-				vec3 dataPosition = oTexCoords; 
-
-				// step 2: 
-				/*
-				get the object space position by subracting 0.5 from the 3D texture coordinates.
-				Then subtraact it from camera position and normalize to get the ray marching direction
-				*/
-
-				vec3 geomatryDirection = normalize((oTexCoords - vec3(0.5)) - u_cameraPosition);
-
-
-				// step 3: multiply the raymarching direction with the step size to get the sub-step size we need to take at each raymarching step
-				vec3 directionStep = geomatryDirection * u_stepSize;
-
-				//flag to indicate if the raymarch loop should terminate
-				bool bStop = false;
-
-				for(int i = 0; i<MAX_SAMPLES; i++)
-				{
-					dataPosition = dataPosition + directionStep;
-
-					bStop = dot(sign(dataPosition - texMin),sign(texMax - dataPosition)) < 3.0;
-
-					if(bStop)
-						break;
-
-					// data fetching from the Red Channel of Volume Texture:
-					float fSample = texture(u_Volume3DSampler,dataPosition).r;
-
-
-					float prev_alpha = fSample - (fSample * FragColor.a);
-					FragColor.rgb = prev_alpha * vec3(fSample) + FragColor.rgb; 
-					FragColor.a += prev_alpha; 
-
-					//Ray Termination : if the currently composited colour alpha is already fully saturated,we terminated the loop
-					if(FragColor.a > 0.99)
-						break;
-
-				}
-
-
-			}
-
-	
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in Raycating FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
-				
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success  in Raycating FRAGMENT Shader Compilation \n");
-	}
-
-	shaderProgramObject_RayCasting = glCreateProgram();
-
-
-	glAttachShader(shaderProgramObject_RayCasting, vertexShaderObject);
-	glAttachShader(shaderProgramObject_RayCasting, fragmentShaderObject);
-
-	// MOVED BELOW
-	//glBindAttribLocation(shaderProgramObject_RayCasting, AMC_ATTRIBUTE_POSITION, "aPosition");
-
-
-	Log = NULL;
-
-	glLinkProgram(shaderProgramObject_RayCasting);
-
-	glGetProgramiv(shaderProgramObject_RayCasting, GL_LINK_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetProgramiv(shaderProgramObject_RayCasting, GL_INFO_LOG_LENGTH, &infoLogLength);
-
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_RayCasting, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in RayCasting shaderObject Linking\nLinking Log : % s\n", Log);
-
-				free(Log);
-				uninitialize();
-				return FALSE;
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "RayCasting shaderObject Linking Successful \n");
-	}
-
-	glUseProgram(shaderProgramObject_RayCasting);
-
-	glBindAttribLocation(shaderProgramObject_RayCasting, AMC_ATTRIBUTE_POSITION, "aPosition");
-	modelViewProjectionUniform_RayCasting = glGetUniformLocation(shaderProgramObject_RayCasting, "u_MVPMatrix");
-	textureVolumeUniform_RayCasting = glGetUniformLocation(shaderProgramObject_RayCasting, "u_Volume3DSampler");
-	cameraPositionUniform = glGetUniformLocation(shaderProgramObject_RayCasting, "u_cameraPosition");
-	step_size_Uniform = glGetUniformLocation(shaderProgramObject_RayCasting, "u_stepSize");
-
-	glUniform1i(textureVolumeUniform_RayCasting, 0);
-
-	glUseProgram(0);
-
-
-
-	return (0);
-}
-
-void Initialize_Raycasting_Geomatry(void)
-{
-	// code:
-
-	glm::vec3 vertices[8] = { glm::vec3(-0.5f,-0.5f,-0.5f),
-							glm::vec3(0.5f,-0.5f,-0.5f),
-							glm::vec3(0.5f, 0.5f,-0.5f),
-							glm::vec3(-0.5f, 0.5f,-0.5f),
-							glm::vec3(-0.5f,-0.5f, 0.5f),
-							glm::vec3(0.5f,-0.5f, 0.5f),
-							glm::vec3(0.5f, 0.5f, 0.5f),
-							glm::vec3(-0.5f, 0.5f, 0.5f) };
-
-	//unit cube indices
-	GLushort cubeIndices[36] = { 0,5,4,
-							  5,0,1,
-							  3,7,6,
-							  3,6,2,
-							  7,4,6,
-							  6,4,5,
-							  2,1,3,
-							  3,1,0,
-							  3,0,7,
-							  7,0,4,
-							  6,5,2,
-							  2,5,1 };
-
-
-	glGenVertexArrays(1, &VAO_cube_RayCastingCube);
-	glBindVertexArray(VAO_cube_RayCastingCube);
-	{
-		// VBO_cube_ID : //pass cube vertices to buffer object memory
-		glGenBuffers(1, &VBO_cube_ID_RayCastingCube);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_cube_ID_RayCastingCube);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &(vertices[0].x), GL_DYNAMIC_DRAW);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		// VBO_cube_Indices : //pass indices to element array  buffer
-		glGenBuffers(1, &VBO_cube_Indices_RayCastingCube);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO_cube_Indices_RayCastingCube);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), &cubeIndices[0], GL_DYNAMIC_DRAW);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-	glBindVertexArray(0);
-
-
-}
-
-void Update_Raycasting_Cube_VBO(void)
-{
-	// code:
-
-	glm::vec3 vertices[8] =
-	{
-		// Minus Z-Vertices
-		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace,fZMinus_BackFace), // 1. Left Bottom
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),  // 2. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,fZMinus_BackFace),  // 3. Right Top
-		glm::vec3(fXMinus_SideFace, fYPlus_TopFace,fZMinus_BackFace), // 4. Left Top
-
-		// Plus Z-Vertices
-		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace), // 5. Left Bottom
-		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),  // 6. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
-		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZPlus_FrontFace)  // 8. Left Top
-	};
-
-	//unit cube indices
-	GLushort cubeIndices[36] =
-	{
-		0,5,4,
-		5,0,1,
-		3,7,6,
-		3,6,2,
-		7,4,6,
-		6,4,5,
-		2,1,3,
-		3,1,0,
-		3,0,7,
-		7,0,4,
-		6,5,2,
-		2,5,1
-	};
-
-	glBindVertexArray(VAO_cube_RayCastingCube);
-	{
-		// VBO_cube_ID : //pass cube vertices to buffer object memory
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_cube_ID_RayCastingCube);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &(vertices[0].x), GL_DYNAMIC_DRAW);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		// VBO_cube_Indices : //pass indices to element array  buffer
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO_cube_Indices_RayCastingCube);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), &cubeIndices[0], GL_DYNAMIC_DRAW);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-	glBindVertexArray(0);
-
-}
-
-void Update_MarchingTetrahedra_Cube(void)
-{
-	// code:
-
-
-	glm::vec3 vertices[8] =
-	{
-		// Minus Z-Vertices
-		glm::vec3(-0.5f,-0.5f,-0.5f), // 1. Left Bottom
-		glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),  // 2. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,-0.5f),  // 3. Right Top
-		glm::vec3(-0.5f, fYPlus_TopFace,-0.5f), // 4. Left Top
-
-		// Plus Z-Vertices
-		glm::vec3(-0.5f,-0.5f, fZPlus_FrontFace), // 5. Left Bottom
-		glm::vec3(fXPlus_SideFace,-0.5f, fZPlus_FrontFace),  // 6. Right Bottom
-		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
-		glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace)  // 8. Left Top
-	};
-
-	//unit cube indices
-	GLushort cubeIndices[36] =
-	{
-		0,5,4,
-		5,0,1,
-		3,7,6,
-		3,6,2,
-		7,4,6,
-		6,4,5,
-		2,1,3,
-		3,1,0,
-		3,0,7,
-		7,0,4,
-		6,5,2,
-		2,5,1
-	};
-
-	glBindVertexArray(volumeMarcherVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, volumeMarcherVBO);
-	{
-		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
-		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);//enable vertex attribute array for position
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-
-		//enable vertex attribute array for normals
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
-		glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, normal));
-
-	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-}
-
-void Render_Raycasting_Output(void)
-{
-	// local:
-
-	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-
-	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
-	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
-
-
-	// code:
-
-	// Grid or Axes Rendering 
-	Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
-
-	glEnable(GL_BLEND);
-	glUseProgram(shaderProgramObject_RayCasting);
-	{
-		glUniformMatrix4fv(modelViewProjectionUniform_RayCasting, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-
-		glUniform3fv(cameraPositionUniform, 1, &(cameraPosition.x));
-		glUniform3f(step_size_Uniform, (1.0f / XDIM), (1.0f / YDIM), (1.0f / ZDIM));
-
-		// Texture : 0
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_3D, textureID);
-		glUniform1i(textureVolumeUniform_RayCasting, 0);
-
-
-		glBindVertexArray(VAO_cube_RayCastingCube);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
-		glBindVertexArray(0);
-		glBindTexture(GL_TEXTURE_3D, 0);
-	}
-	glUseProgram(0);
-	glDisable(GL_BLEND);
-
-}
-
-void Update_Raycasting_Output(void)
-{
-	// local:
-
-	// code;
-
-}
-
-void Uninitialize_Raycasting_shader(void)
-{
-
-	// code:
-
-	if (VBO_cube_Indices_RayCastingCube)
-	{
-		glDeleteBuffers(1, &VBO_cube_Indices_RayCastingCube);
-		VBO_cube_Indices_RayCastingCube = 0;
-	}
-	if (VBO_cube_ID_RayCastingCube)
-	{
-		glDeleteBuffers(1, &VBO_cube_ID_RayCastingCube);
-		VBO_cube_ID_RayCastingCube = 0;
-	}
-
-	if (VAO_cube_RayCastingCube)
-	{
-		glDeleteVertexArrays(1, &VAO_cube_RayCastingCube);
-		VAO_cube_RayCastingCube = 0;
-	}
-
-	Uninitialize_ShaderProgramObject(shaderProgramObject_RayCasting);
-
-}
-
-
-
-//! Shader Type 3: Iso Surface with RAY CASTING Method Definitions:
-
-int Initialize_IsoSurface_shader(void)
-{
-	// local:
-
-	GLuint vertexShaderObject;
-	GLuint fragmentShaderObject;
-
-	GLint status;
-	GLint infoLogLength;
-	char* Log = NULL;
-
-	// code:
-
-	/////////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-			
-			layout (location = 0) in vec3 aPosition;
-			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords; //3D texture coordinates for texture lookup in the fragment shader
-
-			void main()
-			{
-				// step1: // to get the Clipspace position
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-
-
-				// step2: //get the 3D texture coordinates from vertex position from step1
-				oTexCoords = aPosition + vec3(0.5);
-				/* 	step 2 notes:
-				we will get the 3D texture coordinates by adding (0.5,0.5,0.5) to the object space vertex position. 
-				Since the unit cube is at origin (min: (-0.5,-0.5,-0.5) and max: (0.5,0.5,0.5)), by adding (0.5,0.5,0.5) to the unit cube object space position gives us values from (0,0,0) to (1,1,1)
-				*/
-		
-			}
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in IsoSurface Vertex Shader .\n VS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in IsoSurface  Vertex Shader Compilation \n");
-	}
-
-
-
-	/////////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-
-			smooth in vec3 oTexCoords; //3D texture coordinates form vertex shader, interpolated by rasterizer
-
-			uniform sampler3D u_Volume3DSampler; //volume dataset
-			uniform vec3 u_cameraPosition; //camera or eye position
-			uniform vec3 u_stepSize; //ray step size
-
-			const int MAX_SAMPLES = 300;	//total samples for each ray march step
-			const vec3 texMin = vec3(0);	//minimum texture access coordinate
-			const vec3 texMax = vec3(1);	//maximum texture access coordinate
-			const float DELTA = 0.01;			//the step size for gradient calculation
-			const float isoValue = 40/255.0;	//the isovalue for iso-surface detection
-
-			out vec4 FragColor;
-
-
-			//function to give a more accurate position of where the given iso-value (iso) is found given the initial minimum limit (left) and maximum limit (right)
-
-			vec3 Bisection(vec3 left, vec3 right , float iso)
-			{ 
-				//loop 4 times
-				for(int i=0;i<4;i++)
-				{ 
-					//get the mid value between the left and right limit
-					vec3 midpoint = (right + left) * 0.5;
-					//sample the texture at the middle point
-					float cM = texture(u_Volume3DSampler, midpoint).x ;
-					//check if the value at the middle point is less than the given iso-value
-					if(cM < iso)
-						//if so change the left limit to the new middle point
-						left = midpoint;
-					else
-						//otherwise change the right limit to the new middle point
-						right = midpoint; 
-				}
-				//finally return the middle point between the left and right limit
-				return vec3(right + left) * 0.5;
-			}
-
-			//function to calculate the gradient at the given location in the volume dataset
-			//The function user center finite difference approximation to estimate the gradient
-			vec3 GetGradient(vec3 uvw) 
-			{
-				vec3 s1, s2;  
-
-				//Using center finite difference 
-				s1.x = texture(u_Volume3DSampler, uvw-vec3(DELTA,0.0,0.0)).x ;
-				s2.x = texture(u_Volume3DSampler, uvw+vec3(DELTA,0.0,0.0)).x ;
-
-				s1.y = texture(u_Volume3DSampler, uvw-vec3(0.0,DELTA,0.0)).x ;
-				s2.y = texture(u_Volume3DSampler, uvw+vec3(0.0,DELTA,0.0)).x ;
-
-				s1.z = texture(u_Volume3DSampler, uvw-vec3(0.0,0.0,DELTA)).x ;
-				s2.z = texture(u_Volume3DSampler, uvw+vec3(0.0,0.0,DELTA)).x ;
-	 
-				return normalize((s1-s2)/2.0); 
-			}
-
-			vec4 PhongLighting(vec3 L, vec3 N, vec3 V, float specPower, vec3 diffuseColor)
-			{
-				float diffuse = max(dot(L,N),0.0);
-				vec3 halfVec = normalize(L+V);
-				float specular = pow(max(0.00001,dot(halfVec,N)),specPower);	
-				return vec4((diffuse*diffuseColor + specular),1.0);
-			}
-
-			void main(void)
-			{             
-
-				// step 1: save texcoords to local
-				vec3 dataPosition = oTexCoords; 
-
-				// step 2: Getting the ray marching direction:
-				/*
-				get the object space position by subracting 0.5 from the 3D texture coordinates.
-				Then subtraact it from camera position and normalize to get the ray marching direction
-				*/
-				vec3 geomatryDirection = normalize((oTexCoords - vec3(0.5)) - u_cameraPosition);
-
-				// step 3: calculate sub-step size for each Ray marching step
-				/*
-				multiply the raymarching direction with the step size to get the sub-step size we need to take at each raymarching step
-				*/
-				vec3 directionStep = geomatryDirection * u_stepSize;
-
-				//flag to indicate if the raymarch loop should terminate
-				bool bStop = false;
-
-				for(int i = 0; i<MAX_SAMPLES; i++)
-				{
-					dataPosition = dataPosition + directionStep; //advance ray by directionStep
-
-					bStop = dot(sign(dataPosition - texMin),sign(texMax - dataPosition)) < 3.0;
-
-					if(bStop)
-						break;
-
-					// data fetching from the Red Channel of Volume Texture:
-					float fSample = texture(u_Volume3DSampler,dataPosition).r; // sample1
-					float fSample2 = texture(u_Volume3DSampler,dataPosition + directionStep).r; // sample2: next sample
-
-					/*
-					In case of iso-surface rendering, we do not use compositing. 
-					Instead, we find the zero crossing of the volume dataset iso function by sampling two consecutive samples. 
-					*/
-
-					if((fSample - isoValue) < 0 && (fSample2 - isoValue) >= 0.0)
-					{
-						//If there is a zero crossing, we refine the detected iso-surface location by using bisection based refinement.
-						vec3 xN = dataPosition;
-						vec3 xF = dataPosition + directionStep;
-						vec3 tc = Bisection(xN,xF,isoValue);
-
-						//This returns the first hit surface //vFragColor = make_float4(xN,1);
-          	
-						//To get the shaded iso-surface, we first estimate the normal at the refined position
-						vec3 N = GetGradient(tc);					
-
-						//The view vector is simply opposite to the ray marching direction
-						vec3 V = -geomatryDirection;
-
-						//We keep the view vector as the light vector to give us a head light
-						vec3 L =  V;
-
-						//Finally, we call PhongLighing function to get the final colour with diffuse and specular components. Try changing this call to this
-						//vFragColor =  PhongLighting(L,N,V,250,  tc); to get a multi colour
-						//iso-surface
-						FragColor =  PhongLighting(L,N,V,250, vec3(0.5));	
-						break;
-
-					}
-				}
-				
-			}
-
-			//Here we sample the volume dataset using the 3D texture coordinates from the vertex shader.
-			//Note that since at the time of texture creation, we gave the internal format as GL_RED
-			//we can get the sample value from the texture using the red channel. Here, we set all 4
-			//components as the sample value in the texture which gives us a shader of grey.
-	
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in IsoSurface FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
-
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success  in IsoSurface FRAGMENT Shader Compilation \n");
-	}
-
-	shaderProgramObject_IsoSurface = glCreateProgram();
-
-
-	glAttachShader(shaderProgramObject_IsoSurface, vertexShaderObject);
-	glAttachShader(shaderProgramObject_IsoSurface, fragmentShaderObject);
-
-	// MOVED BELOW
-	//glBindAttribLocation(shaderProgramObject_IsoSurface, AMC_ATTRIBUTE_POSITION, "aPosition");
-
-
-	Log = NULL;
-
-	glLinkProgram(shaderProgramObject_IsoSurface);
-
-	glGetProgramiv(shaderProgramObject_IsoSurface, GL_LINK_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetProgramiv(shaderProgramObject_IsoSurface, GL_INFO_LOG_LENGTH, &infoLogLength);
-
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_IsoSurface, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in IsoSurface shaderObject Linking\nLinking Log : % s\n", Log);
-
-				free(Log);
-				uninitialize();
-				return FALSE;
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "IsoSurface shaderObject Linking Successful \n");
-	}
-
-	glUseProgram(shaderProgramObject_IsoSurface);
-
-	glBindAttribLocation(shaderProgramObject_IsoSurface, AMC_ATTRIBUTE_POSITION, "aPosition");
-	modelViewProjectionUniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_MVPMatrix");
-	textureVolumeUniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_Volume3DSampler");
-	cameraPositionUniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_cameraPosition");
-	step_size_Uniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_stepSize");
-
-	glUniform1i(textureVolumeUniform_IsoSurface, 0);
-
-	glUseProgram(0);
-
-
-		
-	return (0);
-}
-
-void Initialize_IsoSurface_Geomatry(void)
-{
-	// local:
-
-	// code:
-
-}
-
-void Render_IsoSurface_Output(void)
-{
-	// local:
-	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-
-	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
-	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
-
-	// code:
-
-
-	// Grid or Axes Rendering 
-	Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
-
-
-	glEnable(GL_BLEND);
-	glUseProgram(shaderProgramObject_IsoSurface);
-	{
-		glUniformMatrix4fv(modelViewProjectionUniform_IsoSurface, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));//pass the shader uniform
-		glUniform3fv(cameraPositionUniform_IsoSurface, 1, &(cameraPosition.x));
-		glUniform3f(step_size_Uniform_IsoSurface, (1.0f / XDIM), (1.0f / YDIM), (1.0f / ZDIM));
-
-		// Texture : 0
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_3D, textureID);
-		glUniform1i(textureVolumeUniform_IsoSurface, 0);
-
-		//	//enable alpha blending (use over operator)  *****  DONE *****
-
-		glBindVertexArray(VAO_cube_RayCastingCube);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
-		glBindVertexArray(0);
-		glBindTexture(GL_TEXTURE_3D, 0);
-	}
-	glUseProgram(0);
-	glDisable(GL_BLEND);
-
-}
-
-
-void Update_IsoSurface_Output(void)
-{
-	// local:
-
-	// code:
-
-}
-
-
-void Uninitialize_IsoSurface_shader(void)
-{
-	// local:
-
-	// code:
-
-	Uninitialize_ShaderProgramObject(shaderProgramObject_IsoSurface);
-
-}
-
-
-//! Shader Type 4: Colormap Classification Method Definitions:
-
-int Initialize_ColormapClassification_shader(void)
-{
-
-	// prototype:
-	void uninitialize(void);
-
-	// local:
-
-	GLuint vertexShaderObject;
-	GLuint fragmentShaderObject;
-
-	GLint status;
-	GLint infoLogLength;
-	char* Log = NULL;
-
-	// code:
-
-	//* ///////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-
-			layout (location = 0) in vec3 aPosition;
-			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords;
-
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-
-				oTexCoords = aPosition + vec3(0.5);
-
-			}
-
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in Colormap VERTEX Shader.\nVS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in Colormap VERTEX Shader.\n");
-	}
-
-
-
-	//* ///////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-
-			smooth in vec3 oTexCoords;
-			uniform sampler3D u_Volume3DSampler;
-			uniform sampler1D u_LevelOfDetail;
-
-			out vec4 FragColor;		
-			void main(void)
-			{             
-
-				FragColor = texture(u_LevelOfDetail, texture(u_Volume3DSampler,oTexCoords).r);
-			}
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-
-	status = 0;
-	infoLogLength = 0;
-	Log = NULL;
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in Colormap FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in Colormap FRAGMENT Shader.\n");
-	}
-
-	shaderProgramObject_Colormap= glCreateProgram();
-
-	glAttachShader(shaderProgramObject_Colormap, vertexShaderObject);
-	glAttachShader(shaderProgramObject_Colormap, fragmentShaderObject);
-
-
-	status = 0;
-	infoLogLength = 0;
-	Log = NULL;
-	glLinkProgram(shaderProgramObject_Colormap);
-	glGetProgramiv(shaderProgramObject_Colormap, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
-	{
-		glGetProgramiv(shaderProgramObject_Colormap, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_Colormap, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in Colormap shaderObject Linking\nLinking Log : % s\n", Log);
-				free(Log);
-				uninitialize();
-				return FALSE;
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in Colormap shaderObject Linking\n");
-	}
-
-	glUseProgram(shaderProgramObject_Colormap);
-
-	glBindAttribLocation(shaderProgramObject_Colormap, AMC_ATTRIBUTE_POSITION, "aPosition");
-	modelViewProjectionUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_MVPMatrix");
-	textureVolumeUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_Volume3DSampler");
-	levelOfDetail_Uniform = glGetUniformLocation(shaderProgramObject_Colormap, "u_LevelOfDetail");
-
-	glUniform1i(textureVolumeUniform_Colormap, 0);
-	glUniform1i(levelOfDetail_Uniform, 1);
-	glUseProgram(0);
-
-
-	return (0);
-}
-
-void LoadTransferFunction(void)
-{
-	// local: 
-	float pData[256][4];
-	int indices[9];
-
-
-	// code:
-
-	for (int i = 0; i < 9; i++) {
-		int index = i * 28;
-		pData[index][0] = jet_values[i].x;
-		pData[index][1] = jet_values[i].y;
-		pData[index][2] = jet_values[i].z;
-		pData[index][3] = jet_values[i].w;
-		indices[i] = index;
-	}
-
-
-	for (int j = 0; j < 9 - 1; j++)
-	{
-		float dDataR = (pData[indices[j + 1]][0] - pData[indices[j]][0]);
-		float dDataG = (pData[indices[j + 1]][1] - pData[indices[j]][1]);
-		float dDataB = (pData[indices[j + 1]][2] - pData[indices[j]][2]);
-		float dDataA = (pData[indices[j + 1]][3] - pData[indices[j]][3]);
-		int dIndex = indices[j + 1] - indices[j];
-
-		float dDataIncR = dDataR / float(dIndex);
-		float dDataIncG = dDataG / float(dIndex);
-		float dDataIncB = dDataB / float(dIndex);
-		float dDataIncA = dDataA / float(dIndex);
-		for (int i = indices[j] + 1; i < indices[j + 1]; i++)
-		{
-			pData[i][0] = (pData[i - 1][0] + dDataIncR);
-			pData[i][1] = (pData[i - 1][1] + dDataIncG);
-			pData[i][2] = (pData[i - 1][2] + dDataIncB);
-			pData[i][3] = (pData[i - 1][3] + dDataIncA);
-		}
-	}
-
-
-	glGenTextures(1, &texture_TransferFunction);//generate the OpenGL texture
-	glActiveTexture(GL_TEXTURE1);//bind this texture to texture unit 1
-	glBindTexture(GL_TEXTURE_1D, texture_TransferFunction);
-	// set the texture parameters
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	//allocate the data to texture memory. Since pData is on stack, we donot delete it 
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_FLOAT, pData);
-
-	//glBindTexture(GL_TEXTURE_1D, 0);
-
-
-}
-
-void Initialize_ColormapClassification_Geomatry(void)
-{
-	// local:
-
-	// code:
-
-}
-
-void Render_ColormapClassification_Output(void)
-{
-	// local:
-
-	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-
-	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);
-
-	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
-
-	// code:
-
-	// Grid or Axes Rendering 
-	Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
-
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(shaderProgramObject_Colormap);
-	{
-		glUniformMatrix4fv(modelViewProjectionUniform_Colormap, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_3D, textureID);
-		glUniform1i(textureVolumeUniform_Colormap, 0);
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_1D, texture_TransferFunction);
-		glUniform1i(levelOfDetail_Uniform, 1);
-
-		glBindVertexArray(VAO_volume);
-		glDrawArrays(GL_TRIANGLES, 0, sizeof(vTextureSlices) / sizeof(vTextureSlices[0]));
-		glBindTexture(GL_TEXTURE_3D, 0);
-		glBindVertexArray(0);
-	}
-	glUseProgram(0);
-	glDisable(GL_BLEND);
-
-
-}
-
-void Update_ColormapClassification_Output(void)
-{
-	// local:
-
-	// code:
-
-}
-
-void Uninitialize_ColormapClassification_shader(void)
-{
-	// local:
-
-	// code:
-
-	Uninitialize_ShaderProgramObject(shaderProgramObject_Colormap);
-
-	if (texture_TransferFunction)
-	{
-		glDeleteTextures(1, &texture_TransferFunction);
-		texture_TransferFunction = 0;
-	}
-
-	
-}
-
+//
+//int Initialize_Raycasting_shader(void)
+//{
+//
+//	// local:
+//
+//	GLuint vertexShaderObject;
+//	GLuint fragmentShaderObject;
+//
+//	GLint status;
+//	GLint infoLogLength;
+//	char* Log = NULL;
+//
+//	// code:
+//
+//	/////////////////////// # VERTEX SHADER # ////////////////////////
+//	const GLchar* vertexShaderSource = R"(
+//			
+//			#version 460 core
+//			
+//			layout (location = 0) in vec3 aPosition;
+//			uniform mat4 u_MVPMatrix;
+//			smooth out vec3 oTexCoords;
+//			void main()
+//			{
+//				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
+//
+//				oTexCoords = aPosition + vec3(0.5);
+//			}
+//			)";
+//
+//	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+//	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
+//
+//	glCompileShader(vertexShaderObject);
+//	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in Raycating Vertex Shader .\n VS Compilation Log : %s\n", Log);
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in Raycating  Vertex Shader Compilation \n");
+//	}
+//
+//
+//
+//	/////////////////////// # FRAGMENT SHADER # ////////////////////////
+//	const GLchar* fragmentShaderSource = R"(
+//			
+//			#version 460 core
+//
+//			smooth in vec3 oTexCoords;
+//
+//			uniform sampler3D u_Volume3DSampler;
+//			uniform vec3 u_cameraPosition;
+//			uniform vec3 u_stepSize;
+//
+//			const int MAX_SAMPLES = 300;
+//			const vec3 texMin = vec3(0);
+//			const vec3 texMax = vec3(1);
+//
+//			out vec4 FragColor;		
+//			void main(void)
+//			{             
+//
+//				// step 1:
+//				vec3 dataPosition = oTexCoords; 
+//
+//				// step 2: 
+//				/*
+//				get the object space position by subracting 0.5 from the 3D texture coordinates.
+//				Then subtraact it from camera position and normalize to get the ray marching direction
+//				*/
+//
+//				vec3 geomatryDirection = normalize((oTexCoords - vec3(0.5)) - u_cameraPosition);
+//
+//
+//				// step 3: multiply the raymarching direction with the step size to get the sub-step size we need to take at each raymarching step
+//				vec3 directionStep = geomatryDirection * u_stepSize;
+//
+//				//flag to indicate if the raymarch loop should terminate
+//				bool bStop = false;
+//
+//				for(int i = 0; i<MAX_SAMPLES; i++)
+//				{
+//					dataPosition = dataPosition + directionStep;
+//
+//					bStop = dot(sign(dataPosition - texMin),sign(texMax - dataPosition)) < 3.0;
+//
+//					if(bStop)
+//						break;
+//
+//					// data fetching from the Red Channel of Volume Texture:
+//					float fSample = texture(u_Volume3DSampler,dataPosition).r;
+//
+//
+//					float prev_alpha = fSample - (fSample * FragColor.a);
+//					FragColor.rgb = prev_alpha * vec3(fSample) + FragColor.rgb; 
+//					FragColor.a += prev_alpha; 
+//
+//					//Ray Termination : if the currently composited colour alpha is already fully saturated,we terminated the loop
+//					if(FragColor.a > 0.99)
+//						break;
+//
+//				}
+//
+//
+//			}
+//
+//	
+//			)";
+//	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+//	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
+//
+//	glCompileShader(fragmentShaderObject);
+//	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in Raycating FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
+//				
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success  in Raycating FRAGMENT Shader Compilation \n");
+//	}
+//
+//	shaderProgramObject_RayCasting = glCreateProgram();
+//
+//
+//	glAttachShader(shaderProgramObject_RayCasting, vertexShaderObject);
+//	glAttachShader(shaderProgramObject_RayCasting, fragmentShaderObject);
+//
+//	// MOVED BELOW
+//	//glBindAttribLocation(shaderProgramObject_RayCasting, AMC_ATTRIBUTE_POSITION, "aPosition");
+//
+//
+//	Log = NULL;
+//
+//	glLinkProgram(shaderProgramObject_RayCasting);
+//
+//	glGetProgramiv(shaderProgramObject_RayCasting, GL_LINK_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetProgramiv(shaderProgramObject_RayCasting, GL_INFO_LOG_LENGTH, &infoLogLength);
+//
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetProgramInfoLog(shaderProgramObject_RayCasting, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in RayCasting shaderObject Linking\nLinking Log : % s\n", Log);
+//
+//				free(Log);
+//				uninitialize();
+//				return FALSE;
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "RayCasting shaderObject Linking Successful \n");
+//	}
+//
+//	glUseProgram(shaderProgramObject_RayCasting);
+//
+//	glBindAttribLocation(shaderProgramObject_RayCasting, AMC_ATTRIBUTE_POSITION, "aPosition");
+//	modelViewProjectionUniform_RayCasting = glGetUniformLocation(shaderProgramObject_RayCasting, "u_MVPMatrix");
+//	textureVolumeUniform_RayCasting = glGetUniformLocation(shaderProgramObject_RayCasting, "u_Volume3DSampler");
+//	cameraPositionUniform = glGetUniformLocation(shaderProgramObject_RayCasting, "u_cameraPosition");
+//	step_size_Uniform = glGetUniformLocation(shaderProgramObject_RayCasting, "u_stepSize");
+//
+//	glUniform1i(textureVolumeUniform_RayCasting, 0);
+//
+//	glUseProgram(0);
+//
+//
+//
+//	return (0);
+//}
+//
+//void Initialize_Raycasting_Geomatry(void)
+//{
+//	// code:
+//
+//	glm::vec3 vertices[8] = { glm::vec3(-0.5f,-0.5f,-0.5f),
+//							glm::vec3(0.5f,-0.5f,-0.5f),
+//							glm::vec3(0.5f, 0.5f,-0.5f),
+//							glm::vec3(-0.5f, 0.5f,-0.5f),
+//							glm::vec3(-0.5f,-0.5f, 0.5f),
+//							glm::vec3(0.5f,-0.5f, 0.5f),
+//							glm::vec3(0.5f, 0.5f, 0.5f),
+//							glm::vec3(-0.5f, 0.5f, 0.5f) };
+//
+//	//unit cube indices
+//	GLushort cubeIndices[36] = { 0,5,4,
+//							  5,0,1,
+//							  3,7,6,
+//							  3,6,2,
+//							  7,4,6,
+//							  6,4,5,
+//							  2,1,3,
+//							  3,1,0,
+//							  3,0,7,
+//							  7,0,4,
+//							  6,5,2,
+//							  2,5,1 };
+//
+//
+//	glGenVertexArrays(1, &VAO_cube_RayCastingCube);
+//	glBindVertexArray(VAO_cube_RayCastingCube);
+//	{
+//		// VBO_cube_ID : //pass cube vertices to buffer object memory
+//		glGenBuffers(1, &VBO_cube_ID_RayCastingCube);
+//		glBindBuffer(GL_ARRAY_BUFFER, VBO_cube_ID_RayCastingCube);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &(vertices[0].x), GL_DYNAMIC_DRAW);
+//		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+//		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+//		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//		glBindBuffer(GL_ARRAY_BUFFER, 0);
+//
+//		// VBO_cube_Indices : //pass indices to element array  buffer
+//		glGenBuffers(1, &VBO_cube_Indices_RayCastingCube);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO_cube_Indices_RayCastingCube);
+//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), &cubeIndices[0], GL_DYNAMIC_DRAW);
+//		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//	}
+//	glBindVertexArray(0);
+//
+//
+//}
+//
+//void Update_Raycasting_Cube_VBO(void)
+//{
+//	// code:
+//
+//	glm::vec3 vertices[8] =
+//	{
+//		// Minus Z-Vertices
+//		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace,fZMinus_BackFace), // 1. Left Bottom
+//		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace,fZMinus_BackFace),  // 2. Right Bottom
+//		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,fZMinus_BackFace),  // 3. Right Top
+//		glm::vec3(fXMinus_SideFace, fYPlus_TopFace,fZMinus_BackFace), // 4. Left Top
+//
+//		// Plus Z-Vertices
+//		glm::vec3(fXMinus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace), // 5. Left Bottom
+//		glm::vec3(fXPlus_SideFace,fYMinus_BottomFace, fZPlus_FrontFace),  // 6. Right Bottom
+//		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
+//		glm::vec3(fXMinus_SideFace, fYPlus_TopFace, fZPlus_FrontFace)  // 8. Left Top
+//	};
+//
+//	//unit cube indices
+//	GLushort cubeIndices[36] =
+//	{
+//		0,5,4,
+//		5,0,1,
+//		3,7,6,
+//		3,6,2,
+//		7,4,6,
+//		6,4,5,
+//		2,1,3,
+//		3,1,0,
+//		3,0,7,
+//		7,0,4,
+//		6,5,2,
+//		2,5,1
+//	};
+//
+//	glBindVertexArray(VAO_cube_RayCastingCube);
+//	{
+//		// VBO_cube_ID : //pass cube vertices to buffer object memory
+//		glBindBuffer(GL_ARRAY_BUFFER, VBO_cube_ID_RayCastingCube);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &(vertices[0].x), GL_DYNAMIC_DRAW);
+//		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+//		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+//		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//		glBindBuffer(GL_ARRAY_BUFFER, 0);
+//
+//		// VBO_cube_Indices : //pass indices to element array  buffer
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO_cube_Indices_RayCastingCube);
+//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), &cubeIndices[0], GL_DYNAMIC_DRAW);
+//		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//	}
+//	glBindVertexArray(0);
+//
+//}
+//
+//void Update_MarchingTetrahedra_Cube(void)
+//{
+//	// code:
+//
+//
+//	glm::vec3 vertices[8] =
+//	{
+//		// Minus Z-Vertices
+//		glm::vec3(-0.5f,-0.5f,-0.5f), // 1. Left Bottom
+//		glm::vec3(fXPlus_SideFace,-0.5f,-0.5f),  // 2. Right Bottom
+//		glm::vec3(fXPlus_SideFace, fYPlus_TopFace,-0.5f),  // 3. Right Top
+//		glm::vec3(-0.5f, fYPlus_TopFace,-0.5f), // 4. Left Top
+//
+//		// Plus Z-Vertices
+//		glm::vec3(-0.5f,-0.5f, fZPlus_FrontFace), // 5. Left Bottom
+//		glm::vec3(fXPlus_SideFace,-0.5f, fZPlus_FrontFace),  // 6. Right Bottom
+//		glm::vec3(fXPlus_SideFace, fYPlus_TopFace, fZPlus_FrontFace),  // 7. Right Top
+//		glm::vec3(-0.5f, fYPlus_TopFace, fZPlus_FrontFace)  // 8. Left Top
+//	};
+//
+//	//unit cube indices
+//	GLushort cubeIndices[36] =
+//	{
+//		0,5,4,
+//		5,0,1,
+//		3,7,6,
+//		3,6,2,
+//		7,4,6,
+//		6,4,5,
+//		2,1,3,
+//		3,1,0,
+//		3,0,7,
+//		7,0,4,
+//		6,5,2,
+//		2,5,1
+//	};
+//
+//	glBindVertexArray(volumeMarcherVAO);
+//	glBindBuffer(GL_ARRAY_BUFFER, volumeMarcherVBO);
+//	{
+//		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
+//		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
+//		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);//enable vertex attribute array for position
+//		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+//
+//		//enable vertex attribute array for normals
+//		glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
+//		glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, normal));
+//
+//	}
+//	glBindBuffer(GL_ARRAY_BUFFER, 0);
+//	glBindVertexArray(0);
+//}
+//
+//void Render_Raycasting_Output(void)
+//{
+//	// local:
+//
+//	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+//
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+//
+//	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
+//	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
+//
+//
+//	// code:
+//
+//	// Grid or Axes Rendering 
+//	Render_Volume_Box_Axes(modelViewProjectionMatrix);
+//
+//
+//	glEnable(GL_BLEND);
+//	glUseProgram(shaderProgramObject_RayCasting);
+//	{
+//		glUniformMatrix4fv(modelViewProjectionUniform_RayCasting, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
+//
+//		glUniform3fv(cameraPositionUniform, 1, &(cameraPosition.x));
+//		glUniform3f(step_size_Uniform, (1.0f / XDIM), (1.0f / YDIM), (1.0f / ZDIM));
+//
+//		// Texture : 0
+//		glActiveTexture(GL_TEXTURE0);
+//		glBindTexture(GL_TEXTURE_3D, textureID);
+//		glUniform1i(textureVolumeUniform_RayCasting, 0);
+//
+//
+//		glBindVertexArray(VAO_cube_RayCastingCube);
+//		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+//		glBindVertexArray(0);
+//		glBindTexture(GL_TEXTURE_3D, 0);
+//	}
+//	glUseProgram(0);
+//	glDisable(GL_BLEND);
+//
+//}
+//
+//void Update_Raycasting_Output(void)
+//{
+//	// local:
+//
+//	// code;
+//
+//}
+//
+//void Uninitialize_Raycasting_shader(void)
+//{
+//
+//	// code:
+//
+//	if (VBO_cube_Indices_RayCastingCube)
+//	{
+//		glDeleteBuffers(1, &VBO_cube_Indices_RayCastingCube);
+//		VBO_cube_Indices_RayCastingCube = 0;
+//	}
+//	if (VBO_cube_ID_RayCastingCube)
+//	{
+//		glDeleteBuffers(1, &VBO_cube_ID_RayCastingCube);
+//		VBO_cube_ID_RayCastingCube = 0;
+//	}
+//
+//	if (VAO_cube_RayCastingCube)
+//	{
+//		glDeleteVertexArrays(1, &VAO_cube_RayCastingCube);
+//		VAO_cube_RayCastingCube = 0;
+//	}
+//
+//	Uninitialize_ShaderProgramObject(shaderProgramObject_RayCasting);
+//
+//}
+//
+//
+//
+////! Shader Type 3: Iso Surface with RAY CASTING Method Definitions:
+//
+//int Initialize_IsoSurface_shader(void)
+//{
+//	// local:
+//
+//	GLuint vertexShaderObject;
+//	GLuint fragmentShaderObject;
+//
+//	GLint status;
+//	GLint infoLogLength;
+//	char* Log = NULL;
+//
+//	// code:
+//
+//	/////////////////////// # VERTEX SHADER # ////////////////////////
+//	const GLchar* vertexShaderSource = R"(
+//			
+//			#version 460 core
+//			
+//			layout (location = 0) in vec3 aPosition;
+//			uniform mat4 u_MVPMatrix;
+//			smooth out vec3 oTexCoords; //3D texture coordinates for texture lookup in the fragment shader
+//
+//			void main()
+//			{
+//				// step1: // to get the Clipspace position
+//				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
+//
+//
+//				// step2: //get the 3D texture coordinates from vertex position from step1
+//				oTexCoords = aPosition + vec3(0.5);
+//				/* 	step 2 notes:
+//				we will get the 3D texture coordinates by adding (0.5,0.5,0.5) to the object space vertex position. 
+//				Since the unit cube is at origin (min: (-0.5,-0.5,-0.5) and max: (0.5,0.5,0.5)), by adding (0.5,0.5,0.5) to the unit cube object space position gives us values from (0,0,0) to (1,1,1)
+//				*/
+//		
+//			}
+//			)";
+//
+//	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+//	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
+//
+//	glCompileShader(vertexShaderObject);
+//	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in IsoSurface Vertex Shader .\n VS Compilation Log : %s\n", Log);
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in IsoSurface  Vertex Shader Compilation \n");
+//	}
+//
+//
+//
+//	/////////////////////// # FRAGMENT SHADER # ////////////////////////
+//	const GLchar* fragmentShaderSource = R"(
+//			
+//			#version 460 core
+//
+//			smooth in vec3 oTexCoords; //3D texture coordinates form vertex shader, interpolated by rasterizer
+//
+//			uniform sampler3D u_Volume3DSampler; //volume dataset
+//			uniform vec3 u_cameraPosition; //camera or eye position
+//			uniform vec3 u_stepSize; //ray step size
+//
+//			const int MAX_SAMPLES = 300;	//total samples for each ray march step
+//			const vec3 texMin = vec3(0);	//minimum texture access coordinate
+//			const vec3 texMax = vec3(1);	//maximum texture access coordinate
+//			const float DELTA = 0.01;			//the step size for gradient calculation
+//			const float isoValue = 40/255.0;	//the isovalue for iso-surface detection
+//
+//			out vec4 FragColor;
+//
+//
+//			//function to give a more accurate position of where the given iso-value (iso) is found given the initial minimum limit (left) and maximum limit (right)
+//
+//			vec3 Bisection(vec3 left, vec3 right , float iso)
+//			{ 
+//				//loop 4 times
+//				for(int i=0;i<4;i++)
+//				{ 
+//					//get the mid value between the left and right limit
+//					vec3 midpoint = (right + left) * 0.5;
+//					//sample the texture at the middle point
+//					float cM = texture(u_Volume3DSampler, midpoint).x ;
+//					//check if the value at the middle point is less than the given iso-value
+//					if(cM < iso)
+//						//if so change the left limit to the new middle point
+//						left = midpoint;
+//					else
+//						//otherwise change the right limit to the new middle point
+//						right = midpoint; 
+//				}
+//				//finally return the middle point between the left and right limit
+//				return vec3(right + left) * 0.5;
+//			}
+//
+//			//function to calculate the gradient at the given location in the volume dataset
+//			//The function user center finite difference approximation to estimate the gradient
+//			vec3 GetGradient(vec3 uvw) 
+//			{
+//				vec3 s1, s2;  
+//
+//				//Using center finite difference 
+//				s1.x = texture(u_Volume3DSampler, uvw-vec3(DELTA,0.0,0.0)).x ;
+//				s2.x = texture(u_Volume3DSampler, uvw+vec3(DELTA,0.0,0.0)).x ;
+//
+//				s1.y = texture(u_Volume3DSampler, uvw-vec3(0.0,DELTA,0.0)).x ;
+//				s2.y = texture(u_Volume3DSampler, uvw+vec3(0.0,DELTA,0.0)).x ;
+//
+//				s1.z = texture(u_Volume3DSampler, uvw-vec3(0.0,0.0,DELTA)).x ;
+//				s2.z = texture(u_Volume3DSampler, uvw+vec3(0.0,0.0,DELTA)).x ;
+//	 
+//				return normalize((s1-s2)/2.0); 
+//			}
+//
+//			vec4 PhongLighting(vec3 L, vec3 N, vec3 V, float specPower, vec3 diffuseColor)
+//			{
+//				float diffuse = max(dot(L,N),0.0);
+//				vec3 halfVec = normalize(L+V);
+//				float specular = pow(max(0.00001,dot(halfVec,N)),specPower);	
+//				return vec4((diffuse*diffuseColor + specular),1.0);
+//			}
+//
+//			void main(void)
+//			{             
+//
+//				// step 1: save texcoords to local
+//				vec3 dataPosition = oTexCoords; 
+//
+//				// step 2: Getting the ray marching direction:
+//				/*
+//				get the object space position by subracting 0.5 from the 3D texture coordinates.
+//				Then subtraact it from camera position and normalize to get the ray marching direction
+//				*/
+//				vec3 geomatryDirection = normalize((oTexCoords - vec3(0.5)) - u_cameraPosition);
+//
+//				// step 3: calculate sub-step size for each Ray marching step
+//				/*
+//				multiply the raymarching direction with the step size to get the sub-step size we need to take at each raymarching step
+//				*/
+//				vec3 directionStep = geomatryDirection * u_stepSize;
+//
+//				//flag to indicate if the raymarch loop should terminate
+//				bool bStop = false;
+//
+//				for(int i = 0; i<MAX_SAMPLES; i++)
+//				{
+//					dataPosition = dataPosition + directionStep; //advance ray by directionStep
+//
+//					bStop = dot(sign(dataPosition - texMin),sign(texMax - dataPosition)) < 3.0;
+//
+//					if(bStop)
+//						break;
+//
+//					// data fetching from the Red Channel of Volume Texture:
+//					float fSample = texture(u_Volume3DSampler,dataPosition).r; // sample1
+//					float fSample2 = texture(u_Volume3DSampler,dataPosition + directionStep).r; // sample2: next sample
+//
+//					/*
+//					In case of iso-surface rendering, we do not use compositing. 
+//					Instead, we find the zero crossing of the volume dataset iso function by sampling two consecutive samples. 
+//					*/
+//
+//					if((fSample - isoValue) < 0 && (fSample2 - isoValue) >= 0.0)
+//					{
+//						//If there is a zero crossing, we refine the detected iso-surface location by using bisection based refinement.
+//						vec3 xN = dataPosition;
+//						vec3 xF = dataPosition + directionStep;
+//						vec3 tc = Bisection(xN,xF,isoValue);
+//
+//						//This returns the first hit surface //vFragColor = make_float4(xN,1);
+//          	
+//						//To get the shaded iso-surface, we first estimate the normal at the refined position
+//						vec3 N = GetGradient(tc);					
+//
+//						//The view vector is simply opposite to the ray marching direction
+//						vec3 V = -geomatryDirection;
+//
+//						//We keep the view vector as the light vector to give us a head light
+//						vec3 L =  V;
+//
+//						//Finally, we call PhongLighing function to get the final colour with diffuse and specular components. Try changing this call to this
+//						//vFragColor =  PhongLighting(L,N,V,250,  tc); to get a multi colour
+//						//iso-surface
+//						FragColor =  PhongLighting(L,N,V,250, vec3(0.5));	
+//						break;
+//
+//					}
+//				}
+//				
+//			}
+//
+//			//Here we sample the volume dataset using the 3D texture coordinates from the vertex shader.
+//			//Note that since at the time of texture creation, we gave the internal format as GL_RED
+//			//we can get the sample value from the texture using the red channel. Here, we set all 4
+//			//components as the sample value in the texture which gives us a shader of grey.
+//	
+//			)";
+//	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+//	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
+//
+//	glCompileShader(fragmentShaderObject);
+//	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in IsoSurface FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
+//
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success  in IsoSurface FRAGMENT Shader Compilation \n");
+//	}
+//
+//	shaderProgramObject_IsoSurface = glCreateProgram();
+//
+//
+//	glAttachShader(shaderProgramObject_IsoSurface, vertexShaderObject);
+//	glAttachShader(shaderProgramObject_IsoSurface, fragmentShaderObject);
+//
+//	// MOVED BELOW
+//	//glBindAttribLocation(shaderProgramObject_IsoSurface, AMC_ATTRIBUTE_POSITION, "aPosition");
+//
+//
+//	Log = NULL;
+//
+//	glLinkProgram(shaderProgramObject_IsoSurface);
+//
+//	glGetProgramiv(shaderProgramObject_IsoSurface, GL_LINK_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetProgramiv(shaderProgramObject_IsoSurface, GL_INFO_LOG_LENGTH, &infoLogLength);
+//
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetProgramInfoLog(shaderProgramObject_IsoSurface, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in IsoSurface shaderObject Linking\nLinking Log : % s\n", Log);
+//
+//				free(Log);
+//				uninitialize();
+//				return FALSE;
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "IsoSurface shaderObject Linking Successful \n");
+//	}
+//
+//	glUseProgram(shaderProgramObject_IsoSurface);
+//
+//	glBindAttribLocation(shaderProgramObject_IsoSurface, AMC_ATTRIBUTE_POSITION, "aPosition");
+//	modelViewProjectionUniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_MVPMatrix");
+//	textureVolumeUniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_Volume3DSampler");
+//	cameraPositionUniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_cameraPosition");
+//	step_size_Uniform_IsoSurface = glGetUniformLocation(shaderProgramObject_IsoSurface, "u_stepSize");
+//
+//	glUniform1i(textureVolumeUniform_IsoSurface, 0);
+//
+//	glUseProgram(0);
+//
+//
+//		
+//	return (0);
+//}
+//
+//void Initialize_IsoSurface_Geomatry(void)
+//{
+//	// local:
+//
+//	// code:
+//
+//}
+//
+//void Render_IsoSurface_Output(void)
+//{
+//	// local:
+//	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+//
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+//
+//	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
+//	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
+//
+//	// code:
+//
+//
+//	// Grid or Axes Rendering 
+//	Render_Volume_Box_Axes(modelViewProjectionMatrix);
+//
+//
+//
+//	glEnable(GL_BLEND);
+//	glUseProgram(shaderProgramObject_IsoSurface);
+//	{
+//		glUniformMatrix4fv(modelViewProjectionUniform_IsoSurface, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));//pass the shader uniform
+//		glUniform3fv(cameraPositionUniform_IsoSurface, 1, &(cameraPosition.x));
+//		glUniform3f(step_size_Uniform_IsoSurface, (1.0f / XDIM), (1.0f / YDIM), (1.0f / ZDIM));
+//
+//		// Texture : 0
+//		glActiveTexture(GL_TEXTURE0);
+//		glBindTexture(GL_TEXTURE_3D, textureID);
+//		glUniform1i(textureVolumeUniform_IsoSurface, 0);
+//
+//		//	//enable alpha blending (use over operator)  *****  DONE *****
+//
+//		glBindVertexArray(VAO_cube_RayCastingCube);
+//		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+//		glBindVertexArray(0);
+//		glBindTexture(GL_TEXTURE_3D, 0);
+//	}
+//	glUseProgram(0);
+//	glDisable(GL_BLEND);
+//
+//}
+//
+//
+//void Update_IsoSurface_Output(void)
+//{
+//	// local:
+//
+//	// code:
+//
+//}
+//
+//
+//void Uninitialize_IsoSurface_shader(void)
+//{
+//	// local:
+//
+//	// code:
+//
+//	Uninitialize_ShaderProgramObject(shaderProgramObject_IsoSurface);
+//
+//}
+//
+//
+////! Shader Type 4: Colormap Classification Method Definitions:
+//
+//int Initialize_ColormapClassification_shader(void)
+//{
+//
+//	// prototype:
+//	void uninitialize(void);
+//
+//	// local:
+//
+//	GLuint vertexShaderObject;
+//	GLuint fragmentShaderObject;
+//
+//	GLint status;
+//	GLint infoLogLength;
+//	char* Log = NULL;
+//
+//	// code:
+//
+//	//* ///////////////////// # VERTEX SHADER # ////////////////////////
+//	const GLchar* vertexShaderSource = R"(
+//			
+//			#version 460 core
+//
+//			layout (location = 0) in vec3 aPosition;
+//			uniform mat4 u_MVPMatrix;
+//			smooth out vec3 oTexCoords;
+//
+//			void main()
+//			{
+//				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
+//
+//				oTexCoords = aPosition + vec3(0.5);
+//
+//			}
+//
+//			)";
+//
+//	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+//	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
+//
+//	glCompileShader(vertexShaderObject);
+//	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in Colormap VERTEX Shader.\nVS Compilation Log : %s\n", Log);
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in Colormap VERTEX Shader.\n");
+//	}
+//
+//
+//
+//	//* ///////////////////// # FRAGMENT SHADER # ////////////////////////
+//	const GLchar* fragmentShaderSource = R"(
+//			
+//			#version 460 core
+//
+//			smooth in vec3 oTexCoords;
+//			uniform sampler3D u_Volume3DSampler;
+//			uniform sampler1D u_LevelOfDetail;
+//
+//			out vec4 FragColor;		
+//			void main(void)
+//			{             
+//
+//				FragColor = texture(u_LevelOfDetail, texture(u_Volume3DSampler,oTexCoords).r);
+//			}
+//			)";
+//	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+//	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
+//
+//	glCompileShader(fragmentShaderObject);
+//
+//	status = 0;
+//	infoLogLength = 0;
+//	Log = NULL;
+//	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in Colormap FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in Colormap FRAGMENT Shader.\n");
+//	}
+//
+//	shaderProgramObject_Colormap= glCreateProgram();
+//
+//	glAttachShader(shaderProgramObject_Colormap, vertexShaderObject);
+//	glAttachShader(shaderProgramObject_Colormap, fragmentShaderObject);
+//
+//
+//	status = 0;
+//	infoLogLength = 0;
+//	Log = NULL;
+//	glLinkProgram(shaderProgramObject_Colormap);
+//	glGetProgramiv(shaderProgramObject_Colormap, GL_LINK_STATUS, &status);
+//	if (status == GL_FALSE)
+//	{
+//		glGetProgramiv(shaderProgramObject_Colormap, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetProgramInfoLog(shaderProgramObject_Colormap, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in Colormap shaderObject Linking\nLinking Log : % s\n", Log);
+//				free(Log);
+//				uninitialize();
+//				return FALSE;
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in Colormap shaderObject Linking\n");
+//	}
+//
+//	glUseProgram(shaderProgramObject_Colormap);
+//
+//	glBindAttribLocation(shaderProgramObject_Colormap, AMC_ATTRIBUTE_POSITION, "aPosition");
+//	modelViewProjectionUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_MVPMatrix");
+//	textureVolumeUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_Volume3DSampler");
+//	levelOfDetail_Uniform = glGetUniformLocation(shaderProgramObject_Colormap, "u_LevelOfDetail");
+//
+//	glUniform1i(textureVolumeUniform_Colormap, 0);
+//	glUniform1i(levelOfDetail_Uniform, 1);
+//	glUseProgram(0);
+//
+//
+//	return (0);
+//}
+//
+//void LoadTransferFunction(void)
+//{
+//	// local: 
+//	float pData[256][4];
+//	int indices[9];
+//
+//
+//	// code:
+//
+//	for (int i = 0; i < 9; i++) {
+//		int index = i * 28;
+//		pData[index][0] = jet_values[i].x;
+//		pData[index][1] = jet_values[i].y;
+//		pData[index][2] = jet_values[i].z;
+//		pData[index][3] = jet_values[i].w;
+//		indices[i] = index;
+//	}
+//
+//
+//	for (int j = 0; j < 9 - 1; j++)
+//	{
+//		float dDataR = (pData[indices[j + 1]][0] - pData[indices[j]][0]);
+//		float dDataG = (pData[indices[j + 1]][1] - pData[indices[j]][1]);
+//		float dDataB = (pData[indices[j + 1]][2] - pData[indices[j]][2]);
+//		float dDataA = (pData[indices[j + 1]][3] - pData[indices[j]][3]);
+//		int dIndex = indices[j + 1] - indices[j];
+//
+//		float dDataIncR = dDataR / float(dIndex);
+//		float dDataIncG = dDataG / float(dIndex);
+//		float dDataIncB = dDataB / float(dIndex);
+//		float dDataIncA = dDataA / float(dIndex);
+//		for (int i = indices[j] + 1; i < indices[j + 1]; i++)
+//		{
+//			pData[i][0] = (pData[i - 1][0] + dDataIncR);
+//			pData[i][1] = (pData[i - 1][1] + dDataIncG);
+//			pData[i][2] = (pData[i - 1][2] + dDataIncB);
+//			pData[i][3] = (pData[i - 1][3] + dDataIncA);
+//		}
+//	}
+//
+//
+//	glGenTextures(1, &texture_TransferFunction);//generate the OpenGL texture
+//	glActiveTexture(GL_TEXTURE1);//bind this texture to texture unit 1
+//	glBindTexture(GL_TEXTURE_1D, texture_TransferFunction);
+//	// set the texture parameters
+//	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//
+//	//allocate the data to texture memory. Since pData is on stack, we donot delete it 
+//	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_FLOAT, pData);
+//
+//	//glBindTexture(GL_TEXTURE_1D, 0);
+//
+//
+//}
+//
+//void Initialize_ColormapClassification_Geomatry(void)
+//{
+//	// local:
+//
+//	// code:
+//
+//}
+//
+//void Render_ColormapClassification_Output(void)
+//{
+//	// local:
+//
+//	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+//
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+//
+//	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);
+//
+//	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
+//
+//	// code:
+//
+//	// Grid or Axes Rendering 
+//	Render_Volume_Box_Axes(modelViewProjectionMatrix);
+//
+//
+//
+//	glEnable(GL_BLEND);
+//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	glUseProgram(shaderProgramObject_Colormap);
+//	{
+//		glUniformMatrix4fv(modelViewProjectionUniform_Colormap, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
+//
+//		glActiveTexture(GL_TEXTURE0);
+//		glBindTexture(GL_TEXTURE_3D, textureID);
+//		glUniform1i(textureVolumeUniform_Colormap, 0);
+//
+//		glActiveTexture(GL_TEXTURE1);
+//		glBindTexture(GL_TEXTURE_1D, texture_TransferFunction);
+//		glUniform1i(levelOfDetail_Uniform, 1);
+//
+//		glBindVertexArray(VAO_volume);
+//		glDrawArrays(GL_TRIANGLES, 0, sizeof(vTextureSlices) / sizeof(vTextureSlices[0]));
+//		glBindTexture(GL_TEXTURE_3D, 0);
+//		glBindVertexArray(0);
+//	}
+//	glUseProgram(0);
+//	glDisable(GL_BLEND);
+//
+//
+//}
+//
+//void Update_ColormapClassification_Output(void)
+//{
+//	// local:
+//
+//	// code:
+//
+//}
+//
+//void Uninitialize_ColormapClassification_shader(void)
+//{
+//	// local:
+//
+//	// code:
+//
+//	Uninitialize_ShaderProgramObject(shaderProgramObject_Colormap);
+//
+//	if (texture_TransferFunction)
+//	{
+//		glDeleteTextures(1, &texture_TransferFunction);
+//		texture_TransferFunction = 0;
+//	}
+//
+//	
+//}
+//
 
 //! Shader Type 5: Marching Tetrahedra Method Definitions:
-
-
-void Initialize_TetrahedraMarcher_Constructor()
-{
-	XDIM_TM = 256;
-	YDIM_TM = 256;
-	ZDIM_TM = 256;
-	pVolume = NULL;
-}
-
-void Initialize_TetrahedraMarcher_Shaders()
-{
-	// prototype:
-	void uninitialize(void);
-
-	// local:
-
-	GLuint vertexShaderObject;
-	GLuint fragmentShaderObject;
-
-	GLint status;
-	GLint infoLogLength;
-	char* Log = NULL;
-
-	// code:
-
-
-	/////////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-			
-			layout (location = 0) in vec3 aPosition;
-			layout (location = 2) in vec3 aNormal;
-
-			uniform mat4 u_MVPMatrix;
-			uniform vec4 u_clippingPlane1;
-			uniform vec4 u_clippingPlane2;
-			uniform vec4 u_clippingPlane3;
-			uniform vec4 u_clippingPlane4;
-			uniform vec4 u_clippingPlane5;
-			uniform vec4 u_clippingPlane6;
-
-			smooth out vec3 oNormal;
-
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-				oNormal = aNormal;
-
-				gl_ClipDistance[0]= dot(u_clippingPlane1.xyz,aPosition)+u_clippingPlane1.w;
-				gl_ClipDistance[1]= dot(u_clippingPlane2.xyz,aPosition)+u_clippingPlane2.w;
-				gl_ClipDistance[2]= dot(u_clippingPlane3.xyz,aPosition)+u_clippingPlane3.w;
-				gl_ClipDistance[3]= dot(u_clippingPlane4.xyz,aPosition)+u_clippingPlane4.w;
-				gl_ClipDistance[4]= dot(u_clippingPlane5.xyz,aPosition)+u_clippingPlane5.w;
-				gl_ClipDistance[5]= dot(u_clippingPlane6.xyz,aPosition)+u_clippingPlane6.w;
-			}
-	
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in MarchingTetrahedra Vertex Shader.\nVS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in MarchingTetrahedra Vertex Shader.\n");
-	}
-
-
-
-	/////////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-
-			smooth in vec3 oNormal;
-			out vec4 FragColor;
-
-			void main(void)
-			{             
-
-				FragColor = vec4(oNormal,1.0);
-			}
-	
-
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in MarchingTetrahedra Fragment Shader.\nFS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in MarchingTetrahedra Fragment Shader.\n");
-	}
-
-	shaderProgramObject_TM = glCreateProgram();
-
-	glAttachShader(shaderProgramObject_TM, vertexShaderObject);
-	glAttachShader(shaderProgramObject_TM, fragmentShaderObject);
-
-	// pre Linking binding code has been MOVED BELOW
-
-	Log = NULL;
-	
-	glLinkProgram(shaderProgramObject_TM);
-	glGetProgramiv(shaderProgramObject_TM, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
-	{
-		glGetProgramiv(shaderProgramObject_TM, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_TM, infoLogLength, &written, Log);
-				fprintf(gpFile, "Error in MarchingTetrahedra shaderObject Linking\nLinking Log : % s\n", Log);
-				free(Log);
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		fprintf(gpFile, "Success in MarchingTetrahedra shaderObject Linking\n");
-	}
-
-	glUseProgram(shaderProgramObject_TM);
-	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_POSITION, "aPosition");
-	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_NORMAL, "aNormal");
-	modelViewProjectionUniform_TM = glGetUniformLocation(shaderProgramObject_TM, "u_MVPMatrix");
-
-	clipFrontFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane1");
-	clipBackFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane2");
-
-	clipRight_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane3");
-	clipLeft_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane4");
-
-	clipTop_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane5");
-	clipBottom_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane6");
-
-	glUseProgram(0);
-
-}
-
-void Initialize_TetrahedraMarcher_Geomatry(void)
-{
-	// code:
-
-	// VAO + VBO CODE for MarchingTetrahedra
-	glGenVertexArrays(1, &volumeMarcherVAO);
-	glBindVertexArray(volumeMarcherVAO);
-	glGenBuffers(1, &volumeMarcherVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, volumeMarcherVBO);
-	{
-		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
-		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);//enable vertex attribute array for position
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-
-		//enable vertex attribute array for normals
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
-		glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, normal));
-
-	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-}
-
-void SetVolumeDimensions(const int xdim, const int ydim, const int zdim)
-{
-	XDIM_TM = xdim;
-	YDIM_TM = ydim;
-	ZDIM_TM = zdim;
-	invDim.x = 1.0f / XDIM_TM;
-	invDim.y = 1.0f / YDIM_TM;
-	invDim.z = 1.0f / ZDIM_TM;
-}
-void SetNumSamplingVoxels(const int x, const int y, const int z)
-{
-	X_SAMPLING_DIST = x;
-	Y_SAMPLING_DIST = y;
-	Z_SAMPLING_DIST = z;
-}
-void SetIsosurfaceValue(const GLubyte value)
-{
-	isoValue = value;
-}
-
-bool LoadVolume(const std::string& filename)
-{
-
-	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
-
-	if (infile.good())
-	{
-		pVolume = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
-		infile.read(reinterpret_cast<char*>(pVolume), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
-		infile.close();
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)
-{
-	GLubyte cubeCornerValues[8];
-	int flagIndex, edgeFlags, i;
-	glm::vec3 edgeVertices[12];
-	glm::vec3 edgeNormals[12];
-
-	//Make a local copy of the values at the cube's corners
-	for (i = 0; i < 8; i++)
-	{
-		cubeCornerValues[i] = SampleVolume(x + (int)(a2fVertexOffset[i][0] * scale.x),
-			y + (int)(a2fVertexOffset[i][1] * scale.y),
-			z + (int)(a2fVertexOffset[i][2] * scale.z));
-	}
-
-	//Find which vertices are inside of the surface and which are outside
-	//Obtain a flagIndex based on if the value at the cube vertex is less 
-	//than the given isovalue
-	flagIndex = 0;
-	for (i = 0; i < 8; i++)
-	{
-		if (cubeCornerValues[i] <= isoValue)
-			flagIndex |= 1 << i;
-	}
-
-	//Find which edges are intersected by the surface
-	edgeFlags = aiCubeEdgeFlags[flagIndex];
-
-	//If the cube is entirely inside or outside of the surface, then there will be no intersections
-	if (edgeFlags == 0)
-	{
-		return;
-	}
-
-	//for all edges
-	for (i = 0; i < 12; i++)
-	{
-		//if there is an intersection on this edge
-		if (edgeFlags & (1 << i))
-		{
-			//get the offset 
-			float offset = GetOffset(cubeCornerValues[a2iEdgeConnection[i][0]], cubeCornerValues[a2iEdgeConnection[i][1]]);
-
-			//use offset to get the vertex position
-			edgeVertices[i].x = x + (a2fVertexOffset[a2iEdgeConnection[i][0]][0] + offset * a2fEdgeDirection[i][0]) * scale.x;
-			edgeVertices[i].y = y + (a2fVertexOffset[a2iEdgeConnection[i][0]][1] + offset * a2fEdgeDirection[i][1]) * scale.y;
-			edgeVertices[i].z = z + (a2fVertexOffset[a2iEdgeConnection[i][0]][2] + offset * a2fEdgeDirection[i][2]) * scale.z;
-
-			//use the vertex position to get the normal
-			edgeNormals[i] = GetNormal((int)edgeVertices[i].x, (int)edgeVertices[i].y, (int)edgeVertices[i].z);
-		}
-	}
-
-	//Draw the triangles that were found.  There can be up to five per cube
-	for (i = 0; i < 5; i++)
-	{
-		if (a2iTriangleConnectionTable[flagIndex][3 * i] < 0)
-			break;
-
-		for (int j = 0; j < 3; j++)
-		{
-			int vertex = a2iTriangleConnectionTable[flagIndex][3 * i + j];
-			Vertex v;
-			v.normal = (edgeNormals[vertex]);
-			v.pos = (edgeVertices[vertex]) * invDim;
-			vertices.push_back(v);
-		}
-	}
-}
-
-void MarchVolume()
-{
-	vertices.clear();
-	int dx = XDIM_TM / X_SAMPLING_DIST;
-	int dy = YDIM_TM / Y_SAMPLING_DIST;
-	int dz = ZDIM_TM / Z_SAMPLING_DIST;
-	glm::vec3 scale = glm::vec3(dx, dy, dz);
-	for (int z = 0; z < ZDIM_TM; z += dz)
-	{
-		for (int y = 0; y < YDIM_TM; y += dy)
-		{
-			for (int x = 0; x < XDIM_TM; x += dx)
-			{
-				SampleVoxel(x, y, z, scale);
-			}
-		}
-	}
-}
-
-size_t GetTotalVertices_TM()
-{
-	return vertices.size();
-}
-
-Vertex* GetVertexPointer_TM()
-{
-	return  &vertices[0];
-}
-
-GLubyte SampleVolume(const int x, const int y, const int z) {
-	int index = (x + (y * XDIM_TM)) + z * (XDIM_TM * YDIM_TM);
-	if (index < 0)
-		index = 0;
-	if (index >= XDIM_TM * YDIM_TM * ZDIM_TM)
-		index = (XDIM_TM * YDIM_TM * ZDIM_TM) - 1;
-	return pVolume[index];
-}
-
-glm::vec3 GetNormal(const int x, const int y, const int z) {
-	glm::vec3 N;
-	N.x = (SampleVolume(x - 1, y, z) - SampleVolume(x + 1, y, z)) * 0.5f;
-	N.y = (SampleVolume(x, y - 1, z) - SampleVolume(x, y + 1, z)) * 0.5f;
-	N.z = (SampleVolume(x, y, z - 1) - SampleVolume(x, y, z + 1)) * 0.5f;
-	return glm::normalize(N);
-}
-float GetOffset(const GLubyte v1, const GLubyte v2) {
-	float delta = (float)(v2 - v1);
-	if (delta == 0)
-		return 0.5f;
-	else
-		return (isoValue - v1) / delta;
-}
-
-void Render_MarchingTetrahedra(void)
-{
-	// local:
-
-	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
-
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-
-	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
-	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
-
-
-	glm::vec4 clipPlane_Front = glm::vec4(0.0f, 0.0f, -1.0f, fClipPlane_Front);
-	glm::vec4 clipPlane_Back = glm::vec4(0.0f, 0.0f, 1.0f, -fClipPlane_Back);
-	
-	glm::vec4 clipPlane_Right= glm::vec4(-1.0f, 0.0f, 0.0f, fClipPlane_Right);
-	glm::vec4 clipPlane_Left = glm::vec4(1.0f, 0.0f, 0.0f, -fClipPlane_Left);
-	
-	glm::vec4 clipPlane_Top = glm::vec4(0.0f, -1.0f, 0.0f, fClipPlane_Top);
-	glm::vec4 clipPlane_Bottom = glm::vec4(0.0f, 1.0f, 0.0f, -fClipPlane_Bottom);
-
-	// code:
-
-	// Grid or Axes Rendering 
-	Render_Volume_Box_Axes(modelViewProjectionMatrix);
-	
-
-	if (bWireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	glm::mat4 TranslationMatrix_2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, -0.5f));
-
-	glEnable(GL_CLIP_DISTANCE0);
-	glEnable(GL_CLIP_DISTANCE1);
-	glEnable(GL_CLIP_DISTANCE2);
-	glEnable(GL_CLIP_DISTANCE3);
-	glEnable(GL_CLIP_DISTANCE4);
-	glEnable(GL_CLIP_DISTANCE5);
-	glUseProgram(shaderProgramObject_TM);
-	{
-		glUniformMatrix4fv(modelViewProjectionUniform_TM, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix * TranslationMatrix_2));//pass the shader uniform
-
-		glUniform4fv(clipFrontFace_uniform,1,glm::value_ptr(clipPlane_Front));
-		glUniform4fv(clipBackFace_uniform,1,glm::value_ptr(clipPlane_Back));
-
-		glUniform4fv(clipRight_uniform,1,glm::value_ptr(clipPlane_Right));
-		glUniform4fv(clipLeft_uniform,1,glm::value_ptr(clipPlane_Left));
-
-		glUniform4fv(clipTop_uniform,1,glm::value_ptr(clipPlane_Top));
-		glUniform4fv(clipBottom_uniform,1,glm::value_ptr(clipPlane_Bottom));
-
-		glBindVertexArray(volumeMarcherVAO);
-		glDrawArrays(GL_TRIANGLES, 0, GetTotalVertices_TM());
-		glBindVertexArray(0);
-	}
-	glUseProgram(0);
-	glDisable(GL_CLIP_DISTANCE5);
-	glDisable(GL_CLIP_DISTANCE4);
-	glDisable(GL_CLIP_DISTANCE3);
-	glDisable(GL_CLIP_DISTANCE2);
-	glDisable(GL_CLIP_DISTANCE1);
-	glDisable(GL_CLIP_DISTANCE0);
-
-	//restore the default polygon mode
-	if (bWireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-}
-
-void Update_MarchingTetrahedra()
-{
-	// code:
-}
-
-void Uninitialize_MarchingTetrahedra(void)
-{
-	// code:
-
-	Uninitialize_ShaderProgramObject(shaderProgramObject_TM);
-
-
-	if (volumeMarcherVBO)
-	{
-		glDeleteBuffers(1, &volumeMarcherVBO);
-		volumeMarcherVBO = 0;
-	}
-
-	if (volumeMarcherVAO)
-	{
-		glDeleteVertexArrays(1, &volumeMarcherVAO);
-		volumeMarcherVAO = 0;
-	}
-
-	if (pVolume)
-	{
-		free(pVolume);
-		pVolume = NULL;
-	}
-
-	if (!vertices.empty())
-	{
-		vertices.clear();
-	}
-}
-
+//
+//
+//void Initialize_TetrahedraMarcher_Constructor()
+//{
+//	XDIM_TM = 256;
+//	YDIM_TM = 256;
+//	ZDIM_TM = 256;
+//	pVolume = NULL;
+//}
+//
+//void Initialize_TetrahedraMarcher_Shaders()
+//{
+//	// prototype:
+//	void uninitialize(void);
+//
+//	// local:
+//
+//	GLuint vertexShaderObject;
+//	GLuint fragmentShaderObject;
+//
+//	GLint status;
+//	GLint infoLogLength;
+//	char* Log = NULL;
+//
+//	// code:
+//
+//
+//	/////////////////////// # VERTEX SHADER # ////////////////////////
+//	const GLchar* vertexShaderSource = R"(
+//			
+//			#version 460 core
+//			
+//			layout (location = 0) in vec3 aPosition;
+//			layout (location = 2) in vec3 aNormal;
+//
+//			uniform mat4 u_MVPMatrix;
+//			uniform vec4 u_clippingPlane1;
+//			uniform vec4 u_clippingPlane2;
+//			uniform vec4 u_clippingPlane3;
+//			uniform vec4 u_clippingPlane4;
+//			uniform vec4 u_clippingPlane5;
+//			uniform vec4 u_clippingPlane6;
+//
+//			smooth out vec3 oNormal;
+//
+//			void main()
+//			{
+//				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
+//				oNormal = aNormal;
+//
+//				gl_ClipDistance[0]= dot(u_clippingPlane1.xyz,aPosition)+u_clippingPlane1.w;
+//				gl_ClipDistance[1]= dot(u_clippingPlane2.xyz,aPosition)+u_clippingPlane2.w;
+//				gl_ClipDistance[2]= dot(u_clippingPlane3.xyz,aPosition)+u_clippingPlane3.w;
+//				gl_ClipDistance[3]= dot(u_clippingPlane4.xyz,aPosition)+u_clippingPlane4.w;
+//				gl_ClipDistance[4]= dot(u_clippingPlane5.xyz,aPosition)+u_clippingPlane5.w;
+//				gl_ClipDistance[5]= dot(u_clippingPlane6.xyz,aPosition)+u_clippingPlane6.w;
+//			}
+//	
+//			)";
+//
+//	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+//	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
+//
+//	glCompileShader(vertexShaderObject);
+//	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in MarchingTetrahedra Vertex Shader.\nVS Compilation Log : %s\n", Log);
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in MarchingTetrahedra Vertex Shader.\n");
+//	}
+//
+//
+//
+//	/////////////////////// # FRAGMENT SHADER # ////////////////////////
+//	const GLchar* fragmentShaderSource = R"(
+//			
+//			#version 460 core
+//
+//			smooth in vec3 oNormal;
+//			out vec4 FragColor;
+//
+//			void main(void)
+//			{             
+//
+//				FragColor = vec4(oNormal,1.0);
+//			}
+//	
+//
+//			)";
+//	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+//	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
+//
+//	glCompileShader(fragmentShaderObject);
+//	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
+//
+//	if (status == GL_FALSE)
+//	{
+//		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in MarchingTetrahedra Fragment Shader.\nFS Compilation Log : %s\n", Log);
+//				free(Log);
+//				Log = NULL;
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in MarchingTetrahedra Fragment Shader.\n");
+//	}
+//
+//	shaderProgramObject_TM = glCreateProgram();
+//
+//	glAttachShader(shaderProgramObject_TM, vertexShaderObject);
+//	glAttachShader(shaderProgramObject_TM, fragmentShaderObject);
+//
+//	// pre Linking binding code has been MOVED BELOW
+//
+//	Log = NULL;
+//	
+//	glLinkProgram(shaderProgramObject_TM);
+//	glGetProgramiv(shaderProgramObject_TM, GL_LINK_STATUS, &status);
+//	if (status == GL_FALSE)
+//	{
+//		glGetProgramiv(shaderProgramObject_TM, GL_INFO_LOG_LENGTH, &infoLogLength);
+//		if (infoLogLength > 0)
+//		{
+//			Log = (char*)malloc(infoLogLength);
+//			if (Log != NULL)
+//			{
+//				GLsizei written;
+//				glGetProgramInfoLog(shaderProgramObject_TM, infoLogLength, &written, Log);
+//				fprintf(gpFile, "Error in MarchingTetrahedra shaderObject Linking\nLinking Log : % s\n", Log);
+//				free(Log);
+//				uninitialize();
+//			}
+//		}
+//	}
+//	else
+//	{
+//		fprintf(gpFile, "Success in MarchingTetrahedra shaderObject Linking\n");
+//	}
+//
+//	glUseProgram(shaderProgramObject_TM);
+//	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_POSITION, "aPosition");
+//	glBindAttribLocation(shaderProgramObject_TM, AMC_ATTRIBUTE_NORMAL, "aNormal");
+//	modelViewProjectionUniform_TM = glGetUniformLocation(shaderProgramObject_TM, "u_MVPMatrix");
+//
+//	clipFrontFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane1");
+//	clipBackFace_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane2");
+//
+//	clipRight_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane3");
+//	clipLeft_uniform= glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane4");
+//
+//	clipTop_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane5");
+//	clipBottom_uniform = glGetUniformLocation(shaderProgramObject_TM, "u_clippingPlane6");
+//
+//	glUseProgram(0);
+//
+//}
+//
+//void Initialize_TetrahedraMarcher_Geomatry(void)
+//{
+//	// code:
+//
+//	// VAO + VBO CODE for MarchingTetrahedra
+//	glGenVertexArrays(1, &volumeMarcherVAO);
+//	glBindVertexArray(volumeMarcherVAO);
+//	glGenBuffers(1, &volumeMarcherVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, volumeMarcherVBO);
+//	{
+//		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
+//		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
+//		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);//enable vertex attribute array for position
+//		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+//
+//		//enable vertex attribute array for normals
+//		glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
+//		glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, normal));
+//
+//	}
+//	glBindBuffer(GL_ARRAY_BUFFER, 0);
+//	glBindVertexArray(0);
+//
+//}
+//
+//void SetVolumeDimensions(const int xdim, const int ydim, const int zdim)
+//{
+//	XDIM_TM = xdim;
+//	YDIM_TM = ydim;
+//	ZDIM_TM = zdim;
+//	invDim.x = 1.0f / XDIM_TM;
+//	invDim.y = 1.0f / YDIM_TM;
+//	invDim.z = 1.0f / ZDIM_TM;
+//}
+//void SetNumSamplingVoxels(const int x, const int y, const int z)
+//{
+//	X_SAMPLING_DIST = x;
+//	Y_SAMPLING_DIST = y;
+//	Z_SAMPLING_DIST = z;
+//}
+//void SetIsosurfaceValue(const GLubyte value)
+//{
+//	isoValue = value;
+//}
+//
+//bool LoadVolume(const std::string& filename)
+//{
+//
+//	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
+//
+//	if (infile.good())
+//	{
+//		pVolume = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+//		infile.read(reinterpret_cast<char*>(pVolume), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
+//		infile.close();
+//		return true;
+//	}
+//	else
+//	{
+//		return false;
+//	}
+//}
+//
+//void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)
+//{
+//	GLubyte cubeCornerValues[8];
+//	int flagIndex, edgeFlags, i;
+//	glm::vec3 edgeVertices[12];
+//	glm::vec3 edgeNormals[12];
+//
+//	//Make a local copy of the values at the cube's corners
+//	for (i = 0; i < 8; i++)
+//	{
+//		cubeCornerValues[i] = SampleVolume(x + (int)(a2fVertexOffset[i][0] * scale.x),
+//			y + (int)(a2fVertexOffset[i][1] * scale.y),
+//			z + (int)(a2fVertexOffset[i][2] * scale.z));
+//	}
+//
+//	//Find which vertices are inside of the surface and which are outside
+//	//Obtain a flagIndex based on if the value at the cube vertex is less 
+//	//than the given isovalue
+//	flagIndex = 0;
+//	for (i = 0; i < 8; i++)
+//	{
+//		if (cubeCornerValues[i] <= isoValue)
+//			flagIndex |= 1 << i;
+//	}
+//
+//	//Find which edges are intersected by the surface
+//	edgeFlags = aiCubeEdgeFlags[flagIndex];
+//
+//	//If the cube is entirely inside or outside of the surface, then there will be no intersections
+//	if (edgeFlags == 0)
+//	{
+//		return;
+//	}
+//
+//	//for all edges
+//	for (i = 0; i < 12; i++)
+//	{
+//		//if there is an intersection on this edge
+//		if (edgeFlags & (1 << i))
+//		{
+//			//get the offset 
+//			float offset = GetOffset(cubeCornerValues[a2iEdgeConnection[i][0]], cubeCornerValues[a2iEdgeConnection[i][1]]);
+//
+//			//use offset to get the vertex position
+//			edgeVertices[i].x = x + (a2fVertexOffset[a2iEdgeConnection[i][0]][0] + offset * a2fEdgeDirection[i][0]) * scale.x;
+//			edgeVertices[i].y = y + (a2fVertexOffset[a2iEdgeConnection[i][0]][1] + offset * a2fEdgeDirection[i][1]) * scale.y;
+//			edgeVertices[i].z = z + (a2fVertexOffset[a2iEdgeConnection[i][0]][2] + offset * a2fEdgeDirection[i][2]) * scale.z;
+//
+//			//use the vertex position to get the normal
+//			edgeNormals[i] = GetNormal((int)edgeVertices[i].x, (int)edgeVertices[i].y, (int)edgeVertices[i].z);
+//		}
+//	}
+//
+//	//Draw the triangles that were found.  There can be up to five per cube
+//	for (i = 0; i < 5; i++)
+//	{
+//		if (a2iTriangleConnectionTable[flagIndex][3 * i] < 0)
+//			break;
+//
+//		for (int j = 0; j < 3; j++)
+//		{
+//			int vertex = a2iTriangleConnectionTable[flagIndex][3 * i + j];
+//			Vertex v;
+//			v.normal = (edgeNormals[vertex]);
+//			v.pos = (edgeVertices[vertex]) * invDim;
+//			vertices.push_back(v);
+//		}
+//	}
+//}
+//
+//void MarchVolume()
+//{
+//	vertices.clear();
+//	int dx = XDIM_TM / X_SAMPLING_DIST;
+//	int dy = YDIM_TM / Y_SAMPLING_DIST;
+//	int dz = ZDIM_TM / Z_SAMPLING_DIST;
+//	glm::vec3 scale = glm::vec3(dx, dy, dz);
+//	for (int z = 0; z < ZDIM_TM; z += dz)
+//	{
+//		for (int y = 0; y < YDIM_TM; y += dy)
+//		{
+//			for (int x = 0; x < XDIM_TM; x += dx)
+//			{
+//				SampleVoxel(x, y, z, scale);
+//			}
+//		}
+//	}
+//}
+//
+//size_t GetTotalVertices_TM()
+//{
+//	return vertices.size();
+//}
+//
+//Vertex* GetVertexPointer_TM()
+//{
+//	return  &vertices[0];
+//}
+//
+//GLubyte SampleVolume(const int x, const int y, const int z) {
+//	int index = (x + (y * XDIM_TM)) + z * (XDIM_TM * YDIM_TM);
+//	if (index < 0)
+//		index = 0;
+//	if (index >= XDIM_TM * YDIM_TM * ZDIM_TM)
+//		index = (XDIM_TM * YDIM_TM * ZDIM_TM) - 1;
+//	return pVolume[index];
+//}
+//
+//glm::vec3 GetNormal(const int x, const int y, const int z) {
+//	glm::vec3 N;
+//	N.x = (SampleVolume(x - 1, y, z) - SampleVolume(x + 1, y, z)) * 0.5f;
+//	N.y = (SampleVolume(x, y - 1, z) - SampleVolume(x, y + 1, z)) * 0.5f;
+//	N.z = (SampleVolume(x, y, z - 1) - SampleVolume(x, y, z + 1)) * 0.5f;
+//	return glm::normalize(N);
+//}
+//float GetOffset(const GLubyte v1, const GLubyte v2) {
+//	float delta = (float)(v2 - v1);
+//	if (delta == 0)
+//		return 0.5f;
+//	else
+//		return (isoValue - v1) / delta;
+//}
+//
+//void Render_MarchingTetrahedra(void)
+//{
+//	// local:
+//
+//	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+//
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+//	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+//
+//	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
+//	glm::vec3 cameraPosition = glm::vec3(glm::inverse(ModelViewMatrix) * glm::vec4(0.0, 0.0, 0.0, 1.0));
+//
+//
+//	glm::vec4 clipPlane_Front = glm::vec4(0.0f, 0.0f, -1.0f, fClipPlane_Front);
+//	glm::vec4 clipPlane_Back = glm::vec4(0.0f, 0.0f, 1.0f, -fClipPlane_Back);
+//	
+//	glm::vec4 clipPlane_Right= glm::vec4(-1.0f, 0.0f, 0.0f, fClipPlane_Right);
+//	glm::vec4 clipPlane_Left = glm::vec4(1.0f, 0.0f, 0.0f, -fClipPlane_Left);
+//	
+//	glm::vec4 clipPlane_Top = glm::vec4(0.0f, -1.0f, 0.0f, fClipPlane_Top);
+//	glm::vec4 clipPlane_Bottom = glm::vec4(0.0f, 1.0f, 0.0f, -fClipPlane_Bottom);
+//
+//	// code:
+//
+//	// Grid or Axes Rendering 
+//	Render_Volume_Box_Axes(modelViewProjectionMatrix);
+//	
+//
+//	if (bWireframe)
+//		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//
+//	glm::mat4 TranslationMatrix_2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, -0.5f));
+//
+//	glEnable(GL_CLIP_DISTANCE0);
+//	glEnable(GL_CLIP_DISTANCE1);
+//	glEnable(GL_CLIP_DISTANCE2);
+//	glEnable(GL_CLIP_DISTANCE3);
+//	glEnable(GL_CLIP_DISTANCE4);
+//	glEnable(GL_CLIP_DISTANCE5);
+//	glUseProgram(shaderProgramObject_TM);
+//	{
+//		glUniformMatrix4fv(modelViewProjectionUniform_TM, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix * TranslationMatrix_2));//pass the shader uniform
+//
+//		glUniform4fv(clipFrontFace_uniform,1,glm::value_ptr(clipPlane_Front));
+//		glUniform4fv(clipBackFace_uniform,1,glm::value_ptr(clipPlane_Back));
+//
+//		glUniform4fv(clipRight_uniform,1,glm::value_ptr(clipPlane_Right));
+//		glUniform4fv(clipLeft_uniform,1,glm::value_ptr(clipPlane_Left));
+//
+//		glUniform4fv(clipTop_uniform,1,glm::value_ptr(clipPlane_Top));
+//		glUniform4fv(clipBottom_uniform,1,glm::value_ptr(clipPlane_Bottom));
+//
+//		glBindVertexArray(volumeMarcherVAO);
+//		glDrawArrays(GL_TRIANGLES, 0, GetTotalVertices_TM());
+//		glBindVertexArray(0);
+//	}
+//	glUseProgram(0);
+//	glDisable(GL_CLIP_DISTANCE5);
+//	glDisable(GL_CLIP_DISTANCE4);
+//	glDisable(GL_CLIP_DISTANCE3);
+//	glDisable(GL_CLIP_DISTANCE2);
+//	glDisable(GL_CLIP_DISTANCE1);
+//	glDisable(GL_CLIP_DISTANCE0);
+//
+//	//restore the default polygon mode
+//	if (bWireframe)
+//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//
+//}
+//
+//void Update_MarchingTetrahedra()
+//{
+//	// code:
+//}
+//
+//void Uninitialize_MarchingTetrahedra(void)
+//{
+//	// code:
+//
+//	Uninitialize_ShaderProgramObject(shaderProgramObject_TM);
+//
+//
+//	if (volumeMarcherVBO)
+//	{
+//		glDeleteBuffers(1, &volumeMarcherVBO);
+//		volumeMarcherVBO = 0;
+//	}
+//
+//	if (volumeMarcherVAO)
+//	{
+//		glDeleteVertexArrays(1, &volumeMarcherVAO);
+//		volumeMarcherVAO = 0;
+//	}
+//
+//	if (pVolume)
+//	{
+//		free(pVolume);
+//		pVolume = NULL;
+//	}
+//
+//	if (!vertices.empty())
+//	{
+//		vertices.clear();
+//	}
+//}
+//
 
 
 

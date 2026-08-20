@@ -3,16 +3,23 @@
 #include "./OpenGL/GLHeadersAndMacros.h"
 #include "./OpenGL/GLLog.h"
 
-#include "../include/vmath.h"
+//#include "../include/vmath.h"
 #include "../include/stb_image.h"
 
 
 #define EPSILON 0.0001f;//for floating point inaccuracy
 
-using namespace vmath;
+//using namespace vmath;
 
 
 // variable declarations:
+
+extern int MAX_SLICES;
+extern int XDIM;
+extern int YDIM;
+extern int ZDIM;
+
+extern GLuint textureID;
 
 extern float fZPlus_FrontFace;
 extern float fYPlus_TopFace;

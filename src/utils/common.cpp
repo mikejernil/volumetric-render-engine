@@ -1,6 +1,14 @@
 #include "common.h"
 
 
+
+int MAX_SLICES = 512;
+int XDIM = 256;
+int YDIM = 256;
+int ZDIM = 256;
+
+GLuint textureID = 0;
+
 float fZPlus_FrontFace = 0.5f;
 float fYPlus_TopFace = 0.5f;
 float fXPlus_SideFace = 0.5f;

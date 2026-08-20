@@ -1,15 +1,13 @@
 #pragma once
 
-//#include "../../utils/common.h"
 #include "BasicTextureSlicing.h"
 
 
-extern GLuint shaderProgramObject_Slicer1=0;
-extern GLuint modelViewProjectionUniform_Slicer1=0;
-extern GLuint textureVolumeUniform_Slicer1=0;
-extern GLuint VBO_volume=0;
-extern GLuint VAO_volume=0;
-extern GLuint textureID=0;
+GLuint shaderProgramObject_Slicer1=0;
+GLuint modelViewProjectionUniform_Slicer1=0;
+GLuint textureVolumeUniform_Slicer1=0;
+GLuint VBO_volume=0;
+GLuint VAO_volume=0;
 
 
 // function definitions:
@@ -414,7 +412,7 @@ void Render_Basic_Volume(void)
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
 
-	vmath::mat4 ModelViewMatrix_mat4 = vmath::translate(0.0f, 0.0f, dist);
+	
 
 
 	// code:

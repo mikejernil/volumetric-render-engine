@@ -10,7 +10,6 @@ extern GLuint textureVolumeUniform_Slicer1;
 
 extern GLuint VBO_volume;
 extern GLuint VAO_volume;
-extern GLuint textureID;
 
 // function declarations:
 

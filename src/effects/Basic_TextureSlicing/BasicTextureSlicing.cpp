@@ -10,10 +10,31 @@ GLuint VBO_volume=0;
 GLuint VAO_volume=0;
 
 
+// Shader Type 4: Colomap Classifaction Method : global variables:
+glm::vec4 jet_values[9] = {
+								glm::vec4(0,0,0.5,0),
+								glm::vec4(0,0,1,0.1),
+								glm::vec4(0,0.5,1,0.3),
+								glm::vec4(0,1,1,0.5),
+								glm::vec4(0.5,1,0.5,0.75),
+								glm::vec4(1,1,0,0.8),
+								glm::vec4(1,0.5,0,0.6),
+								glm::vec4(1,0,0,0.5),
+								glm::vec4(0.5,0,0,0.0)
+};
+
+GLuint shaderProgramObject_Colormap = 0;
+GLuint modelViewProjectionUniform_Colormap = 0;
+GLuint textureVolumeUniform_Colormap = 0;
+GLuint levelOfDetail_Uniform = 0;
+GLuint texture_TransferFunction = 0;
+
+
+
 // function definitions:
 
 
-
+//! Shader Type 1: Basic 3D Texture Slicing Method Definitions:
 int Initialize_Slicing_shader(void)
 {
 	// prototype:
@@ -177,8 +198,89 @@ int Initialize_Slicing_shader(void)
 	return (0);
 }
 
+void Render_Basic_Volume(void)
+{
+	// local:
 
-//function to get the max (abs) dimension of the given vertex v
+	//setup the camera transform
+	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
+
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);
+
+	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
+
+
+
+
+	// code:
+
+	// Grid or Axes Rendering 
+	//Render_Volume_Box_Axes(modelViewProjectionMatrix);
+
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+
+	glUseProgram(shaderProgramObject_Slicer1);
+	{
+		glUniformMatrix4fv(modelViewProjectionUniform_Slicer1, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_3D, textureID);
+		glUniform1i(textureVolumeUniform_Slicer1, 0);
+		glBindVertexArray(VAO_volume);
+		glDrawArrays(GL_TRIANGLES, 0, sizeof(vTextureSlices) / sizeof(vTextureSlices[0]));
+		glBindTexture(GL_TEXTURE_3D, 0);
+		glBindVertexArray(0);
+	}
+	glUseProgram(0);
+	glDisable(GL_BLEND);
+
+
+
+}
+
+void Update_Basic_Volume(void)
+{
+	// code:
+
+}
+
+void Uninitialize_Slicing_shader(void)
+{
+	// code:
+
+
+	if (VBO_volume)
+	{
+		glDeleteBuffers(1, &VBO_volume);
+		VBO_volume = 0;
+	}
+	if (VAO_volume)
+	{
+		glDeleteVertexArrays(1, &VAO_volume);
+		VAO_volume = 0;
+	}
+
+	if (textureID)
+	{
+		glDeleteTextures(1, &textureID);
+		textureID = 0;
+	}
+
+
+	//Uninitialize_ShaderProgramObject(shaderProgramObject_Slicer1);
+
+}
+
+
 int FindAbsMax(glm::vec3 v)
 {
 	// code:
@@ -396,24 +498,244 @@ void Slice_Volume(void)
 }
 
 
-void Render_Basic_Volume(void)
+
+//! Shader Type 4: Colormap Classification Method Definitions:
+
+int Initialize_ColormapClassification_shader(void)
+{
+
+	// prototype:
+	void uninitialize(void);
+
+	// local:
+
+	GLuint vertexShaderObject;
+	GLuint fragmentShaderObject;
+
+	GLint status;
+	GLint infoLogLength;
+	char* Log = NULL;
+
+	// code:
+
+	//* ///////////////////// # VERTEX SHADER # ////////////////////////
+	const GLchar* vertexShaderSource = R"(
+			
+			#version 460 core
+
+			layout (location = 0) in vec3 aPosition;
+			uniform mat4 u_MVPMatrix;
+			smooth out vec3 oTexCoords;
+
+			void main()
+			{
+				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
+
+				oTexCoords = aPosition + vec3(0.5);
+			}
+
+			)";
+
+	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
+
+	glCompileShader(vertexShaderObject);
+	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
+
+	if (status == GL_FALSE)
+	{
+		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+		if (infoLogLength > 0)
+		{
+			Log = (char*)malloc(infoLogLength);
+			if (Log != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
+				PrintLog("Error in Colormap VERTEX Shader.\nVS Compilation Log : %s\n", Log);
+				free(Log);
+				Log = NULL;
+				uninitialize();
+			}
+		}
+	}
+	else
+	{
+		PrintLog("Success in Colormap VERTEX Shader.\n");
+	}
+
+
+
+	//* ///////////////////// # FRAGMENT SHADER # ////////////////////////
+	const GLchar* fragmentShaderSource = R"(
+			
+			#version 460 core
+
+			smooth in vec3 oTexCoords;
+			uniform sampler3D u_Volume3DSampler;
+			uniform sampler1D u_LevelOfDetail;
+
+			out vec4 FragColor;		
+			void main(void)
+			{             
+
+				FragColor = texture(u_LevelOfDetail, texture(u_Volume3DSampler,oTexCoords).r);
+			}
+			)";
+	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
+
+	glCompileShader(fragmentShaderObject);
+
+	status = 0;
+	infoLogLength = 0;
+	Log = NULL;
+	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
+
+	if (status == GL_FALSE)
+	{
+		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
+		if (infoLogLength > 0)
+		{
+			Log = (char*)malloc(infoLogLength);
+			if (Log != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
+				PrintLog("Error in Colormap FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
+				free(Log);
+				Log = NULL;
+				uninitialize();
+			}
+		}
+	}
+	else
+	{
+		PrintLog("Success in Colormap FRAGMENT Shader.\n");
+	}
+
+	shaderProgramObject_Colormap = glCreateProgram();
+
+	glAttachShader(shaderProgramObject_Colormap, vertexShaderObject);
+	glAttachShader(shaderProgramObject_Colormap, fragmentShaderObject);
+
+
+	status = 0;
+	infoLogLength = 0;
+	Log = NULL;
+	glLinkProgram(shaderProgramObject_Colormap);
+	glGetProgramiv(shaderProgramObject_Colormap, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE)
+	{
+		glGetProgramiv(shaderProgramObject_Colormap, GL_INFO_LOG_LENGTH, &infoLogLength);
+		if (infoLogLength > 0)
+		{
+			Log = (char*)malloc(infoLogLength);
+			if (Log != NULL)
+			{
+				GLsizei written;
+				glGetProgramInfoLog(shaderProgramObject_Colormap, infoLogLength, &written, Log);
+				PrintLog("Error in Colormap shaderObject Linking\nLinking Log : % s\n", Log);
+				free(Log);
+				uninitialize();
+				return FALSE;
+			}
+		}
+	}
+	else
+	{
+		PrintLog("Success in Colormap shaderObject Linking\n");
+	}
+
+	glUseProgram(shaderProgramObject_Colormap);
+
+	glBindAttribLocation(shaderProgramObject_Colormap, ATTRIBUTE_POSITION, "aPosition");
+	modelViewProjectionUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_MVPMatrix");
+	textureVolumeUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_Volume3DSampler");
+	levelOfDetail_Uniform = glGetUniformLocation(shaderProgramObject_Colormap, "u_LevelOfDetail");
+
+	glUniform1i(textureVolumeUniform_Colormap, 0);
+	glUniform1i(levelOfDetail_Uniform, 1);
+	glUseProgram(0);
+
+
+	return (0);
+}
+
+void LoadTransferFunction(void)
+{
+	// local: 
+	float pData[256][4];
+	int indices[9];
+
+
+	// code:
+
+	for (int i = 0; i < 9; i++) {
+		int index = i * 28;
+		pData[index][0] = jet_values[i].x;
+		pData[index][1] = jet_values[i].y;
+		pData[index][2] = jet_values[i].z;
+		pData[index][3] = jet_values[i].w;
+		indices[i] = index;
+	}
+
+
+	for (int j = 0; j < 9 - 1; j++)
+	{
+		float dDataR = (pData[indices[j + 1]][0] - pData[indices[j]][0]);
+		float dDataG = (pData[indices[j + 1]][1] - pData[indices[j]][1]);
+		float dDataB = (pData[indices[j + 1]][2] - pData[indices[j]][2]);
+		float dDataA = (pData[indices[j + 1]][3] - pData[indices[j]][3]);
+		int dIndex = indices[j + 1] - indices[j];
+
+		float dDataIncR = dDataR / float(dIndex);
+		float dDataIncG = dDataG / float(dIndex);
+		float dDataIncB = dDataB / float(dIndex);
+		float dDataIncA = dDataA / float(dIndex);
+		for (int i = indices[j] + 1; i < indices[j + 1]; i++)
+		{
+			pData[i][0] = (pData[i - 1][0] + dDataIncR);
+			pData[i][1] = (pData[i - 1][1] + dDataIncG);
+			pData[i][2] = (pData[i - 1][2] + dDataIncB);
+			pData[i][3] = (pData[i - 1][3] + dDataIncA);
+		}
+	}
+
+
+	glGenTextures(1, &texture_TransferFunction);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_1D, texture_TransferFunction);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_FLOAT, pData);
+	//glBindTexture(GL_TEXTURE_1D, 0);
+
+
+}
+
+void Initialize_ColormapClassification_Geomatry(void)
 {
 	// local:
 
-	//setup the camera transform
+	// code:
+
+}
+
+void Render_ColormapClassification_Output(void)
+{
+	// local:
+
 	glm::mat4 ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, dist));
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
-
 	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
-
-	
-
 
 	// code:
 
@@ -421,18 +743,21 @@ void Render_Basic_Volume(void)
 	//Render_Volume_Box_Axes(modelViewProjectionMatrix);
 
 
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
-
-	glUseProgram(shaderProgramObject_Slicer1);
+	glUseProgram(shaderProgramObject_Colormap);
 	{
-		glUniformMatrix4fv(modelViewProjectionUniform_Slicer1, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
+		glUniformMatrix4fv(modelViewProjectionUniform_Colormap, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_3D, textureID);
-		glUniform1i(textureVolumeUniform_Slicer1, 0);
+		glUniform1i(textureVolumeUniform_Colormap, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_1D, texture_TransferFunction);
+		glUniform1i(levelOfDetail_Uniform, 1);
+
 		glBindVertexArray(VAO_volume);
 		glDrawArrays(GL_TRIANGLES, 0, sizeof(vTextureSlices) / sizeof(vTextureSlices[0]));
 		glBindTexture(GL_TEXTURE_3D, 0);
@@ -442,39 +767,30 @@ void Render_Basic_Volume(void)
 	glDisable(GL_BLEND);
 
 
-
 }
 
-void Update_Basic_Volume(void)
+void Update_ColormapClassification_Output(void)
 {
+	// local:
+
 	// code:
 
 }
 
-void Uninitialize_Slicing_shader(void)
+void Uninitialize_ColormapClassification_shader(void)
 {
+	// local:
+
 	// code:
 
+	//Uninitialize_ShaderProgramObject(shaderProgramObject_Colormap);
 
-	if (VBO_volume)
+	if (texture_TransferFunction)
 	{
-		glDeleteBuffers(1, &VBO_volume);
-		VBO_volume = 0;
-	}
-	if (VAO_volume)
-	{
-		glDeleteVertexArrays(1, &VAO_volume);
-		VAO_volume = 0;
+		glDeleteTextures(1, &texture_TransferFunction);
+		texture_TransferFunction = 0;
 	}
 
-	if (textureID)
-	{
-		glDeleteTextures(1, &textureID);
-		textureID = 0;
-	}
-
-
-	//Uninitialize_ShaderProgramObject(shaderProgramObject_Slicer1);
 
 }
 

@@ -493,9 +493,6 @@ void Render_MarchingTetrahedra(void)
 
 	// code:
 
-	// Grid or Axes Rendering 
-	//Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
 
 	if (bWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

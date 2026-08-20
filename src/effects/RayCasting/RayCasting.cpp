@@ -362,10 +362,6 @@ void Render_Raycasting_Output(void)
 
 	// code:
 
-	// Grid or Axes Rendering 
-	//Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
-
 	glEnable(GL_BLEND);
 	glUseProgram(shaderProgramObject_RayCasting);
 	{
@@ -753,10 +749,6 @@ void Render_IsoSurface_Output(void)
 	// code:
 
 
-	// Grid or Axes Rendering 
-	//Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
-
 
 	glEnable(GL_BLEND);
 	glUseProgram(shaderProgramObject_IsoSurface);
@@ -769,8 +761,6 @@ void Render_IsoSurface_Output(void)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_3D, textureID);
 		glUniform1i(textureVolumeUniform_IsoSurface, 0);
-
-		//	//enable alpha blending (use over operator)  *****  DONE *****
 
 		glBindVertexArray(VAO_cube_RayCastingCube);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);

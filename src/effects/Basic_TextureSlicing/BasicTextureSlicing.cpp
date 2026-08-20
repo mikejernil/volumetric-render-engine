@@ -219,15 +219,9 @@ void Render_Basic_Volume(void)
 
 	// code:
 
-	// Grid or Axes Rendering 
-	//Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
-
 	glUseProgram(shaderProgramObject_Slicer1);
 	{
 		glUniformMatrix4fv(modelViewProjectionUniform_Slicer1, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
@@ -738,11 +732,6 @@ void Render_ColormapClassification_Output(void)
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
 
 	// code:
-
-	// Grid or Axes Rendering 
-	//Render_Volume_Box_Axes(modelViewProjectionMatrix);
-
-
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -5,9 +5,6 @@ A Volumetric Render Engine 🧊 for Windows (Native). It's being built with Open
 > [!NOTE]
 > This repo is at it's very early stages of development and its an OpenGL Volumetric Demo, it is not a fully-featured Engine yet. We are planning to build more features like custom file loading, more volumetric FX & additional formats support (like DICOM, VDB etc) soon!
 
-> [!NOTE]
-> Current output is of Engine256.raw which is a sample volume dataset of scalar values (unsigned byte) in voxel grid of 256x256x256.It has no header.Dataset is acquired by CT scan of small engine block.Commonly used in simple volume rendering tutorials. You can try other datasets from the /resources/models/ directory.
-
 <img width="600" height="380" alt="volume_engine_day2_post (1)" src="https://github.com/user-attachments/assets/74f362ae-9ff0-4ba9-8ad8-d7cbb7f8eda0" />
 
 Currently it has -
@@ -17,6 +14,9 @@ Currently it has -
 - 6 slicing planes to visualize cross-sections
 
 
+> [!NOTE]
+> Current output is of Engine256.raw which is a sample volume dataset of scalar values (unsigned byte) in voxel grid of 256x256x256.It has no header.Dataset is acquired by CT scan of small engine block.Commonly used in simple volume rendering tutorials. You can try other datasets from the /resources/models/ directory.
+
 ### How to Run
 - Copy glew32.dll (OpenGL Prerequisite extension) from Project folder `dependencies\glew\bin\Release\x64\glew32.dll` to your `Windows/System32/` folder 
 - Start Visual Studio 2022 x64 developer command prompt (Install VS 2022 or higher if not installed already)
@@ -24,6 +24,7 @@ Currently it has -
 
 
 <img width="780" height="900" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />
+
 
 ### Rendering Effects ##
 

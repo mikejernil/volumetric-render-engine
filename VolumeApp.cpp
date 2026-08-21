@@ -2,8 +2,7 @@
 #define UNICODE
 #define _UNICODE
 
-#define KEYBOARD_SLICING_CONTROLS
-#undef KEYBOARD_SLICING_CONTROLS
+
 
 //- Commmon Header Files -
 #include<Windows.h>
@@ -628,7 +627,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	return ((int)msg.wParam);
 }
 
-
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	//function declarations:
@@ -929,92 +927,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		bSliceUpdate = TRUE;
 		switch (LOWORD(wParam))
 		{
-#ifdef KEYBOARD_SLICING_CONTROLS
-		case VK_UP:
-			if (fZPlus_FrontFace >= -0.49f)
-			{
-				fZPlus_FrontFace -= 0.01f;
-			}
-
-			break;
-
-		case VK_DOWN:
-			if (fZPlus_FrontFace < 0.5f)
-			{
-				fZPlus_FrontFace += 0.01f;
-			}
-			break;
-
-		case VK_LEFT:
-			if (fXPlus_SideFace>= -0.49f)
-			{
-				fXPlus_SideFace -= 0.01f;
-			}
-			break;
-
-		case VK_RIGHT:
-			if (fXPlus_SideFace < 0.5f)
-			{
-				fXPlus_SideFace += 0.01f;
-			}
-			break;
-
-		case VK_SUBTRACT:
-			if (fYPlus_TopFace >= -0.49f)
-			{
-				fYPlus_TopFace -= 0.01f;
-			}
-			break;
-
-		case VK_ADD:
-			if (fYPlus_TopFace < 0.5f)
-			{
-				fYPlus_TopFace += 0.01f;
-			}
-			break;
-		case VK_MULTIPLY:
-			if (fYMinus_BottomFace < 0.5f)
-			{
-				fYMinus_BottomFace += 0.01f;
-			}
-			break;
-
-		case VK_DIVIDE:
-			if (fYMinus_BottomFace >= -0.49f)
-			{
-				fYMinus_BottomFace -= 0.01f;
-			}
-			break;
-
-		case VK_NUMPAD2:
-			if (fZMinus_BackFace < 0.5f)
-			{
-				fZMinus_BackFace += 0.01f;
-			}
-			break;
-
-		case VK_NUMPAD8:
-			if (fZMinus_BackFace >= -0.49f)
-			{
-				fZMinus_BackFace -= 0.01f;
-			}
-			break;
-
-		case VK_NUMPAD6:
-			if (fXMinus_SideFace < 0.5f)
-			{
-				fXMinus_SideFace += 0.01f;
-			}
-			break;
-
-		case VK_NUMPAD4:
-			if (fXMinus_SideFace >= -0.49f)
-			{
-				fXMinus_SideFace -= 0.01f;
-			}
-			break;
-#endif
-
 		case VK_ESCAPE:
 			DestroyWindow(hwnd);
 			break;
@@ -1320,28 +1232,23 @@ int initialize(void)
 	LoadVolumeData();
 
 
-	Initialize_Slicing_shader();
-
-
-
-
-
-	Slice_Volume();
 
 	LoadGridObject_Shader(5,5);
-
 	setup_Axes_BufferObjects();
 	Update_Volume_Box_Axes();
 
+
+	Initialize_Slicing_shader();
+	Initialize_Slicing_Geometry();
+	Slice_Volume();
+
+	Initialize_ColormapClassification_shader();
+	LoadTransferFunction();
 
 	Initialize_Raycasting_shader();
 	Initialize_Raycasting_Geomatry();
 
 	Initialize_IsoSurface_shader();
-
-	Initialize_ColormapClassification_shader();
-	LoadTransferFunction();
-
 
 	Initialize_TetrahedraMarcher_Constructor();
 	SetVolumeDimensions(256, 256, 256);
@@ -1353,15 +1260,13 @@ int initialize(void)
 	{
 		fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
 	}
-	//set the isosurface value
+	
 	SetIsosurfaceValue(48);
 	//set the number of sampling voxels 
 	SetNumSamplingVoxels(128, 128, 128);
-	//begin tetrahedra marching
 	MarchVolume();
 	Initialize_TetrahedraMarcher_Geomatry();
 	Initialize_TetrahedraMarcher_Shaders();
-
 
 
 	// Set the background color to BLUE.
@@ -1372,16 +1277,15 @@ int initialize(void)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
-	glEnable(GL_TEXTURE_3D);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// No WarmUpResize in this version
 
+	// initialize perspective matrix and call WarmUp resize()
 	perspectiveProjMatrix_glm = glm::identity<glm::mat4>();
-
 	resize(WIN_WIDTH, WIN_HEIGHT);
+
 	return (0);
 }
 
@@ -1416,7 +1320,6 @@ void printGLInfo(void)
 	fprintf(gpFile, "=======================================================\n");
 }
 
-
 void resize(int width, int height)
 {
 	// code:
@@ -1429,13 +1332,12 @@ void resize(int width, int height)
 	giWinHeight= height;
 
 	glViewport(
-		0,	// x coordinate
-		0,	// y coordinate
-		(GLsizei)width,  //	type=> OpenGL's integer Size i.e sizei
+		0,
+		0,
+		(GLsizei)width,
 		(GLsizei)height
 	);
 
-	
 	perspectiveProjMatrix_glm = glm::perspective(glm::radians(60.0f), (GLfloat)width / (GLfloat)height, 0.1f, 1000.0f);
 }
 
@@ -1634,21 +1536,16 @@ void uninitialize(void)
 }
 
 
-
-
-
 int LoadVolumeData(void)
 {
+	// prototype:
 	void uninitialize();
-	// local:
+
 
 	// code:
-
 	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);	// Engine
 	//std::ifstream infile(volume_file_4.c_str(), std::ios_base::binary); // Head
 	//std::ifstream infile(volume_file_2.c_str(), std::ios_base::binary); // Skull
-
-
 	if (infile.good())
 	{
 		//read the volume data file
@@ -1661,14 +1558,13 @@ int LoadVolumeData(void)
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_3D, textureID);
 		{
-			// set parameters for 'textureID'
+			// set glTexParameteri()
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-			// set mipmap levers for base and max:
 			glTexParameteri(GL_TEXTURE_3D,GL_TEXTURE_BASE_LEVEL,0);
 			glTexParameteri(GL_TEXTURE_3D,GL_TEXTURE_MAX_LEVEL,4);
 
@@ -1685,16 +1581,11 @@ int LoadVolumeData(void)
 				/* type*/GL_UNSIGNED_BYTE,
 				/*pixel data*/pData
 			);
-
-			// generate mipmaps:
 			glGenerateMipmap(GL_TEXTURE_3D);
-
-
 		}
-		//glBindTexture(GL_TEXTURE_3D, 0);
+		glBindTexture(GL_TEXTURE_3D, 0);
 
 		fprintf(gpFile, "LoadVolumeData() Success Step1\n"); fflush(gpFile);
-
 		delete[] pData;
 	}
 	else
@@ -1703,20 +1594,6 @@ int LoadVolumeData(void)
 		uninitialize();
 		return -1;
 	}
-
-	glGenVertexArrays(1, &VAO_volume);
-	glBindVertexArray(VAO_volume);
-	{
-		glGenBuffers(1, &VBO_volume);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_volume);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vTextureSlices), 0, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(ATTRIBUTE_POSITION);
-		glVertexAttribPointer(ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-	glBindVertexArray(0);
-
-
 
 
 	//setup the current camera transform and get the view direction vector
@@ -1727,18 +1604,13 @@ int LoadVolumeData(void)
 
 	viewDirection= -glm::vec3(MV[0][2], MV[1][2], MV[2][2]);	//get the current view direction vector
 
-
 	fprintf(gpFile, "LoadVolumeData() Success Step2 and Last\n"); fflush(gpFile);
-
-
 	return 0;
 }
 
-
-
 bool LoadVolume_MT(void)
 {
-
+	// code:
 	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
 
 	if (infile.good())
@@ -1756,7 +1628,6 @@ bool LoadVolume_MT(void)
 
 
 // to Update UI Button and Label Position on resize():
-
 void Set_UI_Objects_Position(HWND hwnd)
 {
 	// local:
@@ -2016,3 +1887,4 @@ void Set_UI_Objects_Position(HWND hwnd)
 
 
 }
+

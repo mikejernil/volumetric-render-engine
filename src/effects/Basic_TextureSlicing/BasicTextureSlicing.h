@@ -26,6 +26,7 @@ extern glm::vec4 jet_values[9];
 
 
 int Initialize_Slicing_shader(void);
+void Initialize_Slicing_Geometry(void);
 void Slice_Volume(void);
 int FindAbsMax(glm::vec3 v);
 int LoadVolumeData(void);

@@ -198,6 +198,23 @@ int Initialize_Slicing_shader(void)
 	return (0);
 }
 
+void Initialize_Slicing_Geometry(void)
+{
+	// code:
+	glGenVertexArrays(1, &VAO_volume);
+	glBindVertexArray(VAO_volume);
+	{
+		glGenBuffers(1, &VBO_volume);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_volume);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vTextureSlices), 0, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(ATTRIBUTE_POSITION);
+		glVertexAttribPointer(ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+	glBindVertexArray(0);
+
+}
+
 void Render_Basic_Volume(void)
 {
 	// local:
@@ -749,6 +766,11 @@ void Render_ColormapClassification_Output(void)
 
 		glBindVertexArray(VAO_volume);
 		glDrawArrays(GL_TRIANGLES, 0, sizeof(vTextureSlices) / sizeof(vTextureSlices[0]));
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_3D, 0);
+
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_3D, 0);
 		glBindVertexArray(0);
 	}

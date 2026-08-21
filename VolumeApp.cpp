@@ -8,20 +8,12 @@
 //- Commmon Header Files -
 #include<Windows.h>
 #include<Windowsx.h>
-#include<stdio.h>
-#include<stdlib.h>
 #include <fstream>
-#include <iostream>
-#include<math.h>
-#include<stdarg.h>
-#include <commdlg.h>
 
 #include "OGL.h"
 
 
 #include "./src/utils/common.h"
-
-
 #include "./src/effects/Basic_TextureSlicing/BasicTextureSlicing.h"
 #include "./src/effects/RayCasting/RayCasting.h"
 #include "./src/effects/MarchingTetrahedra/MarchingTetrahedra.h"
@@ -30,11 +22,7 @@
 
 
 
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "./src/include/stb_image.h"
-
-// MACROS and 
+// MACROS 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
@@ -56,7 +44,6 @@
 #define ID_TOP_FACE_PLUS 1012
 #define ID_LABEL_TOP_FACE 1013
 
-
 #define ID_BACK_FACE_MINUS 1014
 #define ID_BACK_FACE_PLUS 1015
 #define ID_LABEL_BACK_FACE 1016
@@ -70,13 +57,6 @@
 #define ID_LABEL_BOTTOM_FACE 1022
 
 
-
-
-
-
-
-#pragma comment(lib, "Comdlg32")
-
 // global variable declarations:
 HWND ghwnd = NULL;
 DWORD dwStyle = 0;
@@ -87,24 +67,13 @@ MONITORINFO mi;
 BOOL gbActiveWindow = FALSE;
 FILE* gpFile = NULL;
 
-// - OpenGL Related Variables -
-HDC ghdc = NULL;
-HGLRC ghrc = NULL;
-
-
 
 GLuint giWinWidth=0;
 GLuint giWinHeight = 0;
 
-enum
-{
-	AMC_ATTRIBUTE_POSITION = 0,
-	AMC_ATTRIBUTE_COLOR,
-	AMC_ATTRIBUTE_NORMAL,
-	AMC_ATTRIBUTE_TEXCOORD,
-};
 
-
+HDC ghdc = NULL;
+HGLRC ghrc = NULL;
 
 // global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -129,21 +98,11 @@ const wchar_t* effectNames[] =
 const wchar_t* textHolder = L"";
 
 
-
 //* Object 1 Data Info
-
 const std::string volume_file = "./resources/model/Engine256.raw";
 
 
-
-
-
-
-
-
-
 BOOL bSliceUpdate = TRUE;
-
 BOOL bMouseClicked = FALSE;
 BOOL bMouseControl = FALSE;
 
@@ -156,12 +115,7 @@ GLfloat xMouseValue_NDC = 0.0f;
 GLfloat yMouseValue_NDC = 0.0f;
 
 
-
-
-
-
-
-// Handle to UI Buttons and  Labels
+// Handle to UI Buttons and Labels
 HWND hwndValueLabel = NULL;
 
 HWND hLabel_FrontFace = NULL;
@@ -1756,8 +1710,8 @@ int LoadVolumeData(void)
 		glGenBuffers(1, &VBO_volume);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO_volume);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vTextureSlices), 0, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-		glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ATTRIBUTE_POSITION);
+		glVertexAttribPointer(ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	glBindVertexArray(0);

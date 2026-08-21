@@ -1,14 +1,26 @@
 
+cls
+
 del VolumeApp.exe
 del VolumeApp.obj
 del OGL.res
+del ".\\bin\\*.obj"
 
 
-cl.exe /c /EHsc /I ".\\dependencies\\glew\\include\\GL" VolumeApp.cpp
+@REM Compiles all the available cpp files in the subdirectories
+for /r %%i in (*.cpp) do (
+	echo "%%i"
+    cl.exe /Fo".\\bin\\" /c /EHsc  /I ".\\dependencies\\glew\\include\\GL" "%%i"
+)
 
-rc.exe OGL.rc
+echo ====================== COMPILATION DONE ======================
 
-link.exe VolumeApp.obj OGL.res user32.lib gdi32.lib /LIBPATH:".\\dependencies\\glew\\lib\\Release\\x64" /SUBSYSTEM:WINDOWS
+rc.exe /Fo".\\bin\\OGL.res" OGL.rc
+
+
+link.exe /out:VolumeApp.exe ./bin/*.obj ./bin/OGL.res user32.lib gdi32.lib /LIBPATH:".\\dependencies\\glew\\lib\\Release\\x64" /SUBSYSTEM:WINDOWS
+
+echo ====================== LINKING DONE ======================
 
 VolumeApp.exe
 

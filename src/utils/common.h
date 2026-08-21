@@ -4,13 +4,12 @@
 #include "./OpenGL/GLLog.h"
 
 
-
+// Macros 
 #define EPSILON 0.0001f;//for floating point inaccuracy
 
 
 
 // variable declarations:
-
 extern int MAX_SLICES;
 extern int XDIM;
 extern int YDIM;
@@ -30,11 +29,8 @@ extern glm::vec3 viewDirection;
 
 extern int num_slices;
 
-//unit cube edges
 extern int edgeList[8][12];
-
 extern int edges[12][2];
-
 extern glm::vec3 vTextureSlices[512 * 12];
 
 extern float dist;
@@ -43,12 +39,11 @@ extern float rotationX;
 extern float rotationY;
 extern float rotationZ;
 
-
 extern BOOL bWireframe;
 
 extern glm::mat4 perspectiveProjMatrix_glm;
 
 // function declarations:
-float degreeToRadians(float);
+
 
 

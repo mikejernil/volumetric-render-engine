@@ -142,6 +142,7 @@ BOOL LinkShaderProgramObject(GLuint shaderProgramObject)
 
 void UninitializeShaders(GLuint shaderProgramObject)
 {
+	static int iCount = 1;
 	// code
 	if (shaderProgramObject)
 	{
@@ -169,6 +170,8 @@ void UninitializeShaders(GLuint shaderProgramObject)
 
 		glDeleteProgram(shaderProgramObject);
 		shaderProgramObject = 0;
+		PrintLog("SUCCES: after UninitializeShaders() time : %d \n", iCount);
+		iCount++;
 	}
 }
 

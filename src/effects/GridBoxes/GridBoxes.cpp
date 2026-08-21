@@ -351,7 +351,8 @@ void Uninitialize_Grid(void)
 		VAO_Volume_Axes = 0;
 	}
 
-	//Uninitialize_ShaderProgramObject(shaderProgramObject_Grid);
+	UninitializeShaders(shaderProgramObject_Grid);
+
 }
 
 

@@ -270,7 +270,7 @@ void Uninitialize_Slicing_shader(void)
 	}
 
 
-	//Uninitialize_ShaderProgramObject(shaderProgramObject_Slicer1);
+	UninitializeShaders(shaderProgramObject_Slicer1);
 
 }
 
@@ -772,7 +772,7 @@ void Uninitialize_ColormapClassification_shader(void)
 
 	// code:
 
-	//Uninitialize_ShaderProgramObject(shaderProgramObject_Colormap);
+	UninitializeShaders(shaderProgramObject_Colormap);
 
 	if (texture_TransferFunction)
 	{

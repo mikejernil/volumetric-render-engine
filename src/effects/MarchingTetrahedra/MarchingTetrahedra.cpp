@@ -545,7 +545,7 @@ void Uninitialize_MarchingTetrahedra(void)
 {
 	// code:
 
-	//Uninitialize_ShaderProgramObject(shaderProgramObject_TM);
+	UninitializeShaders(shaderProgramObject_TM);
 
 
 	if (volumeMarcherVBO)

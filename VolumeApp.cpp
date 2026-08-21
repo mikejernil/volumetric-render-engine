@@ -109,7 +109,6 @@ enum
 // global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void ToggleFullscreen(void);
-void Uninitialize_ShaderProgramObject(GLuint );
 
 
 
@@ -1622,7 +1621,6 @@ void update(void)
 void uninitialize(void)
 {
 	// function declarations
-	void Uninitialize_ShaderProgramObject(GLuint);
 	void ToggleFullscreen(void);
 
 	// code:
@@ -1802,37 +1800,6 @@ bool LoadVolume_MT(void)
 	}
 }
 
-
-void Uninitialize_ShaderProgramObject(GLuint shaderProgramObject_)
-{
-	// code:
-
-	if (shaderProgramObject_)
-	{
-		glUseProgram(shaderProgramObject_);
-		GLint numShaders = 0;
-		glGetProgramiv(shaderProgramObject_, GL_ATTACHED_SHADERS, &numShaders);
-		if (numShaders > 0)
-		{
-			GLuint* pShaders = (GLuint*)malloc(numShaders * sizeof(GLuint));
-			if (pShaders != NULL)
-			{
-				glGetAttachedShaders(shaderProgramObject_, numShaders, &numShaders, pShaders);
-				for (GLint i = 0; i < numShaders; i++)
-				{
-					glDetachShader(shaderProgramObject_, pShaders[i]);
-					glDeleteShader(pShaders[i]);
-					pShaders[i] = 0;
-				}
-				free(pShaders);
-			}
-		}
-		glUseProgram(0);
-		glDeleteProgram(shaderProgramObject_);
-		shaderProgramObject_ = 0;
-	}
-
-}
 
 // to Update UI Button and Label Position on resize():
 

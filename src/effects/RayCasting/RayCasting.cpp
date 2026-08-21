@@ -416,7 +416,7 @@ void Uninitialize_Raycasting_shader(void)
 		VAO_cube_RayCastingCube = 0;
 	}
 
-	//Uninitialize_ShaderProgramObject(shaderProgramObject_RayCasting);
+	UninitializeShaders(shaderProgramObject_RayCasting);
 
 }
 
@@ -786,7 +786,7 @@ void Uninitialize_IsoSurface_shader(void)
 
 	// code:
 
-	//Uninitialize_ShaderProgramObject(shaderProgramObject_IsoSurface);
+	UninitializeShaders(shaderProgramObject_IsoSurface);
 
 }
 

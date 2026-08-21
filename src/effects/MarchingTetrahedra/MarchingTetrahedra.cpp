@@ -141,112 +141,9 @@ void Initialize_TetrahedraMarcher_Shaders()
 	// code:
 
 
-	/////////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-			
-			layout (location = 0) in vec3 aPosition;
-			layout (location = 2) in vec3 aNormal;
+	vertexShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\MarchingTetrahedra\\MarchingTetrahedra.vs.glsl", VERTEX);
+	fragmentShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\MarchingTetrahedra\\MarchingTetrahedra.fs.glsl", FRAGMENT);
 
-			uniform mat4 u_MVPMatrix;
-			uniform vec4 u_clippingPlane1;
-			uniform vec4 u_clippingPlane2;
-			uniform vec4 u_clippingPlane3;
-			uniform vec4 u_clippingPlane4;
-			uniform vec4 u_clippingPlane5;
-			uniform vec4 u_clippingPlane6;
-
-			smooth out vec3 oNormal;
-
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-				oNormal = aNormal;
-
-				gl_ClipDistance[0]= dot(u_clippingPlane1.xyz,aPosition)+u_clippingPlane1.w;
-				gl_ClipDistance[1]= dot(u_clippingPlane2.xyz,aPosition)+u_clippingPlane2.w;
-				gl_ClipDistance[2]= dot(u_clippingPlane3.xyz,aPosition)+u_clippingPlane3.w;
-				gl_ClipDistance[3]= dot(u_clippingPlane4.xyz,aPosition)+u_clippingPlane4.w;
-				gl_ClipDistance[4]= dot(u_clippingPlane5.xyz,aPosition)+u_clippingPlane5.w;
-				gl_ClipDistance[5]= dot(u_clippingPlane6.xyz,aPosition)+u_clippingPlane6.w;
-			}
-	
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				PrintLog("Error in MarchingTetrahedra Vertex Shader.\nVS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		PrintLog("Success in MarchingTetrahedra Vertex Shader.\n");
-	}
-
-
-
-	/////////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-
-			smooth in vec3 oNormal;
-			out vec4 FragColor;
-
-			void main(void)
-			{             
-
-				FragColor = vec4(oNormal,1.0);
-			}
-	
-
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				PrintLog("Error in MarchingTetrahedra Fragment Shader.\nFS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		PrintLog("Success in MarchingTetrahedra Fragment Shader.\n");
-	}
 
 	shaderProgramObject_TM = glCreateProgram();
 
@@ -255,30 +152,15 @@ void Initialize_TetrahedraMarcher_Shaders()
 
 	// pre Linking binding code has been MOVED BELOW
 
-	Log = NULL;
-
-	glLinkProgram(shaderProgramObject_TM);
-	glGetProgramiv(shaderProgramObject_TM, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
+	if (LinkShaderProgramObject(shaderProgramObject_TM) == FALSE)
 	{
-		glGetProgramiv(shaderProgramObject_TM, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_TM, infoLogLength, &written, Log);
-				PrintLog("Error in MarchingTetrahedra shaderObject Linking\nLinking Log : % s\n", Log);
-				free(Log);
-				uninitialize();
-			}
-		}
+		PrintLog("shaderProgramObject_TM Linking FAILED \n");
 	}
 	else
 	{
-		PrintLog("Success in MarchingTetrahedra shaderObject Linking\n");
+		PrintLog("shaderProgramObject_TM Linking Successful \n");
 	}
+
 
 	glUseProgram(shaderProgramObject_TM);
 	glBindAttribLocation(shaderProgramObject_TM, ATTRIBUTE_POSITION, "aPosition");

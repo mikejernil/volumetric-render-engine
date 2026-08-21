@@ -42,99 +42,11 @@ int LoadGridObject_Shader(int width, int depth)
 	GLuint vertexShaderObject;
 	GLuint fragmentShaderObject;
 
-	GLint status;
-	GLint infoLogLength;
-	char* Log = NULL;
-
 	// code:
 
-	///* //////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-			
-			layout (location = 0) in vec3 aPosition;
-			uniform mat4 u_MVPMatrix;
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-			}
-	
-			)";
+	vertexShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\GridBoxes\\GridBoxes.vs.glsl", VERTEX);
+	fragmentShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\GridBoxes\\GridBoxes.fs.glsl", FRAGMENT);
 
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				PrintLog(" GridObject Vertex Shader Compilation Log : %s\n", Log);
-
-				free(Log);
-				Log = NULL;
-				uninitialize();
-				return -1;
-			}
-		}
-	}
-	else
-	{
-		PrintLog("GridObject Success at  Vertex Shader Compilation \n");
-	}
-
-
-
-	//* ///////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-
-			uniform vec4 u_Color;
-			out vec4 FragColor;		
-			void main(void)
-			{             
-				FragColor = u_Color ;
-			}
-
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				PrintLog("GridObject  FRAGMENT Shader Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-				return -1;
-			}
-		}
-	}
-	else
-	{
-		PrintLog("GridObject Success at  FRAGMENT Shader Compilation \n");
-	}
 
 	shaderProgramObject_Grid = glCreateProgram();
 
@@ -145,30 +57,13 @@ int LoadGridObject_Shader(int width, int depth)
 
 	glBindAttribLocation(shaderProgramObject_Grid, ATTRIBUTE_POSITION, "aPosition");
 
-	infoLogLength = 0;
-	Log = NULL;
-	glLinkProgram(shaderProgramObject_Grid);
-	glGetProgramiv(shaderProgramObject_Grid, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
+	if (LinkShaderProgramObject(shaderProgramObject_Grid) == FALSE)
 	{
-		glGetProgramiv(shaderProgramObject_Grid, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_Grid, infoLogLength, &written, Log);
-				PrintLog("GridObject  Shader Compilation Log : %s\n", Log);
-				free(Log);
-				uninitialize();
-				return -1;
-			}
-		}
+		PrintLog("shaderProgramObject_Grid Linking FAILED \n");
 	}
 	else
 	{
-		PrintLog("GridObject  Linking Successful \n");
+		PrintLog("shaderProgramObject_Grid Linking Successful \n");
 	}
 
 	mvpUniform_GridObject = glGetUniformLocation(shaderProgramObject_Grid, "u_MVPMatrix");

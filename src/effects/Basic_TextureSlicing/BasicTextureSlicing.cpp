@@ -45,141 +45,20 @@ int Initialize_Slicing_shader(void)
 	GLuint vertexShaderObject;
 	GLuint fragmentShaderObject;
 
-	GLint status;
-	GLint infoLogLength;
-	char* Log = NULL;
-
 	// code:
 
-	//* ///////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-			layout (location = 0) in vec3 aPosition;
-			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords; //3D texture coordinates for texture lookup in the fragment shader
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-				oTexCoords = aPosition + vec3(0.5);
-
-				//get the 3D texture coordinates by adding (0.5,0.5,0.5) to the object space 
-				//vertex position. Since the unit cube is at origin (min: (-0.5,-0.5,-0.5) and max: (0.5,0.5,0.5))
-				//adding (0.5,0.5,0.5) to the unit cube object space position gives us values from (0,0,0) to 
-				//(1,1,1)
-			}
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				PrintLog("Slicer1 Vertex Shader Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		PrintLog("Slicer1  Success at  Vertex Shader Compilation \n");
-	}
-
-
-
-	//* ///////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-			smooth in vec3 oTexCoords; //3D texture coordinates form vertex shader, interpolated by rasterizer
-			uniform sampler3D u_Volume3DSampler; //volume dataset
-
-			out vec4 FragColor;		
-			void main(void)
-			{             
-				FragColor = texture(u_Volume3DSampler, oTexCoords).rrrr;
-			}
-
-			//Here we sample the volume dataset using the 3D texture coordinates from the vertex shader.
-			//Note that since at the time of texture creation, we gave the internal format as GL_RED
-			//we can get the sample value from the texture using the red channel. Here, we set all 4
-			//components as the sample value in the texture which gives us a shader of grey.
-	
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-
-	status = 0;
-	infoLogLength = 0;
-	Log = NULL;
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				PrintLog("Slicer1  FRAGMENT Shader Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		PrintLog("Slicer1 Success at NEW FRAGMENT Shader Compilation \n");
-	}
+	vertexShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\Basic_TextureSlicing\\TextureSlicing.vs.glsl", VERTEX);
+	fragmentShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\Basic_TextureSlicing\\TextureSlicing.fs.glsl", FRAGMENT);
 
 	shaderProgramObject_Slicer1 = glCreateProgram();
-
 
 	glAttachShader(shaderProgramObject_Slicer1, vertexShaderObject);
 	glAttachShader(shaderProgramObject_Slicer1, fragmentShaderObject);
 
-	// MOVED BELOW
 
-	status = 0;
-	infoLogLength = 0;
-	Log = NULL;
-	glLinkProgram(shaderProgramObject_Slicer1);
-	glGetProgramiv(shaderProgramObject_Slicer1, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
+	if (LinkShaderProgramObject(shaderProgramObject_Slicer1)==FALSE)
 	{
-		glGetProgramiv(shaderProgramObject_Slicer1, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_Slicer1, infoLogLength, &written, Log);
-				PrintLog("Slicer1  SHADEROBJECT  Linking Log : %s\n", Log);
-				free(Log);
-				uninitialize();
-				return FALSE;
-			}
-		}
+		PrintLog("Slicer1  shaderProgramObject_Slicer1 Linking FAILED \n");
 	}
 	else
 	{
@@ -187,7 +66,6 @@ int Initialize_Slicing_shader(void)
 	}
 
 	glUseProgram(shaderProgramObject_Slicer1);
-
 	glBindAttribLocation(shaderProgramObject_Slicer1, ATTRIBUTE_POSITION, "aPosition");
 	modelViewProjectionUniform_Slicer1 = glGetUniformLocation(shaderProgramObject_Slicer1, "u_MVPMatrix");
 	textureVolumeUniform_Slicer1 = glGetUniformLocation(shaderProgramObject_Slicer1, "u_Volume3DSampler");
@@ -523,107 +401,11 @@ int Initialize_ColormapClassification_shader(void)
 	GLuint vertexShaderObject;
 	GLuint fragmentShaderObject;
 
-	GLint status;
-	GLint infoLogLength;
-	char* Log = NULL;
 
 	// code:
 
-	//* ///////////////////// # VERTEX SHADER # ////////////////////////
-	const GLchar* vertexShaderSource = R"(
-			
-			#version 460 core
-
-			layout (location = 0) in vec3 aPosition;
-			uniform mat4 u_MVPMatrix;
-			smooth out vec3 oTexCoords;
-
-			void main()
-			{
-				gl_Position = u_MVPMatrix * vec4(aPosition.xyz, 1.0);
-
-				oTexCoords = aPosition + vec3(0.5);
-			}
-
-			)";
-
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSource, NULL);
-
-	glCompileShader(vertexShaderObject);
-	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, Log);
-				PrintLog("Error in Colormap VERTEX Shader.\nVS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		PrintLog("Success in Colormap VERTEX Shader.\n");
-	}
-
-
-
-	//* ///////////////////// # FRAGMENT SHADER # ////////////////////////
-	const GLchar* fragmentShaderSource = R"(
-			
-			#version 460 core
-
-			smooth in vec3 oTexCoords;
-			uniform sampler3D u_Volume3DSampler;
-			uniform sampler1D u_LevelOfDetail;
-
-			out vec4 FragColor;		
-			void main(void)
-			{             
-
-				FragColor = texture(u_LevelOfDetail, texture(u_Volume3DSampler,oTexCoords).r);
-			}
-			)";
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSource, NULL);
-
-	glCompileShader(fragmentShaderObject);
-
-	status = 0;
-	infoLogLength = 0;
-	Log = NULL;
-	glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, Log);
-				PrintLog("Error in Colormap FRAGMENT Shader.\nFS Compilation Log : %s\n", Log);
-				free(Log);
-				Log = NULL;
-				uninitialize();
-			}
-		}
-	}
-	else
-	{
-		PrintLog("Success in Colormap FRAGMENT Shader.\n");
-	}
+	vertexShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\Colormap\\Colormap.vs.glsl", VERTEX);
+	fragmentShaderObject = CreateAndCompileShaderObjects(".\\src\\shaders\\Colormap\\Colormap.fs.glsl", FRAGMENT);
 
 	shaderProgramObject_Colormap = glCreateProgram();
 
@@ -631,42 +413,27 @@ int Initialize_ColormapClassification_shader(void)
 	glAttachShader(shaderProgramObject_Colormap, fragmentShaderObject);
 
 
-	status = 0;
-	infoLogLength = 0;
-	Log = NULL;
-	glLinkProgram(shaderProgramObject_Colormap);
-	glGetProgramiv(shaderProgramObject_Colormap, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
+	if (LinkShaderProgramObject(shaderProgramObject_Colormap)==FALSE)
 	{
-		glGetProgramiv(shaderProgramObject_Colormap, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0)
-		{
-			Log = (char*)malloc(infoLogLength);
-			if (Log != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(shaderProgramObject_Colormap, infoLogLength, &written, Log);
-				PrintLog("Error in Colormap shaderObject Linking\nLinking Log : % s\n", Log);
-				free(Log);
-				uninitialize();
-				return FALSE;
-			}
-		}
+		PrintLog("shaderProgramObject_Colormap Linking FAILED \n");
 	}
 	else
 	{
-		PrintLog("Success in Colormap shaderObject Linking\n");
+		PrintLog("shaderProgramObject_Colormap Linking Successful \n");
 	}
 
+
 	glUseProgram(shaderProgramObject_Colormap);
+	{
+		glBindAttribLocation(shaderProgramObject_Colormap, ATTRIBUTE_POSITION, "aPosition");
 
-	glBindAttribLocation(shaderProgramObject_Colormap, ATTRIBUTE_POSITION, "aPosition");
-	modelViewProjectionUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_MVPMatrix");
-	textureVolumeUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_Volume3DSampler");
-	levelOfDetail_Uniform = glGetUniformLocation(shaderProgramObject_Colormap, "u_LevelOfDetail");
+		modelViewProjectionUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_MVPMatrix");
+		textureVolumeUniform_Colormap = glGetUniformLocation(shaderProgramObject_Colormap, "u_Volume3DSampler");
+		levelOfDetail_Uniform = glGetUniformLocation(shaderProgramObject_Colormap, "u_LevelOfDetail");
 
-	glUniform1i(textureVolumeUniform_Colormap, 0);
-	glUniform1i(levelOfDetail_Uniform, 1);
+		glUniform1i(textureVolumeUniform_Colormap, 0);
+		glUniform1i(levelOfDetail_Uniform, 1);
+	}
 	glUseProgram(0);
 
 

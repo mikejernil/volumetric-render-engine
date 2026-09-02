@@ -22,6 +22,10 @@ extern GLuint texture_TransferFunction;
 extern glm::vec4 jet_values[9];
 
 
+extern GLuint texture_Data_1;
+extern GLuint texture_Data_2;
+extern GLuint texture_Data_3;
+
 // function declarations:
 
 
@@ -30,6 +34,7 @@ void Initialize_Slicing_Geometry(void);
 void Slice_Volume(void);
 int FindAbsMax(glm::vec3 v);
 int LoadVolumeData(void);
+int Load_Volume_Data(const std::string , GLuint* );
 void Render_Basic_Volume(void);
 void Update_Basic_Volume(void);
 void Uninitialize_Slicing_shader(void);

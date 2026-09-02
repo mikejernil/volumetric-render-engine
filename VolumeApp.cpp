@@ -7,7 +7,7 @@
 //- Commmon Header Files -
 #include<Windows.h>
 #include<Windowsx.h>
-#include <fstream>
+
 
 #include "OGL.h"
 
@@ -98,7 +98,12 @@ const wchar_t* textHolder = L"";
 
 
 //* Object 1 Data Info
+
 const std::string volume_file = "./resources/model/Engine256.raw";
+
+const std::string volume_data_1 = "./resources/model/Engine256.raw";
+const std::string volume_data_2 = "./resources/model/bonsai_256x256x256_uint8.raw";
+const std::string volume_data_3 = "./resources/model/skull_256x256x256_uint8.raw";
 
 
 BOOL bSliceUpdate = TRUE;
@@ -943,6 +948,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CHAR:
 		switch (LOWORD(wParam))
 		{
+		case '1':
+			textureID = texture_Data_1;
+			break;
+
+		case '2':
+			textureID = texture_Data_2;
+			break;
+
+		case '3':
+			textureID = texture_Data_3;
+			break;
+
 		case 'f':
 		case 'F':
 			if (gbFullscreen == FALSE)
@@ -1229,8 +1246,12 @@ int initialize(void)
 	printGLInfo();
 
 
-	LoadVolumeData();
+	//LoadVolumeData();
+	Load_Volume_Data(volume_data_1, &texture_Data_1);
+	Load_Volume_Data(volume_data_2, &texture_Data_2);
+	Load_Volume_Data(volume_data_3, &texture_Data_3);
 
+	textureID = texture_Data_1;
 
 
 	LoadGridObject_Shader(5,5);
@@ -1607,6 +1628,66 @@ int LoadVolumeData(void)
 	fprintf(gpFile, "LoadVolumeData() Success Step2 and Last\n"); fflush(gpFile);
 	return 0;
 }
+
+
+int Load_Volume_Data(const std::string volume_data_ ,GLuint *textureData_)
+{
+	// prototype:
+	void uninitialize();
+
+
+	// code:
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);	// Engine
+	if (infile.good())
+	{
+		//read the volume data file
+		GLubyte* pData = new GLubyte[XDIM * YDIM * ZDIM];
+		infile.read(reinterpret_cast<char*>(pData), XDIM * YDIM * ZDIM * sizeof(GLubyte));
+		infile.close();
+
+
+		glGenTextures(1, textureData_);
+		glBindTexture(GL_TEXTURE_3D, *textureData_);
+		{
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 4);
+
+			glTexImage3D(
+				GL_TEXTURE_3D,
+				0,
+				GL_R8,
+				XDIM,
+				YDIM,
+				ZDIM,
+				0,
+				GL_RED,
+				GL_UNSIGNED_BYTE,
+				pData
+			);
+			glGenerateMipmap(GL_TEXTURE_3D);
+		}
+		glBindTexture(GL_TEXTURE_3D, 0);
+
+		fprintf(gpFile, "Load_Volume_Data() Success Step1\n"); fflush(gpFile);
+		delete[] pData;
+	}
+	else
+	{
+		fprintf(gpFile, "Load_Volume_Data() FAILED Step1\n"); fflush(gpFile);
+		uninitialize();
+		return -1;
+	}
+
+	fprintf(gpFile, "Load_Volume_Data() Success Step2 and Last\n"); fflush(gpFile);
+	return 0;
+}
+
 
 bool LoadVolume_MT(void)
 {

@@ -1,10 +1,13 @@
 
 cls
 
+mkdir bin
+
 del VolumeApp.exe
 del VolumeApp.obj
 del OGL.res
 del ".\\bin\\*.obj"
+
 
 
 @REM Compiles all the available cpp files in the subdirectories

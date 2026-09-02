@@ -30,6 +30,9 @@ GLuint levelOfDetail_Uniform = 0;
 GLuint texture_TransferFunction = 0;
 
 
+GLuint texture_Data_1 = 0;
+GLuint texture_Data_2 = 0;
+GLuint texture_Data_3 = 0;
 
 // function definitions:
 

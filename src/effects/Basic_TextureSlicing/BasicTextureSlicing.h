@@ -25,6 +25,7 @@ extern glm::vec4 jet_values[9];
 extern GLuint texture_Data_1;
 extern GLuint texture_Data_2;
 extern GLuint texture_Data_3;
+extern GLuint texture_Data_4;
 
 // function declarations:
 

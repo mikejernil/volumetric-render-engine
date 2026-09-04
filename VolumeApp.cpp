@@ -55,6 +55,9 @@
 #define ID_BOTTOM_FACE_PLUS 1021
 #define ID_LABEL_BOTTOM_FACE 1022
 
+#define ID_LEFT_DATA_SET 1023
+#define ID_RIGHT_DATA_SET 1024
+#define ID_LABEL_DATA_SET 1025
 
 // global variable declarations:
 HWND ghwnd = NULL;
@@ -97,13 +100,27 @@ const wchar_t* effectNames[] =
 const wchar_t* textHolder = L"";
 
 
+int iDataSet = -1;
+
+const wchar_t* textDataSet= L"";
+
+const wchar_t* dataSet[] =
+{
+	L"Engine",
+	L"Bonsai Tree",
+	L"Aneurism",
+	L"Foot",
+};
+
+
 //* Object 1 Data Info
 
 const std::string volume_file = "./resources/model/Engine256.raw";
 
 const std::string volume_data_1 = "./resources/model/Engine256.raw";
 const std::string volume_data_2 = "./resources/model/bonsai_256x256x256_uint8.raw";
-const std::string volume_data_3 = "./resources/model/skull_256x256x256_uint8.raw";
+const std::string volume_data_3 = "./resources/model/aneurism_256x256x256_uint8.raw";
+const std::string volume_data_4 = "./resources/model/foot_256x256x256_uint8.raw";
 
 
 BOOL bSliceUpdate = TRUE;
@@ -130,6 +147,8 @@ HWND hLabel_BackFace = NULL;
 HWND hLabel_LeftFace = NULL;
 HWND hLabel_BottomFace = NULL;
 
+HWND hLabel_DataSet= NULL;
+
 HWND hResetButton = NULL;
 HWND hwndLeftButton = NULL;
 HWND hwndRightButton = NULL;
@@ -145,6 +164,9 @@ HWND hLeftClip_Minus = NULL;
 HWND hLeftClip_Plus = NULL;
 HWND hBottomClip_Minus = NULL;
 HWND hBottomClip_Plus = NULL;
+
+HWND hLeft_Data_Set = NULL;
+HWND hRight_Data_Set = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -238,6 +260,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	
 	iEffectUsed = 3;
+
 	
 
 	// Reset button:
@@ -588,6 +611,53 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	
+	// ------------------ Data Set :  ARROW Two Buttons and Label ------------------ 
+	hLeft_Data_Set= CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LEFT_DATA_SET,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_DataSet = CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		880,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_DATA_SET,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text8[64];
+	swprintf_s(text7, 64, L" Engine ",fYMinus_BottomFace);
+	SetWindowText(hLabel_DataSet, text7);
+
+	hRight_Data_Set = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_RIGHT_DATA_SET,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
 
 
 
@@ -637,6 +707,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	//function declarations:
 	void resize(int, int);
 	void Set_UI_Objects_Position(HWND hwnd);
+	void Toggle_Data_Set(void);
 	void uninitialize(void);
 	void ToggleFullscreen(void);
 
@@ -924,6 +995,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				SetFocus(hwnd);
 				break;
 
+			case ID_LEFT_DATA_SET:
+				iDataSet-= 1;
+				if (iDataSet < 0)
+				{
+					iDataSet = 3;
+				}
+				Toggle_Data_Set();
+				bSliceUpdate = TRUE;
+				textDataSet = dataSet[iDataSet];
+				SetWindowText(hLabel_DataSet, textDataSet);
+				SetFocus(hwnd);
+				break;
+
+			case ID_RIGHT_DATA_SET:
+				iDataSet += 1;
+				if (iDataSet > 3)
+				{
+					iDataSet = 0;
+				}
+				Toggle_Data_Set();
+				bSliceUpdate = TRUE;
+				textDataSet = dataSet[iDataSet];
+				SetWindowText(hLabel_DataSet, textDataSet);
+				SetFocus(hwnd);
+				break;
 
 			}
 			break;
@@ -948,18 +1044,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CHAR:
 		switch (LOWORD(wParam))
 		{
-		case '1':
-			textureID = texture_Data_1;
-			break;
-
-		case '2':
-			textureID = texture_Data_2;
-			break;
-
-		case '3':
-			textureID = texture_Data_3;
-			break;
-
 		case 'f':
 		case 'F':
 			if (gbFullscreen == FALSE)
@@ -1175,6 +1259,7 @@ int initialize(void)
 	void printGLInfo(void);
 	void uninitialize(void);
 	void resize(int, int);
+	void Toggle_Data_Set(void);
 	
 	// local:
 	PIXELFORMATDESCRIPTOR pfd;
@@ -1250,8 +1335,11 @@ int initialize(void)
 	Load_Volume_Data(volume_data_1, &texture_Data_1);
 	Load_Volume_Data(volume_data_2, &texture_Data_2);
 	Load_Volume_Data(volume_data_3, &texture_Data_3);
+	Load_Volume_Data(volume_data_4, &texture_Data_4);
 
-	textureID = texture_Data_1;
+	iDataSet = 0;
+	Toggle_Data_Set();
+	//textureID = texture_Data_1;
 
 
 	LoadGridObject_Shader(5,5);
@@ -1965,7 +2053,61 @@ void Set_UI_Objects_Position(HWND hwnd)
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 
+	/********* Data Set ********/
+	y = y + 40;
+	SetWindowPos(
+		hLeft_Data_Set,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
 
 
+	SetWindowPos(
+		hLabel_DataSet,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hRight_Data_Set,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+
+}
+
+void Toggle_Data_Set(void)
+{
+	// code:
+
+	switch (iDataSet)
+	{
+	case 0:
+		textureID = texture_Data_1;
+		break;
+	case 1:
+		textureID = texture_Data_2;
+		break;
+	case 2:
+		textureID = texture_Data_3;
+		break;
+	case 3:
+		textureID = texture_Data_4;
+		break;
+	default:
+		textureID = texture_Data_1;
+		break;
+	}
 }
 

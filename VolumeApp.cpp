@@ -1092,6 +1092,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case 'W':
 			bWireframe = !bWireframe;
 			break;
+
+		case 's':
+			if (num_slices > 1)
+			{
+				num_slices -= 1;
+			}
+			break;
+			
+		case 'S':
+			if (num_slices < 255)
+			{
+				num_slices += 1;
+			}
+
+			break;
+
+
+		case 'z':
+			rotationZ -= 0.1f;
+			break;
+			
+		case 'Z':
+			rotationZ += 0.1f;
+			break;
+
 		default:
 			break;
 		}
@@ -1335,7 +1360,7 @@ int initialize(void)
 	Load_Volume_Data(volume_data_1, &texture_Data_1);
 	Load_Volume_Data(volume_data_2, &texture_Data_2);
 	Load_Volume_Data(volume_data_3, &texture_Data_3);
-	Load_Volume_Data(volume_data_4, &texture_Data_4);
+	Load_Volume_Data_Y_X_Rotate(volume_data_4, &texture_Data_4);
 
 	iDataSet = 0;
 	Toggle_Data_Set();
@@ -1463,6 +1488,7 @@ void display(void)
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
@@ -1570,7 +1596,7 @@ void display(void)
 	}
 	else
 	{
-		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y ( %.2f ,%.2f )", xMouseValue, yMouseValue);
+		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y ( %.2f ,%.2f ) | num_slices :%d | rotationZ : %f", xMouseValue, yMouseValue, num_slices,rotationZ);
 	}
 	SetWindowTextW(ghwnd, str);
 
@@ -1775,6 +1801,81 @@ int Load_Volume_Data(const std::string volume_data_ ,GLuint *textureData_)
 	fprintf(gpFile, "Load_Volume_Data() Success Step2 and Last\n"); fflush(gpFile);
 	return 0;
 }
+
+
+int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureData_)
+{
+	// prototype:
+	void uninitialize();
+
+
+	// code:
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);	// Engine
+	if (infile.good())
+	{
+		//read the volume data file
+		GLubyte* pData = new GLubyte[XDIM * YDIM * ZDIM];
+		infile.read(reinterpret_cast<char*>(pData), XDIM * YDIM * ZDIM * sizeof(GLubyte));
+		infile.close();
+		GLubyte* pData_New = new GLubyte[XDIM * YDIM * ZDIM];
+
+		for (int k = 0; k < ZDIM; k++)
+		{
+			for (int j = 0; j < YDIM; j++)
+			{
+				for (int i = 0; i < XDIM; i++)
+				{
+					int index_old = i + j * XDIM + k * XDIM * YDIM;
+					int index_new = j + i * YDIM + k * YDIM * XDIM;
+
+					pData_New[index_new] = pData[index_old];
+				}
+			}
+		}
+
+		glGenTextures(1, textureData_);
+		glBindTexture(GL_TEXTURE_3D, *textureData_);
+		{
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 4);
+
+			glTexImage3D(
+				GL_TEXTURE_3D,
+				0,
+				GL_R8,
+				YDIM,
+				XDIM,
+				ZDIM,
+				0,
+				GL_RED,
+				GL_UNSIGNED_BYTE,
+				pData_New
+			);
+			glGenerateMipmap(GL_TEXTURE_3D);
+		}
+		glBindTexture(GL_TEXTURE_3D, 0);
+
+		fprintf(gpFile, "Load_Volume_Data() Success Step1\n"); fflush(gpFile);
+		delete[] pData;
+		delete[] pData_New;
+	}
+	else
+	{
+		fprintf(gpFile, "Load_Volume_Data() FAILED Step1\n"); fflush(gpFile);
+		uninitialize();
+		return -1;
+	}
+
+	fprintf(gpFile, "Load_Volume_Data() Success Step2 and Last\n"); fflush(gpFile);
+	return 0;
+}
+
 
 
 bool LoadVolume_MT(void)
@@ -2054,7 +2155,9 @@ void Set_UI_Objects_Position(HWND hwnd)
 	);
 
 	/********* Data Set ********/
-	y = y + 40;
+
+	y = clientHeight * (60.0f / 1080.0f);
+
 	SetWindowPos(
 		hLeft_Data_Set,
 		NULL,

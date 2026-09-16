@@ -36,6 +36,7 @@ void Slice_Volume(void);
 int FindAbsMax(glm::vec3 v);
 int LoadVolumeData(void);
 int Load_Volume_Data(const std::string , GLuint* );
+int Load_Volume_Data_Y_X_Rotate(const std::string , GLuint* );
 void Render_Basic_Volume(void);
 void Update_Basic_Volume(void);
 void Uninitialize_Slicing_shader(void);

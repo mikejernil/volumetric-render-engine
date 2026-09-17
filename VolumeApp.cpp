@@ -7,7 +7,7 @@
 //- Commmon Header Files -
 #include<Windows.h>
 #include<Windowsx.h>
-#include <fstream>
+
 
 #include "OGL.h"
 
@@ -55,6 +55,9 @@
 #define ID_BOTTOM_FACE_PLUS 1021
 #define ID_LABEL_BOTTOM_FACE 1022
 
+#define ID_LEFT_DATA_SET 1023
+#define ID_RIGHT_DATA_SET 1024
+#define ID_LABEL_DATA_SET 1025
 
 // global variable declarations:
 HWND ghwnd = NULL;
@@ -97,8 +100,27 @@ const wchar_t* effectNames[] =
 const wchar_t* textHolder = L"";
 
 
+int iDataSet = -1;
+
+const wchar_t* textDataSet= L"";
+
+const wchar_t* dataSet[] =
+{
+	L"Engine",
+	L"Bonsai Tree",
+	L"Aneurism",
+	L"Foot",
+};
+
+
 //* Object 1 Data Info
+
 const std::string volume_file = "./resources/model/Engine256.raw";
+
+const std::string volume_data_1 = "./resources/model/Engine256.raw";
+const std::string volume_data_2 = "./resources/model/bonsai_256x256x256_uint8.raw";
+const std::string volume_data_3 = "./resources/model/aneurism_256x256x256_uint8.raw";
+const std::string volume_data_4 = "./resources/model/foot_256x256x256_uint8.raw";
 
 
 BOOL bSliceUpdate = TRUE;
@@ -125,6 +147,8 @@ HWND hLabel_BackFace = NULL;
 HWND hLabel_LeftFace = NULL;
 HWND hLabel_BottomFace = NULL;
 
+HWND hLabel_DataSet= NULL;
+
 HWND hResetButton = NULL;
 HWND hwndLeftButton = NULL;
 HWND hwndRightButton = NULL;
@@ -140,6 +164,9 @@ HWND hLeftClip_Minus = NULL;
 HWND hLeftClip_Plus = NULL;
 HWND hBottomClip_Minus = NULL;
 HWND hBottomClip_Plus = NULL;
+
+HWND hLeft_Data_Set = NULL;
+HWND hRight_Data_Set = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -233,6 +260,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	
 	iEffectUsed = 3;
+
 	
 
 	// Reset button:
@@ -583,6 +611,53 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	
+	// ------------------ Data Set :  ARROW Two Buttons and Label ------------------ 
+	hLeft_Data_Set= CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LEFT_DATA_SET,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_DataSet = CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		880,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_DATA_SET,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text8[64];
+	swprintf_s(text7, 64, L" Engine ",fYMinus_BottomFace);
+	SetWindowText(hLabel_DataSet, text7);
+
+	hRight_Data_Set = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_RIGHT_DATA_SET,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
 
 
 
@@ -632,6 +707,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	//function declarations:
 	void resize(int, int);
 	void Set_UI_Objects_Position(HWND hwnd);
+	void Toggle_Data_Set(void);
 	void uninitialize(void);
 	void ToggleFullscreen(void);
 
@@ -693,7 +769,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				iEffectUsed -= 1;
 				if (iEffectUsed < 0)
 				{
-					iEffectUsed = 4;
+					iEffectUsed = 3;
 				}
 				bSliceUpdate = TRUE;
 
@@ -704,7 +780,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			case ID_RIGHT_ARROW_EFFECT:
 				iEffectUsed += 1;
-				if (iEffectUsed > 4)
+				if (iEffectUsed > 3)
 				{
 					iEffectUsed = 0;
 				}
@@ -919,6 +995,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				SetFocus(hwnd);
 				break;
 
+			case ID_LEFT_DATA_SET:
+				iDataSet-= 1;
+				if (iDataSet < 0)
+				{
+					iDataSet = 3;
+				}
+				Toggle_Data_Set();
+				bSliceUpdate = TRUE;
+				textDataSet = dataSet[iDataSet];
+				SetWindowText(hLabel_DataSet, textDataSet);
+				SetFocus(hwnd);
+				break;
+
+			case ID_RIGHT_DATA_SET:
+				iDataSet += 1;
+				if (iDataSet > 3)
+				{
+					iDataSet = 0;
+				}
+				Toggle_Data_Set();
+				bSliceUpdate = TRUE;
+				textDataSet = dataSet[iDataSet];
+				SetWindowText(hLabel_DataSet, textDataSet);
+				SetFocus(hwnd);
+				break;
 
 			}
 			break;
@@ -991,6 +1092,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case 'W':
 			bWireframe = !bWireframe;
 			break;
+
+		case 's':
+			if (num_slices > 1)
+			{
+				num_slices -= 1;
+			}
+			break;
+			
+		case 'S':
+			if (num_slices < 255)
+			{
+				num_slices += 1;
+			}
+
+			break;
+
+
+		case 'z':
+			rotationZ -= 0.1f;
+			break;
+			
+		case 'Z':
+			rotationZ += 0.1f;
+			break;
+
 		default:
 			break;
 		}
@@ -1158,6 +1284,7 @@ int initialize(void)
 	void printGLInfo(void);
 	void uninitialize(void);
 	void resize(int, int);
+	void Toggle_Data_Set(void);
 	
 	// local:
 	PIXELFORMATDESCRIPTOR pfd;
@@ -1229,8 +1356,15 @@ int initialize(void)
 	printGLInfo();
 
 
-	LoadVolumeData();
+	//LoadVolumeData();
+	Load_Volume_Data(volume_data_1, &texture_Data_1);
+	Load_Volume_Data(volume_data_2, &texture_Data_2);
+	Load_Volume_Data(volume_data_3, &texture_Data_3);
+	Load_Volume_Data_Y_X_Rotate(volume_data_4, &texture_Data_4);
 
+	iDataSet = 0;
+	Toggle_Data_Set();
+	//textureID = texture_Data_1;
 
 
 	LoadGridObject_Shader(5,5);
@@ -1354,6 +1488,7 @@ void display(void)
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
@@ -1461,7 +1596,7 @@ void display(void)
 	}
 	else
 	{
-		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y ( %.2f ,%.2f )", xMouseValue, yMouseValue);
+		swprintf_s(str, L"VolumeApp 3D_Viewer : x ,y ( %.2f ,%.2f ) | num_slices :%d | rotationZ : %f", xMouseValue, yMouseValue, num_slices,rotationZ);
 	}
 	SetWindowTextW(ghwnd, str);
 
@@ -1607,6 +1742,141 @@ int LoadVolumeData(void)
 	fprintf(gpFile, "LoadVolumeData() Success Step2 and Last\n"); fflush(gpFile);
 	return 0;
 }
+
+
+int Load_Volume_Data(const std::string volume_data_ ,GLuint *textureData_)
+{
+	// prototype:
+	void uninitialize();
+
+
+	// code:
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);	// Engine
+	if (infile.good())
+	{
+		//read the volume data file
+		GLubyte* pData = new GLubyte[XDIM * YDIM * ZDIM];
+		infile.read(reinterpret_cast<char*>(pData), XDIM * YDIM * ZDIM * sizeof(GLubyte));
+		infile.close();
+
+
+		glGenTextures(1, textureData_);
+		glBindTexture(GL_TEXTURE_3D, *textureData_);
+		{
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 4);
+
+			glTexImage3D(
+				GL_TEXTURE_3D,
+				0,
+				GL_R8,
+				XDIM,
+				YDIM,
+				ZDIM,
+				0,
+				GL_RED,
+				GL_UNSIGNED_BYTE,
+				pData
+			);
+			glGenerateMipmap(GL_TEXTURE_3D);
+		}
+		glBindTexture(GL_TEXTURE_3D, 0);
+
+		fprintf(gpFile, "Load_Volume_Data() Success Step1\n"); fflush(gpFile);
+		delete[] pData;
+	}
+	else
+	{
+		fprintf(gpFile, "Load_Volume_Data() FAILED Step1\n"); fflush(gpFile);
+		uninitialize();
+		return -1;
+	}
+
+	fprintf(gpFile, "Load_Volume_Data() Success Step2 and Last\n"); fflush(gpFile);
+	return 0;
+}
+
+
+int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureData_)
+{
+	// prototype:
+	void uninitialize();
+
+
+	// code:
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);	// Engine
+	if (infile.good())
+	{
+		//read the volume data file
+		GLubyte* pData = new GLubyte[XDIM * YDIM * ZDIM];
+		infile.read(reinterpret_cast<char*>(pData), XDIM * YDIM * ZDIM * sizeof(GLubyte));
+		infile.close();
+		GLubyte* pData_New = new GLubyte[XDIM * YDIM * ZDIM];
+
+		for (int k = 0; k < ZDIM; k++)
+		{
+			for (int j = 0; j < YDIM; j++)
+			{
+				for (int i = 0; i < XDIM; i++)
+				{
+					int index_old = i + j * XDIM + k * XDIM * YDIM;
+					int index_new = j + i * YDIM + k * YDIM * XDIM;
+
+					pData_New[index_new] = pData[index_old];
+				}
+			}
+		}
+
+		glGenTextures(1, textureData_);
+		glBindTexture(GL_TEXTURE_3D, *textureData_);
+		{
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 4);
+
+			glTexImage3D(
+				GL_TEXTURE_3D,
+				0,
+				GL_R8,
+				YDIM,
+				XDIM,
+				ZDIM,
+				0,
+				GL_RED,
+				GL_UNSIGNED_BYTE,
+				pData_New
+			);
+			glGenerateMipmap(GL_TEXTURE_3D);
+		}
+		glBindTexture(GL_TEXTURE_3D, 0);
+
+		fprintf(gpFile, "Load_Volume_Data() Success Step1\n"); fflush(gpFile);
+		delete[] pData;
+		delete[] pData_New;
+	}
+	else
+	{
+		fprintf(gpFile, "Load_Volume_Data() FAILED Step1\n"); fflush(gpFile);
+		uninitialize();
+		return -1;
+	}
+
+	fprintf(gpFile, "Load_Volume_Data() Success Step2 and Last\n"); fflush(gpFile);
+	return 0;
+}
+
+
 
 bool LoadVolume_MT(void)
 {
@@ -1884,7 +2154,63 @@ void Set_UI_Objects_Position(HWND hwnd)
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 
+	/********* Data Set ********/
+
+	y = clientHeight * (60.0f / 1080.0f);
+
+	SetWindowPos(
+		hLeft_Data_Set,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
 
 
+	SetWindowPos(
+		hLabel_DataSet,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hRight_Data_Set,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+
+}
+
+void Toggle_Data_Set(void)
+{
+	// code:
+
+	switch (iDataSet)
+	{
+	case 0:
+		textureID = texture_Data_1;
+		break;
+	case 1:
+		textureID = texture_Data_2;
+		break;
+	case 2:
+		textureID = texture_Data_3;
+		break;
+	case 3:
+		textureID = texture_Data_4;
+		break;
+	default:
+		textureID = texture_Data_1;
+		break;
+	}
 }
 

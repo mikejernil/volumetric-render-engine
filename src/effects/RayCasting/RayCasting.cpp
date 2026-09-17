@@ -191,6 +191,7 @@ void Render_Raycasting_Output(void)
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;
@@ -330,6 +331,7 @@ void Render_IsoSurface_Output(void)
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	glm::mat4 modelViewProjectionMatrix = perspectiveProjMatrix_glm * ModelViewMatrix;

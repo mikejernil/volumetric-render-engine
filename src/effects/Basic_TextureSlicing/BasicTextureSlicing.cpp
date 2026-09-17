@@ -30,6 +30,10 @@ GLuint levelOfDetail_Uniform = 0;
 GLuint texture_TransferFunction = 0;
 
 
+GLuint texture_Data_1 = 0;
+GLuint texture_Data_2 = 0;
+GLuint texture_Data_3 = 0;
+GLuint texture_Data_4 = 0;
 
 // function definitions:
 
@@ -102,6 +106,7 @@ void Render_Basic_Volume(void)
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 
@@ -509,6 +514,7 @@ void Render_ColormapClassification_Output(void)
 
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelViewMatrix = glm::rotate(ModelViewMatrix, glm::radians(rotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewMatrix = glm::rotate(ModelViewMatrix, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	viewDirection = -glm::vec3(ModelViewMatrix[0][2], ModelViewMatrix[1][2], ModelViewMatrix[2][2]);

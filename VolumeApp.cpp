@@ -769,7 +769,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				iEffectUsed -= 1;
 				if (iEffectUsed < 0)
 				{
-					iEffectUsed = 4;
+					iEffectUsed = 3;
 				}
 				bSliceUpdate = TRUE;
 
@@ -780,7 +780,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			case ID_RIGHT_ARROW_EFFECT:
 				iEffectUsed += 1;
-				if (iEffectUsed > 4)
+				if (iEffectUsed > 3)
 				{
 					iEffectUsed = 0;
 				}

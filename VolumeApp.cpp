@@ -59,6 +59,10 @@
 #define ID_RIGHT_DATA_SET 1024
 #define ID_LABEL_DATA_SET 1025
 
+#define ID_LEFT_ISOVALUE 1026
+#define ID_RIGHT_ISOVALUE 1027
+#define ID_LABEL_ISOVALUE 1028
+
 // global variable declarations:
 HWND ghwnd = NULL;
 DWORD dwStyle = 0;
@@ -146,8 +150,8 @@ HWND hLabel_TopFace = NULL;
 HWND hLabel_BackFace = NULL;
 HWND hLabel_LeftFace = NULL;
 HWND hLabel_BottomFace = NULL;
-
 HWND hLabel_DataSet= NULL;
+HWND hLabel_IsoValue= NULL;
 
 HWND hResetButton = NULL;
 HWND hwndLeftButton = NULL;
@@ -167,6 +171,9 @@ HWND hBottomClip_Plus = NULL;
 
 HWND hLeft_Data_Set = NULL;
 HWND hRight_Data_Set = NULL;
+
+HWND hLeft_IsoValue = NULL;
+HWND hRight_IsoValue = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -640,12 +647,41 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	
+	// ------------------ Iso Value Set :  ARROW Two Buttons and Label ------------------ 
+	hLeft_IsoValue= CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LEFT_ISOVALUE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_IsoValue = CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		880,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_ISOVALUE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
 
 	wchar_t text8[64];
 	swprintf_s(text7, 64, L" Engine ",fYMinus_BottomFace);
 	SetWindowText(hLabel_DataSet, text7);
 
-	hRight_Data_Set = CreateWindow(
+	hRight_IsoValue = CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -654,7 +690,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		40,                  // width
 		30,                  // height
 		hwnd,
-		(HMENU)ID_RIGHT_DATA_SET,
+		(HMENU)ID_RIGHT_ISOVALUE,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
@@ -743,7 +779,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					fClipPlane_Left = 0.0f;
 					fClipPlane_Top = 1.0f;
 					fClipPlane_Bottom = 0.0f;
-
+					uiIsoValue = 48;
 					bSliceUpdate = TRUE;
 					// reset all labels:
 					wchar_t text2[64];
@@ -759,6 +795,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					SetWindowText(hLabel_LeftFace, text2);
 					swprintf_s(text2, 64, L"Bottom face: %.2f", fYMinus_BottomFace);
 					SetWindowText(hLabel_BottomFace, text2);
+					swprintf_s(text2, 64, L"IsoValue: %d ", uiIsoValue);
+					SetWindowText(hLabel_IsoValue, text2);
 
 					SetFocus(hwnd);
 				}
@@ -776,6 +814,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				textHolder = effectNames[iEffectUsed];
 				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
+				if (iEffectUsed != 2)
+				{
+					ShowWindow(hLeft_IsoValue, SW_HIDE);
+					ShowWindow(hLabel_IsoValue, SW_HIDE);
+					ShowWindow(hRight_IsoValue, SW_HIDE);
+				}
+				else
+				{
+					ShowWindow(hLeft_IsoValue, SW_SHOW);
+					ShowWindow(hLabel_IsoValue, SW_SHOW);
+					ShowWindow(hRight_IsoValue, SW_SHOW);
+				}
 				break;
 
 			case ID_RIGHT_ARROW_EFFECT:
@@ -788,6 +838,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				textHolder = effectNames[iEffectUsed];
 				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
+				if (iEffectUsed != 2)
+				{
+					ShowWindow(hLeft_IsoValue, SW_HIDE);
+					ShowWindow(hLabel_IsoValue, SW_HIDE);
+					ShowWindow(hRight_IsoValue, SW_HIDE);
+				}
+				else
+				{
+					ShowWindow(hLeft_IsoValue, SW_SHOW);
+					ShowWindow(hLabel_IsoValue, SW_SHOW);
+					ShowWindow(hRight_IsoValue, SW_SHOW);
+				}
 				break;
 
 			/* FRONT FACE  ARROWS */
@@ -1021,6 +1083,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				SetFocus(hwnd);
 				break;
 
+			case ID_LEFT_ISOVALUE:
+				if (uiIsoValue > 3)
+				{
+					uiIsoValue -= 2;
+				}
+				bSliceUpdate = TRUE;
+				wchar_t text8[64];
+				swprintf_s(text8, 64, L"IsoValue : %d ", uiIsoValue);
+				SetWindowText(hLabel_IsoValue, text8);
+				SetFocus(hwnd);
+				break;
+
+			case ID_RIGHT_ISOVALUE:
+				if (uiIsoValue < 250)
+				{
+					uiIsoValue += 2;
+				}
+				bSliceUpdate = TRUE;
+				swprintf_s(text8, 64, L"IsoValue : %d ", uiIsoValue);
+				SetWindowText(hLabel_IsoValue, text8);
+				SetFocus(hwnd);
+				break;
+
 			}
 			break;
 
@@ -1072,6 +1157,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				fZMinus_BackFace= -0.5f;
 				fXMinus_SideFace = -0.5f;
 				dist = -2.0f;
+				uiIsoValue = 48;
 				// reset all labels:
 				wchar_t text2[64];
 				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
@@ -2179,6 +2265,37 @@ void Set_UI_Objects_Position(HWND hwnd)
 
 	SetWindowPos(
 		hRight_Data_Set,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+	/********* Data Set ********/
+
+	y = y + 40;
+
+	SetWindowPos(
+		hLeft_IsoValue,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_IsoValue,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hRight_IsoValue,
 		NULL,
 		x + buttonWidth + padding + labelWidth + padding,
 		y,

@@ -648,6 +648,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		NULL
 	);
 	
+	hRight_Data_Set= CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_RIGHT_DATA_SET,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
 	// ------------------ Iso Value Set :  ARROW Two Buttons and Label ------------------ 
 	hLeft_IsoValue= CreateWindow(
 		L"BUTTON",
@@ -807,7 +821,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				iEffectUsed -= 1;
 				if (iEffectUsed < 0)
 				{
-					iEffectUsed = 3;
+					iEffectUsed = 4;
 				}
 				bSliceUpdate = TRUE;
 
@@ -830,7 +844,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			case ID_RIGHT_ARROW_EFFECT:
 				iEffectUsed += 1;
-				if (iEffectUsed > 3)
+				if (iEffectUsed > 4)
 				{
 					iEffectUsed = 0;
 				}
@@ -1442,7 +1456,6 @@ int initialize(void)
 	printGLInfo();
 
 
-	//LoadVolumeData();
 	Load_Volume_Data(volume_data_1, &texture_Data_1);
 	Load_Volume_Data(volume_data_2, &texture_Data_2);
 	Load_Volume_Data(volume_data_3, &texture_Data_3);
@@ -1450,7 +1463,6 @@ int initialize(void)
 
 	iDataSet = 0;
 	Toggle_Data_Set();
-	//textureID = texture_Data_1;
 
 
 	LoadGridObject_Shader(5,5);
@@ -1472,22 +1484,67 @@ int initialize(void)
 
 	Initialize_TetrahedraMarcher_Constructor();
 	SetVolumeDimensions(256, 256, 256);
-	if (LoadVolume_MT())
+
+	if (LoadVolume_MT(volume_data_1,&pVolume_1))
 	{
-		fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_1,&pVolume_1) Successful.------- \n");		fflush(gpFile);
 	}
 	else
 	{
-		fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_1,&pVolume_1) Failed.------- \n");		fflush(gpFile);
+	}
+	
+
+	if (LoadVolume_MT(volume_data_2,&pVolume_2))
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_2,&pVolume_2) Successful.------- \n");		fflush(gpFile);
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_2,&pVolume_2) Failed.------- \n");		fflush(gpFile);
+	}
+
+	if (LoadVolume_MT(volume_data_3,&pVolume_3))
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_3,&pVolume_3) Successful.------- \n");		fflush(gpFile);
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_3,&pVolume_3) Failed.------- \n");		fflush(gpFile);
+	}
+	
+	if (LoadVolume_MT_Y_X_Rotate(volume_data_4,&pVolume_4))
+	{
+		fprintf(gpFile, "------- LoadVolume_MT_Y_X_Rotate(volume_data_4,&pVolume_4) Successful.------- \n");		fflush(gpFile);
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume_MT_Y_X_Rotate(volume_data_4,&pVolume_4) Failed.------- \n");		fflush(gpFile);
 	}
 	
 	SetIsosurfaceValue(48);
 	//set the number of sampling voxels 
 	SetNumSamplingVoxels(128, 128, 128);
-	MarchVolume();
-	Initialize_TetrahedraMarcher_Geomatry();
+
+	// Data 1:
+	MarchVolume(pVolume_1);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_1,&volumeMarcherVBO_1);
+
+	// Data 2:
+	MarchVolume(pVolume_2);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_2, &volumeMarcherVBO_2);
+
+	// Data 3:
+	MarchVolume(pVolume_3);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_3, &volumeMarcherVBO_3);
+
+	// Data 4:
+	MarchVolume(pVolume_4);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_4, &volumeMarcherVBO_4);
+
 	Initialize_TetrahedraMarcher_Shaders();
 
+	volumeMarcherVAO= volumeMarcherVAO_1;
 
 	// Set the background color to BLUE.
 	glClearColor(0.75f, 0.75f, 0.75f, 0.0f);
@@ -1884,7 +1941,7 @@ int Load_Volume_Data(const std::string volume_data_ ,GLuint *textureData_)
 		return -1;
 	}
 
-	fprintf(gpFile, "Load_Volume_Data() Success Step2 and Last\n"); fflush(gpFile);
+	fprintf(gpFile, "Load_Volume_Data() Success Step2  \n"); fflush(gpFile);
 	return 0;
 }
 
@@ -1964,16 +2021,55 @@ int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureD
 
 
 
-bool LoadVolume_MT(void)
+
+
+bool LoadVolume_MT(const std::string volume_data_, GLubyte** pVolume_)
 {
 	// code:
-	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);
 
 	if (infile.good())
 	{
-		pVolume = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
-		infile.read(reinterpret_cast<char*>(pVolume), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
+		*pVolume_ = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+		infile.read(reinterpret_cast<char*>(*pVolume_), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
 		infile.close();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool LoadVolume_MT_Y_X_Rotate(const std::string volume_data_, GLubyte** pVolume_)
+{
+	// code:
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);
+
+	if (infile.good())
+	{
+		GLubyte* pData_Temp = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+
+		infile.read(reinterpret_cast<char*>(pData_Temp), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
+		infile.close();
+
+		*pVolume_ = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+
+		for (int k = 0; k < ZDIM_TM; k++)
+		{
+			for (int j = 0; j < YDIM_TM; j++)
+			{
+				for (int i = 0; i < XDIM_TM; i++)
+				{
+					int index_old = i + j * XDIM_TM + k * XDIM_TM * YDIM_TM;
+					int index_new = j + i * YDIM_TM + k * YDIM_TM * XDIM_TM;
+
+					(*pVolume_)[index_new] = pData_Temp[index_old];
+				}
+			}
+		}
+
+		delete[] pData_Temp;
 		return true;
 	}
 	else
@@ -2271,8 +2367,8 @@ void Set_UI_Objects_Position(HWND hwnd)
 		buttonWidth, buttonHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
-	/********* Data Set ********/
-
+	
+	/********* Iso Value ********/
 	y = y + 40;
 
 	SetWindowPos(
@@ -2315,15 +2411,19 @@ void Toggle_Data_Set(void)
 	{
 	case 0:
 		textureID = texture_Data_1;
+		volumeMarcherVAO = volumeMarcherVAO_1;
 		break;
 	case 1:
 		textureID = texture_Data_2;
+		volumeMarcherVAO = volumeMarcherVAO_2;
 		break;
 	case 2:
 		textureID = texture_Data_3;
+		volumeMarcherVAO = volumeMarcherVAO_3;
 		break;
 	case 3:
 		textureID = texture_Data_4;
+		volumeMarcherVAO = volumeMarcherVAO_4;
 		break;
 	default:
 		textureID = texture_Data_1;

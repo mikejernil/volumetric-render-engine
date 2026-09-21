@@ -30,6 +30,22 @@ GLubyte isoValue;
 GLuint volumeMarcherVBO = 0;
 GLuint volumeMarcherVAO = 0;
 
+GLuint volumeMarcherVBO_1 = 0;
+GLuint volumeMarcherVAO_1 = 0;
+
+GLuint volumeMarcherVBO_2 = 0;
+GLuint volumeMarcherVAO_2 = 0;
+
+GLuint volumeMarcherVBO_3 = 0;
+GLuint volumeMarcherVAO_3 = 0;
+
+GLuint volumeMarcherVBO_4 = 0;
+GLuint volumeMarcherVAO_4 = 0;
+
+GLubyte* pVolume_1 = NULL;
+GLubyte* pVolume_2 = NULL;
+GLubyte* pVolume_3 = NULL;
+GLubyte* pVolume_4 = NULL;
 
 // clipping plane members:
 GLuint clipFrontFace_uniform = 0;
@@ -180,15 +196,15 @@ void Initialize_TetrahedraMarcher_Shaders()
 
 }
 
-void Initialize_TetrahedraMarcher_Geomatry(void)
+void Initialize_TetrahedraMarcher_Geomatry(GLuint* VAO_,GLuint* VBO_)
 {
 	// code:
 
 	// VAO + VBO CODE for MarchingTetrahedra
-	glGenVertexArrays(1, &volumeMarcherVAO);
-	glBindVertexArray(volumeMarcherVAO);
-	glGenBuffers(1, &volumeMarcherVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, volumeMarcherVBO);
+	glGenVertexArrays(1, VAO_);
+	glBindVertexArray(*VAO_);
+	glGenBuffers(1, VBO_);
+	glBindBuffer(GL_ARRAY_BUFFER, *VBO_);
 	{
 		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
 		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
@@ -227,7 +243,7 @@ void SetIsosurfaceValue(const GLubyte value)
 
 
 
-void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)
+void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale, GLubyte* pVolume_)
 {
 	GLubyte cubeCornerValues[8];
 	int flagIndex, edgeFlags, i;
@@ -239,7 +255,8 @@ void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)
 	{
 		cubeCornerValues[i] = SampleVolume(x + (int)(a2fVertexOffset[i][0] * scale.x),
 			y + (int)(a2fVertexOffset[i][1] * scale.y),
-			z + (int)(a2fVertexOffset[i][2] * scale.z));
+			z + (int)(a2fVertexOffset[i][2] * scale.z),
+			pVolume_);
 	}
 
 	//Find which vertices are inside of the surface and which are outside
@@ -276,7 +293,7 @@ void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)
 			edgeVertices[i].z = z + (a2fVertexOffset[a2iEdgeConnection[i][0]][2] + offset * a2fEdgeDirection[i][2]) * scale.z;
 
 			//use the vertex position to get the normal
-			edgeNormals[i] = GetNormal((int)edgeVertices[i].x, (int)edgeVertices[i].y, (int)edgeVertices[i].z);
+			edgeNormals[i] = GetNormal((int)edgeVertices[i].x, (int)edgeVertices[i].y, (int)edgeVertices[i].z, pVolume_);
 		}
 	}
 
@@ -297,7 +314,7 @@ void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale)
 	}
 }
 
-void MarchVolume()
+void MarchVolume(GLubyte* pVolume_)
 {
 	vertices.clear();
 	int dx = XDIM_TM / X_SAMPLING_DIST;
@@ -310,7 +327,7 @@ void MarchVolume()
 		{
 			for (int x = 0; x < XDIM_TM; x += dx)
 			{
-				SampleVoxel(x, y, z, scale);
+				SampleVoxel(x, y, z, scale, pVolume_);
 			}
 		}
 	}
@@ -326,20 +343,22 @@ Vertex* GetVertexPointer_TM()
 	return  &vertices[0];
 }
 
-GLubyte SampleVolume(const int x, const int y, const int z) {
+GLubyte SampleVolume(const int x, const int y, const int z,GLubyte* pVolume_)
+{
 	int index = (x + (y * XDIM_TM)) + z * (XDIM_TM * YDIM_TM);
 	if (index < 0)
 		index = 0;
 	if (index >= XDIM_TM * YDIM_TM * ZDIM_TM)
 		index = (XDIM_TM * YDIM_TM * ZDIM_TM) - 1;
-	return pVolume[index];
+	return pVolume_[index];
 }
 
-glm::vec3 GetNormal(const int x, const int y, const int z) {
+glm::vec3 GetNormal(const int x, const int y, const int z,GLubyte* pVolume_)
+{
 	glm::vec3 N;
-	N.x = (SampleVolume(x - 1, y, z) - SampleVolume(x + 1, y, z)) * 0.5f;
-	N.y = (SampleVolume(x, y - 1, z) - SampleVolume(x, y + 1, z)) * 0.5f;
-	N.z = (SampleVolume(x, y, z - 1) - SampleVolume(x, y, z + 1)) * 0.5f;
+	N.x = (SampleVolume(x - 1, y, z, pVolume_) - SampleVolume(x + 1, y, z, pVolume_)) * 0.5f;
+	N.y = (SampleVolume(x, y - 1, z, pVolume_) - SampleVolume(x, y + 1, z, pVolume_)) * 0.5f;
+	N.z = (SampleVolume(x, y, z - 1, pVolume_) - SampleVolume(x, y, z + 1, pVolume_)) * 0.5f;
 	return glm::normalize(N);
 }
 float GetOffset(const GLubyte v1, const GLubyte v2) {
@@ -430,6 +449,77 @@ void Uninitialize_MarchingTetrahedra(void)
 
 	UninitializeShaders(shaderProgramObject_TM);
 
+
+	if (volumeMarcherVBO_4)
+	{
+		glDeleteBuffers(1, &volumeMarcherVBO_4);
+		volumeMarcherVBO_4 = 0;
+	}
+
+	if (volumeMarcherVAO_4)
+	{
+		glDeleteVertexArrays(1, &volumeMarcherVAO_4);
+		volumeMarcherVAO_4 = 0;
+	}
+
+	if (pVolume_4)
+	{
+		free(pVolume_4);
+		pVolume_4 = NULL;
+	}
+	
+	if (volumeMarcherVBO_3)
+	{
+		glDeleteBuffers(1, &volumeMarcherVBO_3);
+		volumeMarcherVBO_3 = 0;
+	}
+
+	if (volumeMarcherVAO_3)
+	{
+		glDeleteVertexArrays(1, &volumeMarcherVAO_3);
+		volumeMarcherVAO_3 = 0;
+	}
+
+	if (pVolume_3)
+	{
+		free(pVolume_3);
+		pVolume_3 = NULL;
+	}
+
+	if (volumeMarcherVBO_2)
+	{
+		glDeleteBuffers(1, &volumeMarcherVBO_2);
+		volumeMarcherVBO_2 = 0;
+	}
+
+	if (volumeMarcherVAO_2)
+	{
+		glDeleteVertexArrays(1, &volumeMarcherVAO_2);
+		volumeMarcherVAO_2 = 0;
+	}
+
+	if (pVolume_2)
+	{
+		free(pVolume_2);
+		pVolume_2 = NULL;
+	}
+	if (volumeMarcherVBO_1)
+	{
+		glDeleteBuffers(1, &volumeMarcherVBO_1);
+		volumeMarcherVBO_1 = 0;
+	}
+
+	if (volumeMarcherVAO_1)
+	{
+		glDeleteVertexArrays(1, &volumeMarcherVAO_1);
+		volumeMarcherVAO_1 = 0;
+	}
+
+	if (pVolume_1)
+	{
+		free(pVolume_1);
+		pVolume_1 = NULL;
+	}
 
 	if (volumeMarcherVBO)
 	{

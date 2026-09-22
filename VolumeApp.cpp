@@ -661,6 +661,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	textDataSet = dataSet[iDataSet];
+	SetWindowText(hLabel_DataSet, textDataSet);
 
 	// ------------------ Iso Value Set :  ARROW Two Buttons and Label ------------------ 
 	hLeft_IsoValue= CreateWindow(
@@ -692,8 +694,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	);
 
 	wchar_t text8[64];
-	swprintf_s(text7, 64, L" Engine ",fYMinus_BottomFace);
-	SetWindowText(hLabel_DataSet, text7);
+	swprintf_s(text7, 64, L"IsoValue : %d ", uiIsoValue);
+	SetWindowText(hLabel_IsoValue, text7);
 
 	hRight_IsoValue = CreateWindow(
 		L"BUTTON",
@@ -709,6 +711,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		NULL
 	);
 
+	ShowWindow(hLeft_IsoValue, SW_HIDE);
+	ShowWindow(hLabel_IsoValue, SW_HIDE);
+	ShowWindow(hRight_IsoValue, SW_HIDE);
 
 
 	ShowWindow(hwnd, SW_MAXIMIZE);

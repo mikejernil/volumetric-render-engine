@@ -1476,7 +1476,7 @@ int initialize(void)
 	Load_Volume_Data(volume_data_1, &texture_Data_1);
 	Load_Volume_Data(volume_data_2, &texture_Data_2);
 	Load_Volume_Data(volume_data_3, &texture_Data_3);
-	Load_Volume_Data_Y_X_Rotate(volume_data_4, &texture_Data_4);
+	Load_Volume_Data_Custom_Rotate(volume_data_4, &texture_Data_4);
 
 	iDataSet = 0;
 	Toggle_Data_Set();
@@ -1530,9 +1530,9 @@ int initialize(void)
 		fprintf(gpFile, "------- LoadVolume_MT(volume_data_3,&pVolume_3) Failed.------- \n");		fflush(gpFile);
 	}
 	
-	if (LoadVolume_MT_Y_X_Rotate(volume_data_4,&pVolume_4))
+	if (Load_Volume_Data_MT_Custom_Rotate(volume_data_4,&pVolume_4))
 	{
-		fprintf(gpFile, "------- LoadVolume_MT_Y_X_Rotate(volume_data_4,&pVolume_4) Successful.------- \n");		fflush(gpFile);
+		fprintf(gpFile, "------- Load_Volume_Data_MT_Custom_Rotate(volume_data_4,&pVolume_4) Successful.------- \n");		fflush(gpFile);
 	}
 	else
 	{
@@ -1965,7 +1965,7 @@ int Load_Volume_Data(const std::string volume_data_ ,GLuint *textureData_)
 }
 
 
-int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureData_)
+int Load_Volume_Data_Custom_Rotate(const std::string volume_data_, GLuint* textureData_)
 {
 	// prototype:
 	void uninitialize();
@@ -1988,7 +1988,11 @@ int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureD
 				for (int i = 0; i < XDIM; i++)
 				{
 					int index_old = i + j * XDIM + k * XDIM * YDIM;
-					int index_new = j + i * YDIM + k * YDIM * XDIM;
+					int new_X = j;
+					int new_Y = XDIM - 1 - i;
+					int new_Z = ZDIM- 1 - k;
+
+					int index_new = new_X + new_Y * YDIM+ new_Z * YDIM* XDIM;
 
 					pData_New[index_new] = pData[index_old];
 				}
@@ -2060,7 +2064,7 @@ bool LoadVolume_MT(const std::string volume_data_, GLubyte** pVolume_)
 	}
 }
 
-bool LoadVolume_MT_Y_X_Rotate(const std::string volume_data_, GLubyte** pVolume_)
+bool Load_Volume_Data_MT_Custom_Rotate(const std::string volume_data_, GLubyte** pVolume_)
 {
 	// code:
 	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);
@@ -2081,7 +2085,13 @@ bool LoadVolume_MT_Y_X_Rotate(const std::string volume_data_, GLubyte** pVolume_
 				for (int i = 0; i < XDIM_TM; i++)
 				{
 					int index_old = i + j * XDIM_TM + k * XDIM_TM * YDIM_TM;
-					int index_new = j + i * YDIM_TM + k * YDIM_TM * XDIM_TM;
+
+					int new_X = j;
+					int new_Y = XDIM_TM - 1 - i;
+					int new_Z = ZDIM_TM - 1 - k;
+
+					int index_new = new_X + new_Y * YDIM_TM + new_Z * YDIM_TM * XDIM_TM;
+
 
 					(*pVolume_)[index_new] = pData_Temp[index_old];
 				}

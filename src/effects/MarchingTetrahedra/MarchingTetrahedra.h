@@ -84,7 +84,7 @@ void SetVolumeDimensions(const int xdim, const int ydim, const int zdim);//funct
 void SetNumSamplingVoxels(const int x, const int y, const int z);//function to set the total number of sampling voxels + more voxels will give a higher density mesh
 void SetIsosurfaceValue(const GLubyte value);//set the isosurface value
 bool LoadVolume_MT(const std::string , GLubyte** );
-bool LoadVolume_MT_Y_X_Rotate(const std::string , GLubyte** );
+bool Load_Volume_Data_MT_Custom_Rotate(const std::string , GLubyte** );
 void MarchVolume(GLubyte*);//march the volume dataset
 size_t GetTotalVertices_TM();//get the total number of vertices generated
 Vertex* GetVertexPointer_TM();//get the pointer to the vertex buffer

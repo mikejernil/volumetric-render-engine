@@ -10,8 +10,10 @@ A Volumetric Render Engine 🧊 for Windows (Native). It's being built with Open
 Currently it has -
 - Volumetric RAW format support 
 - Different types of rendering (Colormap, Iso-surface etc.)
+- 4 Sample datasets loaded.
 - Rotate & Zoom Controls (for easy navigation) 
 - 6 slicing planes to visualize cross-sections
+- Added IsoValue changing controls for MarchingTetrahedra and Pseudo Iso Surface Rendering.
 
 
 > [!NOTE]
@@ -50,7 +52,7 @@ Iso Surface value helps us set filter as per Density and remove Noise.
 This is an algorithm in which we  can Render our Volume data as a set of Polygon meshes by extracting  'iso surface'.
 It goes through whole dataset and tries to fit a polygon based on data values to calculate a polygonal mesh from the volume dataset.
 It is called 'Marching Tetrahedra' because the cube is split in half three times, along diagonals which forms six irregular tetrahedra shapes. Here the intersection of the edges along isosurface is used for further calculation of grid points
- 
+Check the Wireframe of loaded data using key W/w when using **Marching Tetrahedra Method**
 
 **Applications** 
 1. Medical imaging

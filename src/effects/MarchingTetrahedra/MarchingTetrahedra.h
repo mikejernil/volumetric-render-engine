@@ -53,6 +53,7 @@ extern GLubyte* pVolume_2;
 extern GLubyte* pVolume_3;
 extern GLubyte* pVolume_4;
 
+extern BOOL bRecalculateForIsoValue;
 
 // clipping plane members:
 extern GLuint clipFrontFace_uniform;
@@ -92,5 +93,7 @@ glm::vec3 GetNormal(const int x, const int y, const int z, GLubyte*);//get the n
 void SampleVoxel(const int x, const int y, const int z, glm::vec3 scale, GLubyte*);//samples a voxel at the given location and scale
 float GetOffset(const GLubyte v1, const GLubyte v2);//returns the offset between the two sample values
 void Render_MarchingTetrahedra(void);
+
+void ReCalculate_VAO(GLuint , GLuint , GLubyte* );
 void Update_MarchingTetrahedra(void);
 void Uninitialize_MarchingTetrahedra(void);

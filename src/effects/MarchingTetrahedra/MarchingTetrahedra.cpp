@@ -47,6 +47,8 @@ GLubyte* pVolume_2 = NULL;
 GLubyte* pVolume_3 = NULL;
 GLubyte* pVolume_4 = NULL;
 
+BOOL bRecalculateForIsoValue = FALSE;
+
 // clipping plane members:
 GLuint clipFrontFace_uniform = 0;
 float fClipPlane_Front = 1.0f;
@@ -207,7 +209,7 @@ void Initialize_TetrahedraMarcher_Geomatry(GLuint* VAO_,GLuint* VBO_)
 	glBindBuffer(GL_ARRAY_BUFFER, *VBO_);
 	{
 		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
-		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_DYNAMIC_DRAW);
 		glEnableVertexAttribArray(ATTRIBUTE_POSITION);//enable vertex attribute array for position
 		glVertexAttribPointer(ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 
@@ -438,9 +440,54 @@ void Render_MarchingTetrahedra(void)
 
 }
 
+
+void ReCalculate_VAO(GLuint VAO_, GLuint VBO_, GLubyte* pVolume_)
+{
+	// code:
+
+	vertices.clear();
+	int dx = XDIM_TM / X_SAMPLING_DIST;
+	int dy = YDIM_TM / Y_SAMPLING_DIST;
+	int dz = ZDIM_TM / Z_SAMPLING_DIST;
+	glm::vec3 scale = glm::vec3(dx, dy, dz);
+	for (int z = 0; z < ZDIM_TM; z += dz)
+	{
+		for (int y = 0; y < YDIM_TM; y += dy)
+		{
+			for (int x = 0; x < XDIM_TM; x += dx)
+			{
+				SampleVoxel(x, y, z, scale, pVolume_);
+			}
+		}
+	}
+
+	glBindVertexArray(VAO_);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+	{
+		//pass the obtained vertices from the tetrahedra marcher and pass to the //buffer object memory
+		glBufferData(GL_ARRAY_BUFFER, GetTotalVertices_TM() * sizeof(Vertex), GetVertexPointer_TM(), GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(ATTRIBUTE_POSITION);//enable vertex attribute array for position
+		glVertexAttribPointer(ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+
+		//enable vertex attribute array for normals
+		glEnableVertexAttribArray(ATTRIBUTE_NORMAL);
+		glVertexAttribPointer(ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, normal));
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	
+}
+
 void Update_MarchingTetrahedra()
 {
 	// code:
+
+	if (bRecalculateForIsoValue == TRUE)
+	{
+		ReCalculate_VAO(volumeMarcherVAO, volumeMarcherVBO, (pVolume));
+		bRecalculateForIsoValue = FALSE;
+	}
 }
 
 void Uninitialize_MarchingTetrahedra(void)

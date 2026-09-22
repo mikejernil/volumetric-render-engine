@@ -800,6 +800,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					fClipPlane_Bottom = 0.0f;
 					uiIsoValue = 48;
 					bSliceUpdate = TRUE;
+					SetIsosurfaceValue(uiIsoValue);
+					bRecalculateForIsoValue = TRUE;
 					// reset all labels:
 					wchar_t text2[64];
 					swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
@@ -833,17 +835,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				textHolder = effectNames[iEffectUsed];
 				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
-				if (iEffectUsed != 2)
-				{
-					ShowWindow(hLeft_IsoValue, SW_HIDE);
-					ShowWindow(hLabel_IsoValue, SW_HIDE);
-					ShowWindow(hRight_IsoValue, SW_HIDE);
-				}
-				else
+				if (iEffectUsed == 2 || iEffectUsed == 4)
 				{
 					ShowWindow(hLeft_IsoValue, SW_SHOW);
 					ShowWindow(hLabel_IsoValue, SW_SHOW);
 					ShowWindow(hRight_IsoValue, SW_SHOW);
+				}
+				else
+				{
+					ShowWindow(hLeft_IsoValue, SW_HIDE);
+					ShowWindow(hLabel_IsoValue, SW_HIDE);
+					ShowWindow(hRight_IsoValue, SW_HIDE);
 				}
 				break;
 
@@ -857,17 +859,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				textHolder = effectNames[iEffectUsed];
 				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
-				if (iEffectUsed != 2)
-				{
-					ShowWindow(hLeft_IsoValue, SW_HIDE);
-					ShowWindow(hLabel_IsoValue, SW_HIDE);
-					ShowWindow(hRight_IsoValue, SW_HIDE);
-				}
-				else
+				if (iEffectUsed == 2 || iEffectUsed == 4)
 				{
 					ShowWindow(hLeft_IsoValue, SW_SHOW);
 					ShowWindow(hLabel_IsoValue, SW_SHOW);
 					ShowWindow(hRight_IsoValue, SW_SHOW);
+				}
+				else
+				{
+					ShowWindow(hLeft_IsoValue, SW_HIDE);
+					ShowWindow(hLabel_IsoValue, SW_HIDE);
+					ShowWindow(hRight_IsoValue, SW_HIDE);
 				}
 				break;
 
@@ -1084,6 +1086,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}
 				Toggle_Data_Set();
 				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
 				SetFocus(hwnd);
@@ -1097,6 +1101,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}
 				Toggle_Data_Set();
 				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
 				SetFocus(hwnd);
@@ -1108,6 +1114,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					uiIsoValue -= 2;
 				}
 				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				wchar_t text8[64];
 				swprintf_s(text8, 64, L"IsoValue : %d ", uiIsoValue);
 				SetWindowText(hLabel_IsoValue, text8);
@@ -1120,6 +1128,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					uiIsoValue += 2;
 				}
 				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				swprintf_s(text8, 64, L"IsoValue : %d ", uiIsoValue);
 				SetWindowText(hLabel_IsoValue, text8);
 				SetFocus(hwnd);
@@ -1177,6 +1187,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				fXMinus_SideFace = -0.5f;
 				dist = -2.0f;
 				uiIsoValue = 48;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				// reset all labels:
 				wchar_t text2[64];
 				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
@@ -1527,7 +1539,7 @@ int initialize(void)
 		fprintf(gpFile, "------- LoadVolume_MT_Y_X_Rotate(volume_data_4,&pVolume_4) Failed.------- \n");		fflush(gpFile);
 	}
 	
-	SetIsosurfaceValue(48);
+	SetIsosurfaceValue(uiIsoValue);
 	//set the number of sampling voxels 
 	SetNumSamplingVoxels(128, 128, 128);
 
@@ -1550,6 +1562,8 @@ int initialize(void)
 	Initialize_TetrahedraMarcher_Shaders();
 
 	volumeMarcherVAO= volumeMarcherVAO_1;
+	volumeMarcherVBO= volumeMarcherVBO_1;
+	pVolume = pVolume_1;
 
 	// Set the background color to BLUE.
 	glClearColor(0.75f, 0.75f, 0.75f, 0.0f);
@@ -2417,18 +2431,29 @@ void Toggle_Data_Set(void)
 	case 0:
 		textureID = texture_Data_1;
 		volumeMarcherVAO = volumeMarcherVAO_1;
+		volumeMarcherVBO = volumeMarcherVBO_1;
+		pVolume = pVolume_1;
 		break;
 	case 1:
 		textureID = texture_Data_2;
 		volumeMarcherVAO = volumeMarcherVAO_2;
+		volumeMarcherVBO = volumeMarcherVBO_2;
+
+		pVolume =pVolume_2;
 		break;
 	case 2:
 		textureID = texture_Data_3;
 		volumeMarcherVAO = volumeMarcherVAO_3;
+		volumeMarcherVBO = volumeMarcherVBO_3;
+
+		pVolume = pVolume_3;
 		break;
 	case 3:
 		textureID = texture_Data_4;
 		volumeMarcherVAO = volumeMarcherVAO_4;
+		volumeMarcherVBO = volumeMarcherVBO_4;
+
+		pVolume = pVolume_4;
 		break;
 	default:
 		textureID = texture_Data_1;

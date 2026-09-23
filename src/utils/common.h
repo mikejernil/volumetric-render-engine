@@ -39,6 +39,9 @@ extern float rotationX;
 extern float rotationY;
 extern float rotationZ;
 
+
+extern unsigned int uiIsoValue;
+
 extern BOOL bWireframe;
 
 extern glm::mat4 perspectiveProjMatrix_glm;

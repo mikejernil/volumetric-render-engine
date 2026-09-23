@@ -59,6 +59,10 @@
 #define ID_RIGHT_DATA_SET 1024
 #define ID_LABEL_DATA_SET 1025
 
+#define ID_LEFT_ISOVALUE 1026
+#define ID_RIGHT_ISOVALUE 1027
+#define ID_LABEL_ISOVALUE 1028
+
 // global variable declarations:
 HWND ghwnd = NULL;
 DWORD dwStyle = 0;
@@ -146,8 +150,8 @@ HWND hLabel_TopFace = NULL;
 HWND hLabel_BackFace = NULL;
 HWND hLabel_LeftFace = NULL;
 HWND hLabel_BottomFace = NULL;
-
 HWND hLabel_DataSet= NULL;
+HWND hLabel_IsoValue= NULL;
 
 HWND hResetButton = NULL;
 HWND hwndLeftButton = NULL;
@@ -167,6 +171,9 @@ HWND hBottomClip_Plus = NULL;
 
 HWND hLeft_Data_Set = NULL;
 HWND hRight_Data_Set = NULL;
+
+HWND hLeft_IsoValue = NULL;
+HWND hRight_IsoValue = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -640,12 +647,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
-
-	wchar_t text8[64];
-	swprintf_s(text7, 64, L" Engine ",fYMinus_BottomFace);
-	SetWindowText(hLabel_DataSet, text7);
-
-	hRight_Data_Set = CreateWindow(
+	
+	hRight_Data_Set= CreateWindow(
 		L"BUTTON",
 		L">",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -658,7 +661,59 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	textDataSet = dataSet[iDataSet];
+	SetWindowText(hLabel_DataSet, textDataSet);
 
+	// ------------------ Iso Value Set :  ARROW Two Buttons and Label ------------------ 
+	hLeft_IsoValue= CreateWindow(
+		L"BUTTON",
+		L"<",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,                  // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LEFT_ISOVALUE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLabel_IsoValue = CreateWindow(
+		L"STATIC",
+		L"0.5",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1465,                  // x
+		880,                  // y
+		100,                 // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_LABEL_ISOVALUE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	wchar_t text8[64];
+	swprintf_s(text7, 64, L"IsoValue : %d ", uiIsoValue);
+	SetWindowText(hLabel_IsoValue, text7);
+
+	hRight_IsoValue = CreateWindow(
+		L"BUTTON",
+		L">",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1570,                 // x
+		880,                  // y
+		40,                  // width
+		30,                  // height
+		hwnd,
+		(HMENU)ID_RIGHT_ISOVALUE,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	ShowWindow(hLeft_IsoValue, SW_HIDE);
+	ShowWindow(hLabel_IsoValue, SW_HIDE);
+	ShowWindow(hRight_IsoValue, SW_HIDE);
 
 
 	ShowWindow(hwnd, SW_MAXIMIZE);
@@ -743,8 +798,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					fClipPlane_Left = 0.0f;
 					fClipPlane_Top = 1.0f;
 					fClipPlane_Bottom = 0.0f;
-
+					uiIsoValue = 48;
 					bSliceUpdate = TRUE;
+					SetIsosurfaceValue(uiIsoValue);
+					bRecalculateForIsoValue = TRUE;
 					// reset all labels:
 					wchar_t text2[64];
 					swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
@@ -759,6 +816,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					SetWindowText(hLabel_LeftFace, text2);
 					swprintf_s(text2, 64, L"Bottom face: %.2f", fYMinus_BottomFace);
 					SetWindowText(hLabel_BottomFace, text2);
+					swprintf_s(text2, 64, L"IsoValue: %d ", uiIsoValue);
+					SetWindowText(hLabel_IsoValue, text2);
 
 					SetFocus(hwnd);
 				}
@@ -769,18 +828,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				iEffectUsed -= 1;
 				if (iEffectUsed < 0)
 				{
-					iEffectUsed = 3;
+					iEffectUsed = 4;
 				}
 				bSliceUpdate = TRUE;
 
 				textHolder = effectNames[iEffectUsed];
 				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
+				if (iEffectUsed == 2 || iEffectUsed == 4)
+				{
+					ShowWindow(hLeft_IsoValue, SW_SHOW);
+					ShowWindow(hLabel_IsoValue, SW_SHOW);
+					ShowWindow(hRight_IsoValue, SW_SHOW);
+				}
+				else
+				{
+					ShowWindow(hLeft_IsoValue, SW_HIDE);
+					ShowWindow(hLabel_IsoValue, SW_HIDE);
+					ShowWindow(hRight_IsoValue, SW_HIDE);
+				}
 				break;
 
 			case ID_RIGHT_ARROW_EFFECT:
 				iEffectUsed += 1;
-				if (iEffectUsed > 3)
+				if (iEffectUsed > 4)
 				{
 					iEffectUsed = 0;
 				}
@@ -788,6 +859,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				textHolder = effectNames[iEffectUsed];
 				SetWindowText(hwndValueLabel, textHolder);
 				SetFocus(hwnd);
+				if (iEffectUsed == 2 || iEffectUsed == 4)
+				{
+					ShowWindow(hLeft_IsoValue, SW_SHOW);
+					ShowWindow(hLabel_IsoValue, SW_SHOW);
+					ShowWindow(hRight_IsoValue, SW_SHOW);
+				}
+				else
+				{
+					ShowWindow(hLeft_IsoValue, SW_HIDE);
+					ShowWindow(hLabel_IsoValue, SW_HIDE);
+					ShowWindow(hRight_IsoValue, SW_HIDE);
+				}
 				break;
 
 			/* FRONT FACE  ARROWS */
@@ -1003,6 +1086,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}
 				Toggle_Data_Set();
 				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
 				SetFocus(hwnd);
@@ -1016,8 +1101,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				}
 				Toggle_Data_Set();
 				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
+				SetFocus(hwnd);
+				break;
+
+			case ID_LEFT_ISOVALUE:
+				if (uiIsoValue > 3)
+				{
+					uiIsoValue -= 2;
+				}
+				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
+				wchar_t text8[64];
+				swprintf_s(text8, 64, L"IsoValue : %d ", uiIsoValue);
+				SetWindowText(hLabel_IsoValue, text8);
+				SetFocus(hwnd);
+				break;
+
+			case ID_RIGHT_ISOVALUE:
+				if (uiIsoValue < 250)
+				{
+					uiIsoValue += 2;
+				}
+				bSliceUpdate = TRUE;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
+				swprintf_s(text8, 64, L"IsoValue : %d ", uiIsoValue);
+				SetWindowText(hLabel_IsoValue, text8);
 				SetFocus(hwnd);
 				break;
 
@@ -1072,6 +1186,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				fZMinus_BackFace= -0.5f;
 				fXMinus_SideFace = -0.5f;
 				dist = -2.0f;
+				uiIsoValue = 48;
+				SetIsosurfaceValue(uiIsoValue);
+				bRecalculateForIsoValue = TRUE;
 				// reset all labels:
 				wchar_t text2[64];
 				swprintf_s(text2, 64, L"Front face: %.2f", fZPlus_FrontFace);
@@ -1356,15 +1473,13 @@ int initialize(void)
 	printGLInfo();
 
 
-	//LoadVolumeData();
 	Load_Volume_Data(volume_data_1, &texture_Data_1);
 	Load_Volume_Data(volume_data_2, &texture_Data_2);
 	Load_Volume_Data(volume_data_3, &texture_Data_3);
-	Load_Volume_Data_Y_X_Rotate(volume_data_4, &texture_Data_4);
+	Load_Volume_Data_Custom_Rotate(volume_data_4, &texture_Data_4);
 
 	iDataSet = 0;
 	Toggle_Data_Set();
-	//textureID = texture_Data_1;
 
 
 	LoadGridObject_Shader(5,5);
@@ -1386,22 +1501,69 @@ int initialize(void)
 
 	Initialize_TetrahedraMarcher_Constructor();
 	SetVolumeDimensions(256, 256, 256);
-	if (LoadVolume_MT())
+
+	if (LoadVolume_MT(volume_data_1,&pVolume_1))
 	{
-		fprintf(gpFile, "------- LoadVolume() Successful.------- \n");
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_1,&pVolume_1) Successful.------- \n");		fflush(gpFile);
 	}
 	else
 	{
-		fprintf(gpFile, "------- LoadVolume() Failed.------- \n");
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_1,&pVolume_1) Failed.------- \n");		fflush(gpFile);
 	}
 	
-	SetIsosurfaceValue(48);
+
+	if (LoadVolume_MT(volume_data_2,&pVolume_2))
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_2,&pVolume_2) Successful.------- \n");		fflush(gpFile);
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_2,&pVolume_2) Failed.------- \n");		fflush(gpFile);
+	}
+
+	if (LoadVolume_MT(volume_data_3,&pVolume_3))
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_3,&pVolume_3) Successful.------- \n");		fflush(gpFile);
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume_MT(volume_data_3,&pVolume_3) Failed.------- \n");		fflush(gpFile);
+	}
+	
+	if (Load_Volume_Data_MT_Custom_Rotate(volume_data_4,&pVolume_4))
+	{
+		fprintf(gpFile, "------- Load_Volume_Data_MT_Custom_Rotate(volume_data_4,&pVolume_4) Successful.------- \n");		fflush(gpFile);
+	}
+	else
+	{
+		fprintf(gpFile, "------- LoadVolume_MT_Y_X_Rotate(volume_data_4,&pVolume_4) Failed.------- \n");		fflush(gpFile);
+	}
+	
+	SetIsosurfaceValue(uiIsoValue);
 	//set the number of sampling voxels 
 	SetNumSamplingVoxels(128, 128, 128);
-	MarchVolume();
-	Initialize_TetrahedraMarcher_Geomatry();
+
+	// Data 1:
+	MarchVolume(pVolume_1);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_1,&volumeMarcherVBO_1);
+
+	// Data 2:
+	MarchVolume(pVolume_2);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_2, &volumeMarcherVBO_2);
+
+	// Data 3:
+	MarchVolume(pVolume_3);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_3, &volumeMarcherVBO_3);
+
+	// Data 4:
+	MarchVolume(pVolume_4);
+	Initialize_TetrahedraMarcher_Geomatry(&volumeMarcherVAO_4, &volumeMarcherVBO_4);
+
 	Initialize_TetrahedraMarcher_Shaders();
 
+	volumeMarcherVAO= volumeMarcherVAO_1;
+	volumeMarcherVBO= volumeMarcherVBO_1;
+	pVolume = pVolume_1;
 
 	// Set the background color to BLUE.
 	glClearColor(0.75f, 0.75f, 0.75f, 0.0f);
@@ -1798,12 +1960,12 @@ int Load_Volume_Data(const std::string volume_data_ ,GLuint *textureData_)
 		return -1;
 	}
 
-	fprintf(gpFile, "Load_Volume_Data() Success Step2 and Last\n"); fflush(gpFile);
+	fprintf(gpFile, "Load_Volume_Data() Success Step2  \n"); fflush(gpFile);
 	return 0;
 }
 
 
-int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureData_)
+int Load_Volume_Data_Custom_Rotate(const std::string volume_data_, GLuint* textureData_)
 {
 	// prototype:
 	void uninitialize();
@@ -1826,7 +1988,11 @@ int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureD
 				for (int i = 0; i < XDIM; i++)
 				{
 					int index_old = i + j * XDIM + k * XDIM * YDIM;
-					int index_new = j + i * YDIM + k * YDIM * XDIM;
+					int new_X = j;
+					int new_Y = XDIM - 1 - i;
+					int new_Z = ZDIM- 1 - k;
+
+					int index_new = new_X + new_Y * YDIM+ new_Z * YDIM* XDIM;
 
 					pData_New[index_new] = pData[index_old];
 				}
@@ -1878,16 +2044,61 @@ int Load_Volume_Data_Y_X_Rotate(const std::string volume_data_, GLuint* textureD
 
 
 
-bool LoadVolume_MT(void)
+
+
+bool LoadVolume_MT(const std::string volume_data_, GLubyte** pVolume_)
 {
 	// code:
-	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);
 
 	if (infile.good())
 	{
-		pVolume = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
-		infile.read(reinterpret_cast<char*>(pVolume), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
+		*pVolume_ = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+		infile.read(reinterpret_cast<char*>(*pVolume_), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
 		infile.close();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Load_Volume_Data_MT_Custom_Rotate(const std::string volume_data_, GLubyte** pVolume_)
+{
+	// code:
+	std::ifstream infile(volume_data_.c_str(), std::ios_base::binary);
+
+	if (infile.good())
+	{
+		GLubyte* pData_Temp = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+
+		infile.read(reinterpret_cast<char*>(pData_Temp), XDIM_TM * YDIM_TM * ZDIM_TM * sizeof(GLubyte));
+		infile.close();
+
+		*pVolume_ = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
+
+		for (int k = 0; k < ZDIM_TM; k++)
+		{
+			for (int j = 0; j < YDIM_TM; j++)
+			{
+				for (int i = 0; i < XDIM_TM; i++)
+				{
+					int index_old = i + j * XDIM_TM + k * XDIM_TM * YDIM_TM;
+
+					int new_X = j;
+					int new_Y = XDIM_TM - 1 - i;
+					int new_Z = ZDIM_TM - 1 - k;
+
+					int index_new = new_X + new_Y * YDIM_TM + new_Z * YDIM_TM * XDIM_TM;
+
+
+					(*pVolume_)[index_new] = pData_Temp[index_old];
+				}
+			}
+		}
+
+		delete[] pData_Temp;
 		return true;
 	}
 	else
@@ -2185,6 +2396,37 @@ void Set_UI_Objects_Position(HWND hwnd)
 		buttonWidth, buttonHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
+	
+	/********* Iso Value ********/
+	y = y + 40;
+
+	SetWindowPos(
+		hLeft_IsoValue,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_IsoValue,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hRight_IsoValue,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
 
 
 
@@ -2198,15 +2440,30 @@ void Toggle_Data_Set(void)
 	{
 	case 0:
 		textureID = texture_Data_1;
+		volumeMarcherVAO = volumeMarcherVAO_1;
+		volumeMarcherVBO = volumeMarcherVBO_1;
+		pVolume = pVolume_1;
 		break;
 	case 1:
 		textureID = texture_Data_2;
+		volumeMarcherVAO = volumeMarcherVAO_2;
+		volumeMarcherVBO = volumeMarcherVBO_2;
+
+		pVolume =pVolume_2;
 		break;
 	case 2:
 		textureID = texture_Data_3;
+		volumeMarcherVAO = volumeMarcherVAO_3;
+		volumeMarcherVBO = volumeMarcherVBO_3;
+
+		pVolume = pVolume_3;
 		break;
 	case 3:
 		textureID = texture_Data_4;
+		volumeMarcherVAO = volumeMarcherVAO_4;
+		volumeMarcherVBO = volumeMarcherVBO_4;
+
+		pVolume = pVolume_4;
 		break;
 	default:
 		textureID = texture_Data_1;

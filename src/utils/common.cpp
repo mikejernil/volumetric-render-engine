@@ -46,5 +46,7 @@ float rotationX = 0.0f;
 float rotationY = 0.0f;
 float rotationZ = 0.0f;
 
+unsigned int uiIsoValue= 48;
+
 glm::mat4 perspectiveProjMatrix_glm = glm::identity<glm::mat4>();
 

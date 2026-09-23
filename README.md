@@ -10,7 +10,7 @@ A Volumetric Render Engine 🧊 for Windows (Native). It's being built with Open
 Currently it has -
 - Volumetric RAW format support 
 - Different types of rendering (Colormap, Iso-surface etc.)
-- 4 Sample datasets loaded.
+- 4 Sample datasets loaded. (Engine, Bonsai Tree, Brain Aneurysm, Foot)
 - Rotate & Zoom Controls (for easy navigation) 
 - 6 slicing planes to visualize cross-sections
 - Added IsoValue changing controls for MarchingTetrahedra and Pseudo Iso Surface Rendering.
@@ -25,7 +25,6 @@ Currently it has -
 - Go to Project directory, and run `build.bat`
 
 
-<img width="780" height="900" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />
 
 
 ### Rendering Effects ##
@@ -58,3 +57,6 @@ Check the Wireframe of loaded data using key W/w when using **Marching Tetrahedr
 1. Medical imaging
 2. Industrial machinery testing
 3. Scientific visualization of data
+
+
+<img width="780" height="900" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />

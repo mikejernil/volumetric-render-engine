@@ -59,4 +59,4 @@ Check the Wireframe of loaded data using key W/w when using **Marching Tetrahedr
 3. Scientific visualization of data
 
 
-<img width="780" height="900" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />
+<img width="620" height="700" alt="NewCode (3) (1)" src="https://github.com/user-attachments/assets/60c84719-1027-407e-a8b8-00c2193aa2ba" />

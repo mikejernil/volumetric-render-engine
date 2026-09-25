@@ -18,6 +18,8 @@ Currently it has -
 
 > [!NOTE]
 > Current output is of Engine256.raw which is a sample volume dataset of scalar values (unsigned byte) in voxel grid of 256x256x256.It has no header.Dataset is acquired by CT scan of small engine block.Commonly used in simple volume rendering tutorials. You can try other datasets from the /resources/models/ directory.
+>[!Dataset Credits]
+> The Datasets we referred are from http://klacansky.com/open-scivis-datasets/ which has lot of examples for us to try.
 
 ### How to Run
 - Copy glew32.dll (OpenGL Prerequisite extension) from Project folder `dependencies\glew\bin\Release\x64\glew32.dll` to your `Windows/System32/` folder 

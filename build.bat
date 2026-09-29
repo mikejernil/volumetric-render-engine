@@ -21,7 +21,7 @@ echo ====================== COMPILATION DONE ======================
 rc.exe /Fo".\\bin\\OGL.res" OGL.rc
 
 
-link.exe /out:VolumeApp.exe ./bin/*.obj ./bin/OGL.res user32.lib gdi32.lib /LIBPATH:".\\dependencies\\glew\\lib\\Release\\x64" /SUBSYSTEM:WINDOWS
+link.exe /out:VolumeApp.exe ./bin/*.obj ./bin/OGL.res user32.lib gdi32.lib comdlg32.lib /LIBPATH:".\\dependencies\\glew\\lib\\Release\\x64" /SUBSYSTEM:WINDOWS
 
 echo ====================== LINKING DONE ======================
 

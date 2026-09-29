@@ -7,6 +7,7 @@
 //- Commmon Header Files -
 #include<Windows.h>
 #include<Windowsx.h>
+#include<fstream>
 
 
 #include "OGL.h"
@@ -17,6 +18,7 @@
 #include "./src/effects/RayCasting/RayCasting.h"
 #include "./src/effects/MarchingTetrahedra/MarchingTetrahedra.h"
 #include "./src/effects/GridBoxes/GridBoxes.h"
+#include "./src/utils/FileDialogue.h"
 
 
 
@@ -62,6 +64,8 @@
 #define ID_LEFT_ISOVALUE 1026
 #define ID_RIGHT_ISOVALUE 1027
 #define ID_LABEL_ISOVALUE 1028
+#define ID_LOAD_RAW 1029
+#define ID_LABEL_FILE_STATUS 1030
 
 // global variable declarations:
 HWND ghwnd = NULL;
@@ -84,6 +88,7 @@ HGLRC ghrc = NULL;
 // global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void ToggleFullscreen(void);
+bool LoadCustomRawVolume(HWND hwnd);
 
 
 
@@ -152,6 +157,11 @@ HWND hLabel_LeftFace = NULL;
 HWND hLabel_BottomFace = NULL;
 HWND hLabel_DataSet= NULL;
 HWND hLabel_IsoValue= NULL;
+HWND hLoadRawButton = NULL;
+HWND hFileStatusLabel = NULL;
+
+GLuint customTextureID = 0;
+GLubyte* customVolume = NULL;
 
 HWND hResetButton = NULL;
 HWND hwndLeftButton = NULL;
@@ -711,6 +721,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		NULL
 	);
 
+	hLoadRawButton = CreateWindow(
+		L"BUTTON",
+		L"Load RAW...",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		1420,
+		920,
+		190,
+		35,
+		hwnd,
+		(HMENU)ID_LOAD_RAW,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hFileStatusLabel = CreateWindow(
+		L"STATIC",
+		L"Built-in volume",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1420,
+		960,
+		190,
+		45,
+		hwnd,
+		(HMENU)ID_LABEL_FILE_STATUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
 	ShowWindow(hLeft_IsoValue, SW_HIDE);
 	ShowWindow(hLabel_IsoValue, SW_HIDE);
 	ShowWindow(hRight_IsoValue, SW_HIDE);
@@ -1105,6 +1143,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
+				SetFocus(hwnd);
+				break;
+
+			case ID_LOAD_RAW:
+				LoadCustomRawVolume(hwnd);
 				SetFocus(hwnd);
 				break;
 
@@ -2107,6 +2150,112 @@ bool Load_Volume_Data_MT_Custom_Rotate(const std::string volume_data_, GLubyte**
 	}
 }
 
+bool LoadCustomRawVolume(HWND hwnd)
+{
+	const size_t expectedBytes = static_cast<size_t>(XDIM) * YDIM * ZDIM;
+	std::wstring filePath;
+	std::wstring dialogueError;
+	CommonItemDialogue dialogue(hwnd);
+
+	if (!dialogue.Open(filePath, dialogueError))
+	{
+		if (!dialogueError.empty())
+		{
+			SetWindowText(hFileStatusLabel, dialogueError.c_str());
+			MessageBoxW(hwnd, dialogueError.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		}
+		return false;
+	}
+
+	const size_t extensionStart = filePath.find_last_of(L'.');
+	if (extensionStart == std::wstring::npos || _wcsicmp(filePath.substr(extensionStart).c_str(), L".raw") != 0)
+	{
+		const std::wstring message = L"Please select a file with the .raw extension.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	FILE* file = NULL;
+	if (_wfopen_s(&file, filePath.c_str(), L"rb") != 0 || file == NULL)
+	{
+		const std::wstring message = L"Could not open the selected RAW file.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	if (_fseeki64(file, 0, SEEK_END) != 0)
+	{
+		fclose(file);
+		const std::wstring message = L"Could not inspect the selected RAW file.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	const __int64 fileSize = _ftelli64(file);
+	if (fileSize != static_cast<__int64>(expectedBytes))
+	{
+		fclose(file);
+		wchar_t message[256];
+		swprintf_s(message, L"RAW file must contain exactly %zu bytes (256 x 256 x 256).", expectedBytes);
+		SetWindowText(hFileStatusLabel, message);
+		MessageBoxW(hwnd, message, L"RAW file error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	GLubyte* volumeData = new GLubyte[expectedBytes];
+	rewind(file);
+	const size_t bytesRead = fread(volumeData, sizeof(GLubyte), expectedBytes, file);
+	fclose(file);
+	if (bytesRead != expectedBytes)
+	{
+		delete[] volumeData;
+		const std::wstring message = L"Could not read the complete RAW file.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	GLuint newTextureID = 0;
+	glGenTextures(1, &newTextureID);
+	glBindTexture(GL_TEXTURE_3D, newTextureID);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, XDIM, YDIM, ZDIM, 0, GL_RED, GL_UNSIGNED_BYTE, volumeData);
+	glGenerateMipmap(GL_TEXTURE_3D);
+	glBindTexture(GL_TEXTURE_3D, 0);
+
+	if (customTextureID != 0)
+	{
+		glDeleteTextures(1, &customTextureID);
+	}
+	if (customVolume != NULL)
+	{
+		delete[] customVolume;
+	}
+	customTextureID = newTextureID;
+	customVolume = volumeData;
+	textureID = customTextureID;
+	pVolume = customVolume;
+	MarchVolume(customVolume);
+	ReCalculate_VAO(volumeMarcherVAO, volumeMarcherVBO, customVolume);
+	iDataSet = -1;
+	bSliceUpdate = TRUE;
+	bRecalculateForIsoValue = TRUE;
+
+	const size_t fileNameStart = filePath.find_last_of(L"\\/");
+	const std::wstring fileName = filePath.substr(fileNameStart == std::wstring::npos ? 0 : fileNameStart + 1);
+	const std::wstring status = L"Loaded: " + fileName;
+	SetWindowText(hLabel_DataSet, L"Custom RAW");
+	SetWindowText(hFileStatusLabel, status.c_str());
+	return true;
+}
+
 
 // to Update UI Button and Label Position on resize():
 void Set_UI_Objects_Position(HWND hwnd)
@@ -2394,6 +2543,26 @@ void Set_UI_Objects_Position(HWND hwnd)
 		x + buttonWidth + padding + labelWidth + padding,
 		y,
 		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	SetWindowPos(
+		hLoadRawButton,
+		NULL,
+		x,
+		y + 40,
+		buttonWidth + padding + labelWidth + padding,
+		35,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	SetWindowPos(
+		hFileStatusLabel,
+		NULL,
+		x,
+		y + 80,
+		buttonWidth + padding + labelWidth + padding,
+		45,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 	

@@ -8,6 +8,7 @@
 #include<Windows.h>
 #include<Windowsx.h>
 #include<fstream>
+#include<limits>
 
 
 #include "OGL.h"
@@ -66,6 +67,10 @@
 #define ID_LABEL_ISOVALUE 1028
 #define ID_LOAD_RAW 1029
 #define ID_LABEL_FILE_STATUS 1030
+#define ID_LABEL_RAW_DIMENSIONS 1031
+#define ID_RAW_DIMENSION_X 1032
+#define ID_RAW_DIMENSION_Y 1033
+#define ID_RAW_DIMENSION_Z 1034
 
 // global variable declarations:
 HWND ghwnd = NULL;
@@ -89,6 +94,7 @@ HGLRC ghrc = NULL;
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void ToggleFullscreen(void);
 bool LoadCustomRawVolume(HWND hwnd);
+bool ReadRawDimension(HWND control, int& dimension);
 
 
 
@@ -159,6 +165,9 @@ HWND hLabel_DataSet= NULL;
 HWND hLabel_IsoValue= NULL;
 HWND hLoadRawButton = NULL;
 HWND hFileStatusLabel = NULL;
+HWND hRawDimensionX = NULL;
+HWND hRawDimensionY = NULL;
+HWND hRawDimensionZ = NULL;
 
 GLuint customTextureID = 0;
 GLubyte* customVolume = NULL;
@@ -721,12 +730,66 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		NULL
 	);
 
+	CreateWindow(
+		L"STATIC",
+		L"RAW dimensions (X Y Z)",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		1420,
+		920,
+		190,
+		25,
+		hwnd,
+		(HMENU)ID_LABEL_RAW_DIMENSIONS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hRawDimensionX = CreateWindow(
+		L"EDIT",
+		L"256",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
+		1420,
+		945,
+		58,
+		30,
+		hwnd,
+		(HMENU)ID_RAW_DIMENSION_X,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+	hRawDimensionY = CreateWindow(
+		L"EDIT",
+		L"256",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
+		1486,
+		945,
+		58,
+		30,
+		hwnd,
+		(HMENU)ID_RAW_DIMENSION_Y,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+	hRawDimensionZ = CreateWindow(
+		L"EDIT",
+		L"256",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
+		1552,
+		945,
+		58,
+		30,
+		hwnd,
+		(HMENU)ID_RAW_DIMENSION_Z,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
 	hLoadRawButton = CreateWindow(
 		L"BUTTON",
 		L"Load RAW...",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
 		1420,
-		920,
+		980,
 		190,
 		35,
 		hwnd,
@@ -740,7 +803,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"Built-in volume",
 		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
 		1420,
-		960,
+		1020,
 		190,
 		45,
 		hwnd,
@@ -2150,9 +2213,22 @@ bool Load_Volume_Data_MT_Custom_Rotate(const std::string volume_data_, GLubyte**
 	}
 }
 
+bool ReadRawDimension(HWND control, int& dimension)
+{
+	wchar_t value[32] = {};
+	GetWindowTextW(control, value, ARRAYSIZE(value));
+	const int parsedValue = _wtoi(value);
+	if (parsedValue <= 0)
+	{
+		return false;
+	}
+
+	dimension = parsedValue;
+	return true;
+}
+
 bool LoadCustomRawVolume(HWND hwnd)
 {
-	const size_t expectedBytes = static_cast<size_t>(XDIM) * YDIM * ZDIM;
 	std::wstring filePath;
 	std::wstring dialogueError;
 	CommonItemDialogue dialogue(hwnd);
@@ -2166,6 +2242,33 @@ bool LoadCustomRawVolume(HWND hwnd)
 		}
 		return false;
 	}
+
+	int rawDimensionX = 0;
+	int rawDimensionY = 0;
+	int rawDimensionZ = 0;
+	if (!ReadRawDimension(hRawDimensionX, rawDimensionX) ||
+		!ReadRawDimension(hRawDimensionY, rawDimensionY) ||
+		!ReadRawDimension(hRawDimensionZ, rawDimensionZ))
+	{
+		const std::wstring message = L"X, Y, and Z dimensions must all be positive integers.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"RAW dimension error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	const size_t dimensionX = static_cast<size_t>(rawDimensionX);
+	const size_t dimensionY = static_cast<size_t>(rawDimensionY);
+	const size_t dimensionZ = static_cast<size_t>(rawDimensionZ);
+	if (dimensionX > std::numeric_limits<size_t>::max() / dimensionY ||
+		dimensionX * dimensionY > std::numeric_limits<size_t>::max() / dimensionZ ||
+		dimensionX * dimensionY * dimensionZ > static_cast<size_t>(std::numeric_limits<__int64>::max()))
+	{
+		const std::wstring message = L"The selected dimensions are too large.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"RAW dimension error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	const size_t expectedBytes = dimensionX * dimensionY * dimensionZ;
 
 	const size_t extensionStart = filePath.find_last_of(L'.');
 	if (extensionStart == std::wstring::npos || _wcsicmp(filePath.substr(extensionStart).c_str(), L".raw") != 0)
@@ -2199,7 +2302,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		fclose(file);
 		wchar_t message[256];
-		swprintf_s(message, L"RAW file must contain exactly %zu bytes (256 x 256 x 256).", expectedBytes);
+		swprintf_s(message, L"RAW file must contain exactly %zu bytes (%d x %d x %d).", expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
 		SetWindowText(hFileStatusLabel, message);
 		MessageBoxW(hwnd, message, L"RAW file error", MB_OK | MB_ICONERROR);
 		return false;
@@ -2217,6 +2320,15 @@ bool LoadCustomRawVolume(HWND hwnd)
 		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
 		return false;
 	}
+
+	XDIM = rawDimensionX;
+	YDIM = rawDimensionY;
+	ZDIM = rawDimensionZ;
+	SetVolumeDimensions(rawDimensionX, rawDimensionY, rawDimensionZ);
+	SetNumSamplingVoxels(
+		rawDimensionX > 1 ? rawDimensionX / 2 : 1,
+		rawDimensionY > 1 ? rawDimensionY / 2 : 1,
+		rawDimensionZ > 1 ? rawDimensionZ / 2 : 1);
 
 	GLuint newTextureID = 0;
 	glGenTextures(1, &newTextureID);
@@ -2547,10 +2659,48 @@ void Set_UI_Objects_Position(HWND hwnd)
 	);
 
 	SetWindowPos(
-		hLoadRawButton,
+		GetDlgItem(hwnd, ID_LABEL_RAW_DIMENSIONS),
 		NULL,
 		x,
 		y + 40,
+		buttonWidth + padding + labelWidth + padding,
+		25,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	SetWindowPos(
+		hRawDimensionX,
+		NULL,
+		x,
+		y + 65,
+		58,
+		30,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+	SetWindowPos(
+		hRawDimensionY,
+		NULL,
+		x + 66,
+		y + 65,
+		58,
+		30,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+	SetWindowPos(
+		hRawDimensionZ,
+		NULL,
+		x + 132,
+		y + 65,
+		58,
+		30,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	SetWindowPos(
+		hLoadRawButton,
+		NULL,
+		x,
+		y + 100,
 		buttonWidth + padding + labelWidth + padding,
 		35,
 		SWP_NOZORDER | SWP_NOACTIVATE
@@ -2560,7 +2710,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hFileStatusLabel,
 		NULL,
 		x,
-		y + 80,
+		y + 140,
 		buttonWidth + padding + labelWidth + padding,
 		45,
 		SWP_NOZORDER | SWP_NOACTIVATE
@@ -2604,6 +2754,11 @@ void Set_UI_Objects_Position(HWND hwnd)
 void Toggle_Data_Set(void)
 {
 	// code:
+	XDIM = 256;
+	YDIM = 256;
+	ZDIM = 256;
+	SetVolumeDimensions(256, 256, 256);
+	SetNumSamplingVoxels(128, 128, 128);
 
 	switch (iDataSet)
 	{

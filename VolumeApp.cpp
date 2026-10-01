@@ -735,7 +735,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"RAW dimensions (X Y Z)",
 		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
 		1420,
-		920,
+		960,
 		190,
 		25,
 		hwnd,
@@ -749,7 +749,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"256",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
 		1420,
-		945,
+		995,
 		58,
 		30,
 		hwnd,
@@ -762,7 +762,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"256",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
 		1486,
-		945,
+		995,
 		58,
 		30,
 		hwnd,
@@ -775,7 +775,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"256",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
 		1552,
-		945,
+		995,
 		58,
 		30,
 		hwnd,
@@ -789,7 +789,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"Load RAW...",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
 		1420,
-		980,
+		1030,
 		190,
 		35,
 		hwnd,
@@ -803,7 +803,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"Built-in volume",
 		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
 		1420,
-		1020,
+		1070,
 		190,
 		45,
 		hwnd,
@@ -2238,7 +2238,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 		if (!dialogueError.empty())
 		{
 			SetWindowText(hFileStatusLabel, dialogueError.c_str());
-			MessageBoxW(hwnd, dialogueError.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+			MessageBoxW(hwnd, dialogueError.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
 		}
 		return false;
 	}
@@ -2252,7 +2252,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		const std::wstring message = L"X, Y, and Z dimensions must all be positive integers.";
 		SetWindowText(hFileStatusLabel, message.c_str());
-		MessageBoxW(hwnd, message.c_str(), L"RAW dimension error", MB_OK | MB_ICONERROR);
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -2265,7 +2265,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		const std::wstring message = L"The selected dimensions are too large.";
 		SetWindowText(hFileStatusLabel, message.c_str());
-		MessageBoxW(hwnd, message.c_str(), L"RAW dimension error", MB_OK | MB_ICONERROR);
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 	const size_t expectedBytes = dimensionX * dimensionY * dimensionZ;
@@ -2275,7 +2275,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		const std::wstring message = L"Please select a file with the .raw extension.";
 		SetWindowText(hFileStatusLabel, message.c_str());
-		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -2284,7 +2284,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		const std::wstring message = L"Could not open the selected RAW file.";
 		SetWindowText(hFileStatusLabel, message.c_str());
-		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -2293,7 +2293,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 		fclose(file);
 		const std::wstring message = L"Could not inspect the selected RAW file.";
 		SetWindowText(hFileStatusLabel, message.c_str());
-		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -2302,9 +2302,18 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		fclose(file);
 		wchar_t message[256];
-		swprintf_s(message, L"RAW file must contain exactly %zu bytes (%d x %d x %d).", expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
+		if (static_cast<__int64>(expectedBytes) <= std::numeric_limits<__int64>::max() / 4 &&
+			(fileSize == static_cast<__int64>(expectedBytes) * 2 || fileSize == static_cast<__int64>(expectedBytes) * 4))
+		{
+			const wchar_t* detectedType = fileSize == static_cast<__int64>(expectedBytes) * 2 ? L"uint16" : L"float32";
+			swprintf_s(message, L"Type Mismatch: dimensions are valid, but this file appears to use %s. This loader expects uint8 (%zu bytes for %d x %d x %d).", detectedType, expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
+		}
+		else
+		{
+			swprintf_s(message, L"Type Mismatch or invalid dimensions: expected uint8 (%zu bytes for %d x %d x %d).", expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
+		}
 		SetWindowText(hFileStatusLabel, message);
-		MessageBoxW(hwnd, message, L"RAW file error", MB_OK | MB_ICONERROR);
+		MessageBoxW(hwnd, message, L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -2317,7 +2326,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 		delete[] volumeData;
 		const std::wstring message = L"Could not read the complete RAW file.";
 		SetWindowText(hFileStatusLabel, message.c_str());
-		MessageBoxW(hwnd, message.c_str(), L"RAW file error", MB_OK | MB_ICONERROR);
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -2662,7 +2671,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		GetDlgItem(hwnd, ID_LABEL_RAW_DIMENSIONS),
 		NULL,
 		x,
-		y + 40,
+		y + 80,
 		buttonWidth + padding + labelWidth + padding,
 		25,
 		SWP_NOZORDER | SWP_NOACTIVATE
@@ -2672,7 +2681,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hRawDimensionX,
 		NULL,
 		x,
-		y + 65,
+		y + 115,
 		58,
 		30,
 		SWP_NOZORDER | SWP_NOACTIVATE
@@ -2681,7 +2690,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hRawDimensionY,
 		NULL,
 		x + 66,
-		y + 65,
+		y + 115,
 		58,
 		30,
 		SWP_NOZORDER | SWP_NOACTIVATE
@@ -2690,7 +2699,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hRawDimensionZ,
 		NULL,
 		x + 132,
-		y + 65,
+		y + 115,
 		58,
 		30,
 		SWP_NOZORDER | SWP_NOACTIVATE
@@ -2700,7 +2709,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hLoadRawButton,
 		NULL,
 		x,
-		y + 100,
+		y + 150,
 		buttonWidth + padding + labelWidth + padding,
 		35,
 		SWP_NOZORDER | SWP_NOACTIVATE
@@ -2710,7 +2719,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hFileStatusLabel,
 		NULL,
 		x,
-		y + 140,
+		y + 190,
 		buttonWidth + padding + labelWidth + padding,
 		45,
 		SWP_NOZORDER | SWP_NOACTIVATE

@@ -136,9 +136,7 @@ void Update_MarchingTetrahedra_Cube(void)
 
 void Initialize_TetrahedraMarcher_Constructor()
 {
-	XDIM_TM = 256;
-	YDIM_TM = 256;
-	ZDIM_TM = 256;
+	SetVolumeDimensions(XDIM, YDIM, ZDIM);
 	pVolume = NULL;
 }
 
@@ -225,6 +223,9 @@ void Initialize_TetrahedraMarcher_Geomatry(GLuint* VAO_,GLuint* VBO_)
 
 void SetVolumeDimensions(const int xdim, const int ydim, const int zdim)
 {
+	XDIM = xdim;
+	YDIM = ydim;
+	ZDIM = zdim;
 	XDIM_TM = xdim;
 	YDIM_TM = ydim;
 	ZDIM_TM = zdim;
@@ -322,6 +323,9 @@ void MarchVolume(GLubyte* pVolume_)
 	int dx = XDIM_TM / X_SAMPLING_DIST;
 	int dy = YDIM_TM / Y_SAMPLING_DIST;
 	int dz = ZDIM_TM / Z_SAMPLING_DIST;
+	dx = dx > 0 ? dx : 1;
+	dy = dy > 0 ? dy : 1;
+	dz = dz > 0 ? dz : 1;
 	glm::vec3 scale = glm::vec3(dx, dy, dz);
 	for (int z = 0; z < ZDIM_TM; z += dz)
 	{
@@ -342,7 +346,7 @@ size_t GetTotalVertices_TM()
 
 Vertex* GetVertexPointer_TM()
 {
-	return  &vertices[0];
+	return vertices.empty() ? NULL : &vertices[0];
 }
 
 GLubyte SampleVolume(const int x, const int y, const int z,GLubyte* pVolume_)
@@ -449,6 +453,9 @@ void ReCalculate_VAO(GLuint VAO_, GLuint VBO_, GLubyte* pVolume_)
 	int dx = XDIM_TM / X_SAMPLING_DIST;
 	int dy = YDIM_TM / Y_SAMPLING_DIST;
 	int dz = ZDIM_TM / Z_SAMPLING_DIST;
+	dx = dx > 0 ? dx : 1;
+	dy = dy > 0 ? dy : 1;
+	dz = dz > 0 ? dz : 1;
 	glm::vec3 scale = glm::vec3(dx, dy, dz);
 	for (int z = 0; z < ZDIM_TM; z += dz)
 	{

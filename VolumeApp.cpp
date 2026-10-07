@@ -7,6 +7,8 @@
 //- Commmon Header Files -
 #include<Windows.h>
 #include<Windowsx.h>
+#include<fstream>
+#include<limits>
 
 
 #include "OGL.h"
@@ -17,6 +19,7 @@
 #include "./src/effects/RayCasting/RayCasting.h"
 #include "./src/effects/MarchingTetrahedra/MarchingTetrahedra.h"
 #include "./src/effects/GridBoxes/GridBoxes.h"
+#include "./src/utils/FileDialogue.h"
 
 
 
@@ -62,6 +65,24 @@
 #define ID_LEFT_ISOVALUE 1026
 #define ID_RIGHT_ISOVALUE 1027
 #define ID_LABEL_ISOVALUE 1028
+#define ID_LOAD_RAW 1029
+#define ID_LABEL_FILE_STATUS 1030
+#define ID_LABEL_RAW_DIMENSIONS 1031
+#define ID_RAW_DIMENSION_X 1032
+#define ID_RAW_DIMENSION_Y 1033
+#define ID_RAW_DIMENSION_Z 1034
+
+const int rawInitialPanelX = 1420;
+const int rawInitialDataSetY = 880;
+const int rawControlRowHeight = 40;
+const int rawPanelWidth = 190;
+const int rawLabelHeight = 25;
+const int rawInputWidth = 58;
+const int rawInputHeight = 30;
+const int rawInputGap = 10;
+const int rawInputSpacing = 8;
+const int rawLoadButtonHeight = 35;
+const int rawStatusHeight = 45;
 
 // global variable declarations:
 HWND ghwnd = NULL;
@@ -84,6 +105,8 @@ HGLRC ghrc = NULL;
 // global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void ToggleFullscreen(void);
+bool LoadCustomRawVolume(HWND hwnd);
+bool ReadRawDimension(HWND control, int& dimension);
 
 
 
@@ -152,6 +175,14 @@ HWND hLabel_LeftFace = NULL;
 HWND hLabel_BottomFace = NULL;
 HWND hLabel_DataSet= NULL;
 HWND hLabel_IsoValue= NULL;
+HWND hLoadRawButton = NULL;
+HWND hFileStatusLabel = NULL;
+HWND hRawDimensionX = NULL;
+HWND hRawDimensionY = NULL;
+HWND hRawDimensionZ = NULL;
+
+GLuint customTextureID = 0;
+GLubyte* customVolume = NULL;
 
 HWND hResetButton = NULL;
 HWND hwndLeftButton = NULL;
@@ -711,6 +742,88 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		NULL
 	);
 
+	CreateWindow(
+		L"STATIC",
+		L"RAW dimensions (X Y Z)",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2,
+		rawPanelWidth,
+		rawLabelHeight,
+		hwnd,
+		(HMENU)ID_LABEL_RAW_DIMENSIONS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hRawDimensionX = CreateWindow(
+		L"EDIT",
+		L"256",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
+		hwnd,
+		(HMENU)ID_RAW_DIMENSION_X,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+	hRawDimensionY = CreateWindow(
+		L"EDIT",
+		L"256",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
+		rawInitialPanelX + rawInputWidth + rawInputSpacing,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
+		hwnd,
+		(HMENU)ID_RAW_DIMENSION_Y,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+	hRawDimensionZ = CreateWindow(
+		L"EDIT",
+		L"256",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
+		rawInitialPanelX + (rawInputWidth + rawInputSpacing) * 2,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
+		hwnd,
+		(HMENU)ID_RAW_DIMENSION_Z,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hLoadRawButton = CreateWindow(
+		L"BUTTON",
+		L"Load RAW...",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap,
+		rawPanelWidth,
+		rawLoadButtonHeight,
+		hwnd,
+		(HMENU)ID_LOAD_RAW,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
+	hFileStatusLabel = CreateWindow(
+		L"STATIC",
+		L"Built-in volume",
+		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap + rawLoadButtonHeight + rawInputGap,
+		rawPanelWidth,
+		rawStatusHeight,
+		hwnd,
+		(HMENU)ID_LABEL_FILE_STATUS,
+		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
+		NULL
+	);
+
 	ShowWindow(hLeft_IsoValue, SW_HIDE);
 	ShowWindow(hLabel_IsoValue, SW_HIDE);
 	ShowWindow(hRight_IsoValue, SW_HIDE);
@@ -1105,6 +1218,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
+				SetFocus(hwnd);
+				break;
+
+			case ID_LOAD_RAW:
+				LoadCustomRawVolume(hwnd);
 				SetFocus(hwnd);
 				break;
 
@@ -2107,6 +2225,168 @@ bool Load_Volume_Data_MT_Custom_Rotate(const std::string volume_data_, GLubyte**
 	}
 }
 
+bool ReadRawDimension(HWND control, int& dimension)
+{
+	wchar_t value[32] = {};
+	GetWindowTextW(control, value, ARRAYSIZE(value));
+	const int parsedValue = _wtoi(value);
+	if (parsedValue <= 0)
+	{
+		return false;
+	}
+
+	dimension = parsedValue;
+	return true;
+}
+
+bool LoadCustomRawVolume(HWND hwnd)
+{
+	std::wstring filePath;
+	std::wstring dialogueError;
+	CommonItemDialogue dialogue(hwnd);
+
+	if (!dialogue.Open(filePath, dialogueError))
+	{
+		if (!dialogueError.empty())
+		{
+			SetWindowText(hFileStatusLabel, dialogueError.c_str());
+			MessageBoxW(hwnd, dialogueError.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
+		}
+		return false;
+	}
+
+	int rawDimensionX = 0;
+	int rawDimensionY = 0;
+	int rawDimensionZ = 0;
+	if (!ReadRawDimension(hRawDimensionX, rawDimensionX) ||
+		!ReadRawDimension(hRawDimensionY, rawDimensionY) ||
+		!ReadRawDimension(hRawDimensionZ, rawDimensionZ))
+	{
+		const std::wstring message = L"X, Y, and Z dimensions must all be positive integers.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	const size_t dimensionX = static_cast<size_t>(rawDimensionX);
+	const size_t dimensionY = static_cast<size_t>(rawDimensionY);
+	const size_t dimensionZ = static_cast<size_t>(rawDimensionZ);
+	if (dimensionX > std::numeric_limits<size_t>::max() / dimensionY ||
+		dimensionX * dimensionY > std::numeric_limits<size_t>::max() / dimensionZ ||
+		dimensionX * dimensionY * dimensionZ > static_cast<size_t>(std::numeric_limits<__int64>::max()))
+	{
+		const std::wstring message = L"The selected dimensions are too large.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	const size_t expectedBytes = dimensionX * dimensionY * dimensionZ;
+
+	const size_t extensionStart = filePath.find_last_of(L'.');
+	if (extensionStart == std::wstring::npos || _wcsicmp(filePath.substr(extensionStart).c_str(), L".raw") != 0)
+	{
+		const std::wstring message = L"Please select a file with the .raw extension.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	FILE* file = NULL;
+	if (_wfopen_s(&file, filePath.c_str(), L"rb") != 0 || file == NULL)
+	{
+		const std::wstring message = L"Could not open the selected RAW file.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	if (_fseeki64(file, 0, SEEK_END) != 0)
+	{
+		fclose(file);
+		const std::wstring message = L"Could not inspect the selected RAW file.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	const __int64 fileSize = _ftelli64(file);
+	if (fileSize != static_cast<__int64>(expectedBytes))
+	{
+		fclose(file);
+		wchar_t message[256];
+		if (static_cast<__int64>(expectedBytes) <= std::numeric_limits<__int64>::max() / 4 &&
+			(fileSize == static_cast<__int64>(expectedBytes) * 2 || fileSize == static_cast<__int64>(expectedBytes) * 4))
+		{
+			const wchar_t* detectedType = fileSize == static_cast<__int64>(expectedBytes) * 2 ? L"uint16" : L"float32";
+			swprintf_s(message, L"Type Mismatch: dimensions are valid, but this file appears to use %s. This loader expects uint8 (%zu bytes for %d x %d x %d).", detectedType, expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
+		}
+		else
+		{
+			swprintf_s(message, L"Type Mismatch or invalid dimensions: expected uint8 (%zu bytes for %d x %d x %d).", expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
+		}
+		SetWindowText(hFileStatusLabel, message);
+		MessageBoxW(hwnd, message, L"Import Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	GLubyte* volumeData = new GLubyte[expectedBytes];
+	rewind(file);
+	const size_t bytesRead = fread(volumeData, sizeof(GLubyte), expectedBytes, file);
+	fclose(file);
+	if (bytesRead != expectedBytes)
+	{
+		delete[] volumeData;
+		const std::wstring message = L"Could not read the complete RAW file.";
+		SetWindowText(hFileStatusLabel, message.c_str());
+		MessageBoxW(hwnd, message.c_str(), L"Import Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	XDIM = rawDimensionX;
+	YDIM = rawDimensionY;
+	ZDIM = rawDimensionZ;
+	SetVolumeDimensions(rawDimensionX, rawDimensionY, rawDimensionZ);
+	SetNumSamplingVoxels(128, 128, 128);
+
+	GLuint newTextureID = 0;
+	glGenTextures(1, &newTextureID);
+	glBindTexture(GL_TEXTURE_3D, newTextureID);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, XDIM, YDIM, ZDIM, 0, GL_RED, GL_UNSIGNED_BYTE, volumeData);
+	glGenerateMipmap(GL_TEXTURE_3D);
+	glBindTexture(GL_TEXTURE_3D, 0);
+
+	if (customTextureID != 0)
+	{
+		glDeleteTextures(1, &customTextureID);
+	}
+	if (customVolume != NULL)
+	{
+		delete[] customVolume;
+	}
+	customTextureID = newTextureID;
+	customVolume = volumeData;
+	textureID = customTextureID;
+	pVolume = customVolume;
+	MarchVolume(customVolume);
+	ReCalculate_VAO(volumeMarcherVAO, volumeMarcherVBO, customVolume);
+	iDataSet = -1;
+	bSliceUpdate = TRUE;
+	bRecalculateForIsoValue = TRUE;
+
+	const size_t fileNameStart = filePath.find_last_of(L"\\/");
+	const std::wstring fileName = filePath.substr(fileNameStart == std::wstring::npos ? 0 : fileNameStart + 1);
+	const std::wstring status = L"Loaded: " + fileName;
+	SetWindowText(hLabel_DataSet, L"Custom RAW");
+	SetWindowText(hFileStatusLabel, status.c_str());
+	return true;
+}
+
 
 // to Update UI Button and Label Position on resize():
 void Set_UI_Objects_Position(HWND hwnd)
@@ -2428,13 +2708,76 @@ void Set_UI_Objects_Position(HWND hwnd)
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 
+	/********* Custom File Loading ********/
 
+	SetWindowPos(
+		GetDlgItem(hwnd, ID_LABEL_RAW_DIMENSIONS),
+		NULL,
+		x,
+		y + rawControlRowHeight * 2,
+		rawPanelWidth,
+		rawLabelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	SetWindowPos(
+		hRawDimensionX,
+		NULL,
+		x,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+	SetWindowPos(
+		hRawDimensionY,
+		NULL,
+		x + rawInputWidth + rawInputSpacing,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+	SetWindowPos(
+		hRawDimensionZ,
+		NULL,
+		x + (rawInputWidth + rawInputSpacing) * 2,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	SetWindowPos(
+		hLoadRawButton,
+		NULL,
+		x,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap,
+		rawPanelWidth,
+		rawLoadButtonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	SetWindowPos(
+		hFileStatusLabel,
+		NULL,
+		x,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap + rawLoadButtonHeight + rawInputGap,
+		rawPanelWidth,
+		rawStatusHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
 
 }
 
 void Toggle_Data_Set(void)
 {
 	// code:
+	XDIM = 256;
+	YDIM = 256;
+	ZDIM = 256;
+	SetVolumeDimensions(256, 256, 256);
+	SetNumSamplingVoxels(128, 128, 128);
 
 	switch (iDataSet)
 	{

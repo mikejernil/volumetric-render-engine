@@ -72,6 +72,18 @@
 #define ID_RAW_DIMENSION_Y 1033
 #define ID_RAW_DIMENSION_Z 1034
 
+const int rawInitialPanelX = 1420;
+const int rawInitialDataSetY = 880;
+const int rawControlRowHeight = 40;
+const int rawPanelWidth = 190;
+const int rawLabelHeight = 25;
+const int rawInputWidth = 58;
+const int rawInputHeight = 30;
+const int rawInputGap = 10;
+const int rawInputSpacing = 8;
+const int rawLoadButtonHeight = 35;
+const int rawStatusHeight = 45;
+
 // global variable declarations:
 HWND ghwnd = NULL;
 DWORD dwStyle = 0;
@@ -734,10 +746,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"STATIC",
 		L"RAW dimensions (X Y Z)",
 		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
-		1420,
-		960,
-		190,
-		25,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2,
+		rawPanelWidth,
+		rawLabelHeight,
 		hwnd,
 		(HMENU)ID_LABEL_RAW_DIMENSIONS,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
@@ -748,10 +760,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"EDIT",
 		L"256",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
-		1420,
-		995,
-		58,
-		30,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
 		hwnd,
 		(HMENU)ID_RAW_DIMENSION_X,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
@@ -761,10 +773,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"EDIT",
 		L"256",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
-		1486,
-		995,
-		58,
-		30,
+		rawInitialPanelX + rawInputWidth + rawInputSpacing,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
 		hwnd,
 		(HMENU)ID_RAW_DIMENSION_Y,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
@@ -774,10 +786,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"EDIT",
 		L"256",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER | ES_CENTER,
-		1552,
-		995,
-		58,
-		30,
+		rawInitialPanelX + (rawInputWidth + rawInputSpacing) * 2,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
 		hwnd,
 		(HMENU)ID_RAW_DIMENSION_Z,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
@@ -788,10 +800,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"BUTTON",
 		L"Load RAW...",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-		1420,
-		1030,
-		190,
-		35,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap,
+		rawPanelWidth,
+		rawLoadButtonHeight,
 		hwnd,
 		(HMENU)ID_LOAD_RAW,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
@@ -802,10 +814,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		L"STATIC",
 		L"Built-in volume",
 		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
-		1420,
-		1070,
-		190,
-		45,
+		rawInitialPanelX,
+		rawInitialDataSetY + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap + rawLoadButtonHeight + rawInputGap,
+		rawPanelWidth,
+		rawStatusHeight,
 		hwnd,
 		(HMENU)ID_LABEL_FILE_STATUS,
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
@@ -2334,10 +2346,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	YDIM = rawDimensionY;
 	ZDIM = rawDimensionZ;
 	SetVolumeDimensions(rawDimensionX, rawDimensionY, rawDimensionZ);
-	SetNumSamplingVoxels(
-		rawDimensionX > 1 ? rawDimensionX / 2 : 1,
-		rawDimensionY > 1 ? rawDimensionY / 2 : 1,
-		rawDimensionZ > 1 ? rawDimensionZ / 2 : 1);
+	SetNumSamplingVoxels(128, 128, 128);
 
 	GLuint newTextureID = 0;
 	glGenTextures(1, &newTextureID);
@@ -2347,7 +2356,6 @@ bool LoadCustomRawVolume(HWND hwnd)
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, XDIM, YDIM, ZDIM, 0, GL_RED, GL_UNSIGNED_BYTE, volumeData);
 	glGenerateMipmap(GL_TEXTURE_3D);
 	glBindTexture(GL_TEXTURE_3D, 0);
@@ -2672,9 +2680,9 @@ void Set_UI_Objects_Position(HWND hwnd)
 		GetDlgItem(hwnd, ID_LABEL_RAW_DIMENSIONS),
 		NULL,
 		x,
-		y + 80,
-		buttonWidth + padding + labelWidth + padding,
-		25,
+		y + rawControlRowHeight * 2,
+		rawPanelWidth,
+		rawLabelHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 
@@ -2682,27 +2690,27 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hRawDimensionX,
 		NULL,
 		x,
-		y + 115,
-		58,
-		30,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 	SetWindowPos(
 		hRawDimensionY,
 		NULL,
-		x + 66,
-		y + 115,
-		58,
-		30,
+		x + rawInputWidth + rawInputSpacing,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 	SetWindowPos(
 		hRawDimensionZ,
 		NULL,
-		x + 132,
-		y + 115,
-		58,
-		30,
+		x + (rawInputWidth + rawInputSpacing) * 2,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap,
+		rawInputWidth,
+		rawInputHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 
@@ -2710,9 +2718,9 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hLoadRawButton,
 		NULL,
 		x,
-		y + 150,
-		buttonWidth + padding + labelWidth + padding,
-		35,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap,
+		rawPanelWidth,
+		rawLoadButtonHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 
@@ -2720,9 +2728,9 @@ void Set_UI_Objects_Position(HWND hwnd)
 		hFileStatusLabel,
 		NULL,
 		x,
-		y + 190,
-		buttonWidth + padding + labelWidth + padding,
-		45,
+		y + rawControlRowHeight * 2 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap + rawLoadButtonHeight + rawInputGap,
+		rawPanelWidth,
+		rawStatusHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
 	

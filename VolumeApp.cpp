@@ -2676,6 +2676,39 @@ void Set_UI_Objects_Position(HWND hwnd)
 		buttonWidth, buttonHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
+	
+	/********* Iso Value ********/
+	y = y + 40;
+
+	SetWindowPos(
+		hLeft_IsoValue,
+		NULL,
+		x, y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hLabel_IsoValue,
+		NULL,
+		x + space,
+		y,
+		labelWidth, labelHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+
+	SetWindowPos(
+		hRight_IsoValue,
+		NULL,
+		x + buttonWidth + padding + labelWidth + padding,
+		y,
+		buttonWidth, buttonHeight,
+		SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	/********* Custom File Loading ********/
 
 	SetWindowPos(
 		GetDlgItem(hwnd, ID_LABEL_RAW_DIMENSIONS),
@@ -2734,39 +2767,6 @@ void Set_UI_Objects_Position(HWND hwnd)
 		rawStatusHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
-	
-	/********* Iso Value ********/
-	y = y + 40;
-
-	SetWindowPos(
-		hLeft_IsoValue,
-		NULL,
-		x, y,
-		buttonWidth, buttonHeight,
-		SWP_NOZORDER | SWP_NOACTIVATE
-	);
-
-
-	SetWindowPos(
-		hLabel_IsoValue,
-		NULL,
-		x + space,
-		y,
-		labelWidth, labelHeight,
-		SWP_NOZORDER | SWP_NOACTIVATE
-	);
-
-
-	SetWindowPos(
-		hRight_IsoValue,
-		NULL,
-		x + buttonWidth + padding + labelWidth + padding,
-		y,
-		buttonWidth, buttonHeight,
-		SWP_NOZORDER | SWP_NOACTIVATE
-	);
-
-
 
 }
 

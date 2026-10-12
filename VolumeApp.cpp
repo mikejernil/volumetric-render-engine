@@ -197,7 +197,8 @@ enum class RawDataType
 {
 	UInt8,
 	UInt16,
-	Float32
+	Float32,
+	UInt32
 };
 
 HWND hResetButton = NULL;
@@ -802,7 +803,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	SendMessage(hRawDataType, CB_ADDSTRING, 0, (LPARAM)L"uint8 (8-bit)");
 	SendMessage(hRawDataType, CB_ADDSTRING, 0, (LPARAM)L"uint16 (16-bit)");
 	SendMessage(hRawDataType, CB_ADDSTRING, 0, (LPARAM)L"float32 (32-bit)");
-	SendMessage(hRawDataType, CB_SETMINVISIBLE, 3, 0);
+	SendMessage(hRawDataType, CB_ADDSTRING, 0, (LPARAM)L"uint32 (32-bit unsigned)");
+	SendMessage(hRawDataType, CB_SETMINVISIBLE, 4, 0);
 	SendMessage(hRawDataType, CB_SETCURSEL, 0, 0);
 
 	hRawDimensionX = CreateWindow(
@@ -2331,7 +2333,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	}
 	const size_t expectedBytes = dimensionX * dimensionY * dimensionZ;
 	const int selectedDataType = static_cast<int>(SendMessage(hRawDataType, CB_GETCURSEL, 0, 0));
-	if (selectedDataType < 0 || selectedDataType > 2)
+	if (selectedDataType < 0 || selectedDataType > 3)
 	{
 		const std::wstring message = L"Please select a RAW datatype.";
 		SetWindowText(hFileStatusLabel, message.c_str());
@@ -2341,9 +2343,11 @@ bool LoadCustomRawVolume(HWND hwnd)
 
 	const RawDataType dataType = static_cast<RawDataType>(selectedDataType);
 	const size_t bytesPerVoxel = dataType == RawDataType::UInt8 ? sizeof(GLubyte) :
-		dataType == RawDataType::UInt16 ? sizeof(GLushort) : sizeof(GLfloat);
+		dataType == RawDataType::UInt16 ? sizeof(GLushort) :
+		dataType == RawDataType::Float32 ? sizeof(GLfloat) : sizeof(GLuint);
 	const wchar_t* dataTypeName = dataType == RawDataType::UInt8 ? L"uint8" :
-		dataType == RawDataType::UInt16 ? L"uint16" : L"float32";
+		dataType == RawDataType::UInt16 ? L"uint16" :
+		dataType == RawDataType::Float32 ? L"float32" : L"uint32";
 	if (expectedBytes > std::numeric_limits<size_t>::max() / bytesPerVoxel)
 	{
 		const std::wstring message = L"The selected dimensions and datatype require too much memory.";
@@ -2394,6 +2398,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	std::vector<GLubyte> volumeData(expectedBytes);
 	std::vector<GLushort> uint16Data;
 	std::vector<GLfloat> floatData;
+	std::vector<GLuint> uint32Data;
 	void* textureData = volumeData.data();
 	if (dataType == RawDataType::UInt16)
 	{
@@ -2404,6 +2409,11 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		floatData.resize(expectedBytes);
 		textureData = floatData.data();
+	}
+	else if (dataType == RawDataType::UInt32)
+	{
+		uint32Data.resize(expectedBytes);
+		textureData = uint32Data.data();
 	}
 	rewind(file);
 	const size_t itemsRead = fread(textureData, bytesPerVoxel, expectedBytes, file);
@@ -2430,6 +2440,15 @@ bool LoadCustomRawVolume(HWND hwnd)
 			volumeData[index] = static_cast<GLubyte>(value <= 0.0f ? 0.0f : value >= 1.0f ? 255.0f : value * 255.0f);
 		}
 	}
+	else if (dataType == RawDataType::UInt32)
+	{
+		for (size_t index = 0; index < expectedBytes; ++index)
+		{
+			const double normalized = static_cast<double>(uint32Data[index]) /
+				static_cast<double>(std::numeric_limits<GLuint>::max());
+			volumeData[index] = static_cast<GLubyte>(normalized * 255.0);
+		}
+	}
 
 	XDIM = rawDimensionX;
 	YDIM = rawDimensionY;
@@ -2448,7 +2467,8 @@ bool LoadCustomRawVolume(HWND hwnd)
 	const GLint internalFormat = dataType == RawDataType::UInt8 ? GL_R8 :
 		dataType == RawDataType::UInt16 ? GL_R16 : GL_R32F;
 	const GLenum glDataType = dataType == RawDataType::UInt8 ? GL_UNSIGNED_BYTE :
-		dataType == RawDataType::UInt16 ? GL_UNSIGNED_SHORT : GL_FLOAT;
+		dataType == RawDataType::UInt16 ? GL_UNSIGNED_SHORT :
+		dataType == RawDataType::Float32 ? GL_FLOAT : GL_UNSIGNED_INT;
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, XDIM, YDIM, ZDIM, 0, GL_RED, glDataType, textureData);
 	glGenerateMipmap(GL_TEXTURE_3D);

@@ -7,6 +7,7 @@
 //- Commmon Header Files -
 #include<Windows.h>
 #include<Windowsx.h>
+#include<CommCtrl.h>
 #include<fstream>
 #include<limits>
 
@@ -72,6 +73,8 @@
 #define ID_RAW_DIMENSION_Y 1033
 #define ID_RAW_DIMENSION_Z 1034
 
+#define ID_BUTTON_TIMER 1035
+
 const int rawInitialPanelX = 1420;
 const int rawInitialDataSetY = 880;
 const int rawControlRowHeight = 40;
@@ -104,6 +107,7 @@ HGLRC ghrc = NULL;
 
 // global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK ButtonSubclassProc(HWND, UINT, WPARAM, LPARAM, UINT_PTR, DWORD_PTR);
 void ToggleFullscreen(void);
 bool LoadCustomRawVolume(HWND hwnd);
 bool ReadRawDimension(HWND control, int& dimension);
@@ -205,6 +209,10 @@ HWND hRight_Data_Set = NULL;
 
 HWND hLeft_IsoValue = NULL;
 HWND hRight_IsoValue = NULL;
+
+HWND hButtonDown = NULL;
+BOOL bButtonDown = FALSE;
+int iButtonCount = 0;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -381,6 +389,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		NULL
 	);
 
+	SetWindowSubclass(hFrontClip_Minus,ButtonSubclassProc,0,0);
+
 	hLabel_FrontFace = CreateWindow(
 		L"STATIC",
 		L"0.5",
@@ -412,6 +422,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hFrontClip_Plus, ButtonSubclassProc, 0, 0);
+
 
 
 	//// ------------------ RIGHT FACE:  ARROW Two Buttons and Label ------------------ 
@@ -428,6 +440,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hRightClip_Minus, ButtonSubclassProc, 0, 0);
 
 	hLabel_RightFace = CreateWindow(
 		L"STATIC",
@@ -460,6 +473,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hRightClip_Plus, ButtonSubclassProc, 0, 0);
 
 	// ------------------ TOP FACE:  ARROW Two Buttons and Label ------------------ 
 	hTopClip_Minus = CreateWindow(
@@ -475,6 +489,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hTopClip_Minus, ButtonSubclassProc, 0, 0);
+
 
 	hLabel_TopFace = CreateWindow(
 		L"STATIC",
@@ -507,6 +523,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hTopClip_Plus, ButtonSubclassProc, 0, 0);
+
 
 	// ------------------ BACK FACE:  ARROW Two Buttons and Label ------------------ 
 	hBackClip_Minus = CreateWindow(
@@ -522,6 +540,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hBackClip_Minus, ButtonSubclassProc, 0, 0);
+
 
 	hLabel_BackFace= CreateWindow(
 		L"STATIC",
@@ -554,6 +574,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hBackClip_Plus, ButtonSubclassProc, 0, 0);
+
 
 
 	// ------------------ LEFT FACE:  ARROW Two Buttons and Label ------------------ 
@@ -570,6 +592,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hLeftClip_Minus, ButtonSubclassProc, 0, 0);
 
 	hLabel_LeftFace = CreateWindow(
 		L"STATIC",
@@ -602,7 +625,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
-	
+	SetWindowSubclass(hLeftClip_Plus, ButtonSubclassProc, 0, 0);
+
 	// ------------------ BOTTOM FACE:  ARROW Two Buttons and Label ------------------ 
 	hBottomClip_Minus = CreateWindow(
 		L"BUTTON",
@@ -617,6 +641,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hBottomClip_Minus, ButtonSubclassProc, 0, 0);
 
 	hLabel_BottomFace = CreateWindow(
 		L"STATIC",
@@ -649,7 +674,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
-	
+	SetWindowSubclass(hBottomClip_Plus, ButtonSubclassProc, 0, 0);
+
 	// ------------------ Data Set :  ARROW Two Buttons and Label ------------------ 
 	hLeft_Data_Set= CreateWindow(
 		L"BUTTON",
@@ -709,6 +735,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hLeft_IsoValue, ButtonSubclassProc, 0, 0);
 
 	hLabel_IsoValue = CreateWindow(
 		L"STATIC",
@@ -741,6 +768,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		(HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE),
 		NULL
 	);
+	SetWindowSubclass(hRight_IsoValue, ButtonSubclassProc, 0, 0);
 
 	CreateWindow(
 		L"STATIC",
@@ -1434,6 +1462,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		Set_UI_Objects_Position(hwnd);
 		break;
 
+	case WM_TIMER:
+		if (wParam == ID_BUTTON_TIMER)
+		{
+			if (hButtonDown != NULL)
+			{
+				iButtonCount++;
+				int iButtonID = GetDlgCtrlID(hButtonDown);
+
+				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(iButtonID, BN_CLICKED), (LPARAM)hButtonDown);
+				
+			}
+
+		}
+	break;
+
 	case WM_ERASEBKGND:
 		return (0);
 
@@ -1447,6 +1490,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return (DefWindowProc(hwnd, iMsg, wParam, lParam));
+}
+
+
+LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam,UINT_PTR uSubClassID,DWORD_PTR dwRefData)
+{
+	// local:
+
+	// code:
+	switch (iMsg)
+	{
+	case WM_LBUTTONDOWN:
+	{
+		hButtonDown = hwnd;
+		iButtonCount = 0;
+		SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWORD(GetDlgCtrlID(hwnd), BN_CLICKED), (LPARAM)hwnd);
+		SetTimer(GetParent(hwnd), ID_BUTTON_TIMER, 100, NULL);
+	}
+	break;
+
+	case WM_LBUTTONUP:
+	{
+		KillTimer(GetParent(hwnd), ID_BUTTON_TIMER);
+		hButtonDown = NULL;
+	}
+	break;
+
+
+	default:
+		break;
+	}
+	return (DefSubclassProc(hwnd,iMsg,wParam,lParam));
 }
 
 void ToggleFullscreen(void)
@@ -1959,8 +2033,6 @@ int LoadVolumeData(void)
 
 	// code:
 	std::ifstream infile(volume_file.c_str(), std::ios_base::binary);	// Engine
-	//std::ifstream infile(volume_file_4.c_str(), std::ios_base::binary); // Head
-	//std::ifstream infile(volume_file_2.c_str(), std::ios_base::binary); // Skull
 	if (infile.good())
 	{
 		//read the volume data file

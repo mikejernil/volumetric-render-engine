@@ -1420,7 +1420,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			rotationX += dY;
 
-			float fSign = (cos(glm::radians(rotationX)) >= 0.0 ? 1.0f : -1.0f);
+			float fSign = ((cos(glm::radians(rotationX)) >= 0.0) ? 1.0f : -1.0f);
 			//?? float factor = cos(glm::radians(rotationX));
 			rotationY += dX * fSign;
 
@@ -2389,7 +2389,16 @@ bool LoadCustomRawVolume(HWND hwnd)
 	{
 		fclose(file);
 		wchar_t message[256];
-		swprintf_s(message, L"Type mismatch or invalid dimensions: expected %s (%zu bytes for %d x %d x %d).", dataTypeName, expectedFileSize, rawDimensionX, rawDimensionY, rawDimensionZ);
+		if (static_cast<__int64>(expectedBytes) <= std::numeric_limits<__int64>::max() / 4 &&
+			(fileSize == static_cast<__int64>(expectedBytes) * 2 || fileSize == static_cast<__int64>(expectedBytes) * 4))
+		{
+			const wchar_t* detectedType = ((fileSize == static_cast<__int64>(expectedBytes) * 2) ? L"uint16" : L"float32");
+			swprintf_s(message, L"Type Mismatch: dimensions are valid, but this file appears to use %s. This loader expects uint8 (%zu bytes for %d x %d x %d).", detectedType, expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
+		}
+		else
+		{
+			swprintf_s(message, L"Type Mismatch or invalid dimensions: expected uint8 (%zu bytes for %d x %d x %d).", expectedBytes, rawDimensionX, rawDimensionY, rawDimensionZ);
+		}
 		SetWindowText(hFileStatusLabel, message);
 		MessageBoxW(hwnd, message, L"Import Error", MB_OK | MB_ICONERROR);
 		return false;
@@ -2494,7 +2503,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	bRecalculateForIsoValue = TRUE;
 
 	const size_t fileNameStart = filePath.find_last_of(L"\\/");
-	const std::wstring fileName = filePath.substr(fileNameStart == std::wstring::npos ? 0 : fileNameStart + 1);
+	const std::wstring fileName = filePath.substr((fileNameStart == std::wstring::npos) ? 0 : fileNameStart + 1);
 	const std::wstring status = L"Loaded: " + fileName;
 	SetWindowText(hLabel_DataSet, L"Custom RAW");
 	SetWindowText(hFileStatusLabel, status.c_str());

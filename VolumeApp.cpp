@@ -78,9 +78,8 @@
 #define ID_RAW_DIMENSION_X 1032
 #define ID_RAW_DIMENSION_Y 1033
 #define ID_RAW_DIMENSION_Z 1034
-#define ID_RAW_DATA_TYPE 1035
-
 #define ID_BUTTON_TIMER 1035
+#define ID_RAW_DATA_TYPE 1036
 
 const int rawInitialPanelX = 1420;
 const int rawInitialDataSetY = 880;

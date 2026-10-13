@@ -24,11 +24,6 @@
 #include "./src/effects/GridBoxes/GridBoxes.h"
 #include "./src/utils/FileDialogue.h"
 
-#ifndef CB_SETMINVISIBLE
-#define CB_SETMINVISIBLE (WM_USER + 30)
-#endif
-
-
 
 
 // MACROS 

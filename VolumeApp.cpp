@@ -2413,12 +2413,8 @@ bool LoadCustomRawVolume(HWND hwnd)
 	}
 
 	const RawDataType dataType = static_cast<RawDataType>(selectedDataType);
-	const size_t bytesPerVoxel = dataType == RawDataType::UInt8 ? sizeof(GLubyte) :
-		dataType == RawDataType::UInt16 ? sizeof(GLushort) :
-		dataType == RawDataType::Float32 ? sizeof(GLfloat) : sizeof(GLuint);
-	const wchar_t* dataTypeName = dataType == RawDataType::UInt8 ? L"uint8" :
-		dataType == RawDataType::UInt16 ? L"uint16" :
-		dataType == RawDataType::Float32 ? L"float32" : L"uint32";
+	const size_t bytesPerVoxel = ((dataType == RawDataType::UInt8) ? sizeof(GLubyte) : (dataType == RawDataType::UInt16) ? sizeof(GLushort) : (dataType == RawDataType::Float32) ? sizeof(GLfloat) : sizeof(GLuint));
+	const wchar_t* dataTypeName = ((dataType == RawDataType::UInt8) ? L"uint8" : (dataType == RawDataType::UInt16) ? L"uint16" : (dataType == RawDataType::Float32) ? L"float32" : L"uint32");
 	if (expectedBytes > std::numeric_limits<size_t>::max() / bytesPerVoxel)
 	{
 		const std::wstring message = L"The selected dimensions and datatype require too much memory.";
@@ -2517,7 +2513,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 		for (size_t index = 0; index < expectedBytes; ++index)
 		{
 			const GLfloat value = floatData[index];
-			volumeData[index] = static_cast<GLubyte>(value <= 0.0f ? 0.0f : value >= 1.0f ? 255.0f : value * 255.0f);
+			volumeData[index] = static_cast<GLubyte>(((value <= 0.0f) ? 0.0f : (value >= 1.0f) ? 255.0f : value * 255.0f));
 		}
 	}
 	else if (dataType == RawDataType::UInt32)
@@ -2544,11 +2540,8 @@ bool LoadCustomRawVolume(HWND hwnd)
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	const GLint internalFormat = dataType == RawDataType::UInt8 ? GL_R8 :
-		dataType == RawDataType::UInt16 ? GL_R16 : GL_R32F;
-	const GLenum glDataType = dataType == RawDataType::UInt8 ? GL_UNSIGNED_BYTE :
-		dataType == RawDataType::UInt16 ? GL_UNSIGNED_SHORT :
-		dataType == RawDataType::Float32 ? GL_FLOAT : GL_UNSIGNED_INT;
+	const GLint internalFormat = ((dataType == RawDataType::UInt8) ? GL_R8 : (dataType == RawDataType::UInt16) ? GL_R16 : GL_R32F);
+	const GLenum glDataType = ((dataType == RawDataType::UInt8) ? GL_UNSIGNED_BYTE : (dataType == RawDataType::UInt16) ? GL_UNSIGNED_SHORT : (dataType == RawDataType::Float32) ? GL_FLOAT : GL_UNSIGNED_INT);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, XDIM, YDIM, ZDIM, 0, GL_RED, glDataType, textureData);
 	glGenerateMipmap(GL_TEXTURE_3D);

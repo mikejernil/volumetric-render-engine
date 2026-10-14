@@ -885,8 +885,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	hFileStatusLabel = CreateWindow(
 		L"STATIC",
-		L"Built-in volume",
-		WS_VISIBLE | WS_CHILD | SS_CENTER | SS_CENTERIMAGE,
+		L"",
+		WS_CHILD | SS_LEFT | SS_NOPREFIX,
 		rawInitialPanelX,
 		rawInitialDataSetY + rawControlRowHeight * 4 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap + rawLoadButtonHeight + rawInputGap,
 		rawPanelWidth,
@@ -1276,6 +1276,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
+				ShowWindow(hFileStatusLabel, SW_HIDE);
 				SetFocus(hwnd);
 				break;
 
@@ -1291,6 +1292,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				bRecalculateForIsoValue = TRUE;
 				textDataSet = dataSet[iDataSet];
 				SetWindowText(hLabel_DataSet, textDataSet);
+				ShowWindow(hFileStatusLabel, SW_HIDE);
 				SetFocus(hwnd);
 				break;
 
@@ -2566,6 +2568,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	const std::wstring status = L"Loaded: " + fileName;
 	SetWindowText(hLabel_DataSet, L"Custom RAW");
 	SetWindowText(hFileStatusLabel, status.c_str());
+	ShowWindow(hFileStatusLabel, SW_SHOW);
 	return true;
 }
 
@@ -2965,7 +2968,7 @@ void Set_UI_Objects_Position(HWND hwnd)
 		NULL,
 		x,
 		y + rawControlRowHeight * 4 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap + rawLoadButtonHeight + rawInputGap,
-		rawPanelWidth,
+		std::max(rawPanelWidth, clientWidth - x - 20),
 		rawStatusHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);

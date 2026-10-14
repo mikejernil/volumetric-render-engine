@@ -112,6 +112,7 @@ LRESULT CALLBACK ButtonSubclassProc(HWND, UINT, WPARAM, LPARAM, UINT_PTR, DWORD_
 void ToggleFullscreen(void);
 bool LoadCustomRawVolume(HWND hwnd);
 bool ReadRawDimension(HWND control, int& dimension);
+int GetFileStatusLabelWidth(HWND hwnd);
 
 
 
@@ -2358,6 +2359,39 @@ bool ReadRawDimension(HWND control, int& dimension)
 	return true;
 }
 
+int GetFileStatusLabelWidth(HWND hwnd)
+{
+	const int textLength = GetWindowTextLengthW(hFileStatusLabel);
+	std::wstring text(static_cast<size_t>(textLength) + 1, L'\0');
+	if (textLength > 0)
+	{
+		GetWindowTextW(hFileStatusLabel, &text[0], textLength + 1);
+	}
+
+	HDC deviceContext = GetDC(hFileStatusLabel);
+	SIZE textSize = {};
+	if (deviceContext != NULL)
+	{
+		HFONT font = (HFONT)SendMessage(hFileStatusLabel, WM_GETFONT, 0, 0);
+		HGDIOBJ previousFont = NULL;
+		if (font != NULL)
+		{
+			previousFont = SelectObject(deviceContext, font);
+		}
+		GetTextExtentPoint32W(deviceContext, text.c_str(), textLength, &textSize);
+		if (previousFont != NULL)
+		{
+			SelectObject(deviceContext, previousFont);
+		}
+		ReleaseDC(hFileStatusLabel, deviceContext);
+	}
+
+	RECT clientRect = {};
+	GetClientRect(hwnd, &clientRect);
+	const int maximumWidth = std::max(1, static_cast<int>(clientRect.right - clientRect.left - 40));
+	return std::min(std::max(1, static_cast<int>(textSize.cx) + 10), maximumWidth);
+}
+
 bool LoadCustomRawVolume(HWND hwnd)
 {
 	std::wstring filePath;
@@ -2568,6 +2602,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	const std::wstring status = L"Loaded: " + fileName;
 	SetWindowText(hLabel_DataSet, L"Custom RAW");
 	SetWindowText(hFileStatusLabel, status.c_str());
+	SetWindowPos(hFileStatusLabel, NULL, 20, 20, GetFileStatusLabelWidth(hwnd), rawStatusHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 	ShowWindow(hFileStatusLabel, SW_SHOW);
 	return true;
 }
@@ -2966,9 +3001,9 @@ void Set_UI_Objects_Position(HWND hwnd)
 	SetWindowPos(
 		hFileStatusLabel,
 		NULL,
-		x,
-		y + rawControlRowHeight * 4 + rawLabelHeight + rawInputGap + rawInputHeight + rawInputGap + rawLoadButtonHeight + rawInputGap,
-		std::max(rawPanelWidth, clientWidth - x - 20),
+		20,
+		20,
+		GetFileStatusLabelWidth(hwnd),
 		rawStatusHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);

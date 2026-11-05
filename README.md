@@ -14,6 +14,7 @@ Currently it has -
 - Rotate & Zoom Controls (for easy navigation) 
 - 6 slicing planes to visualize cross-sections
 - Added IsoValue changing controls for MarchingTetrahedra and Pseudo Iso Surface Rendering.
+- You can Load a new RAW file dataset of type uint8,uint16,float32,uint32 having different dimensions.
 
 
 > [!NOTE]
@@ -25,7 +26,10 @@ The Datasets credits to http://klacansky.com/open-scivis-datasets/ which has pro
 - Start Visual Studio 2022 x64 developer command prompt (Install VS 2022 or higher if not installed already)
 - Go to Project directory, and run `build.bat`
 
-
+### How to load a New Dataset
+- select the datatype of your RAW file.
+- enter the XYZ Dimensions in text box.
+- Click 'Load Raw' Button and select your file from Explorer.
 
 
 ### Rendering Effects ##

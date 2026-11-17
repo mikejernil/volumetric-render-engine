@@ -1303,7 +1303,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case ID_LEFT_ISOVALUE:
-				if (uiIsoValue > 3)
+				if (uiIsoValue > uiMinIsoValue)
 				{
 					uiIsoValue -= 2;
 				}
@@ -1317,7 +1317,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case ID_RIGHT_ISOVALUE:
-				if (uiIsoValue < 250)
+				if (uiIsoValue < uiMaxIsoValue)
 				{
 					uiIsoValue += 2;
 				}
@@ -2316,6 +2316,9 @@ bool Load_Volume_Data_MT_Custom_Rotate(const std::string volume_data_, GLubyte**
 
 		*pVolume_ = new GLubyte[XDIM_TM * YDIM_TM * ZDIM_TM];
 
+		uint8_t minValue = UINT8_MAX;
+		uint8_t maxValue = 0;
+
 		for (int k = 0; k < ZDIM_TM; k++)
 		{
 			for (int j = 0; j < YDIM_TM; j++)
@@ -2332,9 +2335,20 @@ bool Load_Volume_Data_MT_Custom_Rotate(const std::string volume_data_, GLubyte**
 
 
 					(*pVolume_)[index_new] = pData_Temp[index_old];
+
+
+					if (pData_Temp[index_old] < minValue)
+						minValue = pData_Temp[index_old];
+
+					if (pData_Temp[index_old] > maxValue)
+						maxValue = pData_Temp[index_old];
 				}
 			}
 		}
+
+		wchar_t message[256];
+		swprintf_s(message, L"Type uint8 raw  File Foot256.raw :    minValue %ld | maxValue : %ld ", minValue, maxValue);
+		MessageBoxW(ghwnd, message, L"Range Calculation", MB_OK | MB_ICONINFORMATION);
 
 		delete[] pData_Temp;
 		return true;
@@ -2534,27 +2548,65 @@ bool LoadCustomRawVolume(HWND hwnd)
 	}
 	if (dataType == RawDataType::UInt16)
 	{
+		uint16_t minValue = UINT16_MAX;
+		uint16_t maxValue = 0;
+
 		for (size_t index = 0; index < expectedBytes; ++index)
 		{
 			volumeData[index] = static_cast<GLubyte>(uint16Data[index] >> 8);
+
+			if (volumeData[index] < minValue)
+				minValue = volumeData[index];
+			
+			if (volumeData[index] > maxValue)
+				maxValue = volumeData[index];
+
 		}
+		wchar_t message[256];
+		swprintf_s(message, L"Type uint16 raw format : minValue %ld | maxValue : %ld ", minValue,maxValue);
+		MessageBoxW(hwnd, message, L"Range Calculation", MB_OK | MB_ICONINFORMATION);
 	}
 	else if (dataType == RawDataType::Float32)
 	{
+		float minValue = FLT_MAX;
+		float maxValue = -FLT_MAX;
 		for (size_t index = 0; index < expectedBytes; ++index)
 		{
 			const GLfloat value = floatData[index];
 			volumeData[index] = static_cast<GLubyte>(((value <= 0.0f) ? 0.0f : (value >= 1.0f) ? 255.0f : value * 255.0f));
+
+
+			if (volumeData[index] < minValue)
+				minValue = volumeData[index];
+
+			if (volumeData[index] > maxValue)
+				maxValue = volumeData[index];
 		}
+		wchar_t message[256];
+		swprintf_s(message, L"Type float32 raw format : minValue %f | maxValue : %f ", minValue, maxValue);
+		MessageBoxW(hwnd, message, L"Range Calculation", MB_OK | MB_ICONINFORMATION);
 	}
 	else if (dataType == RawDataType::UInt32)
 	{
+		uint32_t minValue = UINT32_MAX;
+		uint32_t maxValue = 0;
+
 		for (size_t index = 0; index < expectedBytes; ++index)
 		{
 			const double normalized = static_cast<double>(uint32Data[index]) /
 				static_cast<double>(std::numeric_limits<GLuint>::max());
 			volumeData[index] = static_cast<GLubyte>(normalized * 255.0);
+
+
+			if (volumeData[index] < minValue)
+				minValue = volumeData[index];
+
+			if (volumeData[index] > maxValue)
+				maxValue = volumeData[index];
 		}
+		wchar_t message[256];
+		swprintf_s(message, L"Type uint32 raw format : minValue %ld | maxValue : %ld ", minValue, maxValue);
+		MessageBoxW(hwnd, message, L"Range Calculation", MB_OK | MB_ICONINFORMATION);
 	}
 
 	XDIM = rawDimensionX;

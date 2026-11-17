@@ -41,6 +41,10 @@ extern float rotationZ;
 
 
 extern unsigned int uiIsoValue;
+extern unsigned int uiMinIsoValue;
+extern unsigned int uiMaxIsoValue;
+extern float fMaxForIsoValue;
+
 
 extern BOOL bWireframe;
 

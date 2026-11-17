@@ -8,7 +8,8 @@ uniform sampler3D u_Volume3DSampler; //volume dataset
 uniform vec3 u_cameraPosition; //camera or eye position
 uniform vec3 u_stepSize; //ray step size
 
-uniform int u_isoValue =40;
+uniform float u_isoValue =40.0;
+
 
 const int MAX_SAMPLES = 300;	//total samples for each ray march step
 const vec3 texMin = vec3(0);	//minimum texture access coordinate
@@ -71,7 +72,7 @@ vec4 PhongLighting(vec3 L, vec3 N, vec3 V, float specPower, vec3 diffuseColor)
 
 void main(void)
 {             
-	float isoValue = u_isoValue /255.0;	
+	float isoValue = u_isoValue;
 
 	// step 1: save texcoords to local
 	vec3 dataPosition = oTexCoords; 

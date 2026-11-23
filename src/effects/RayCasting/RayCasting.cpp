@@ -348,7 +348,8 @@ void Render_IsoSurface_Output(void)
 		glUniform3fv(cameraPositionUniform_IsoSurface, 1, &(cameraPosition.x));
 		glUniform3f(step_size_Uniform_IsoSurface, (1.0f / XDIM), (1.0f / YDIM), (1.0f / ZDIM));
 
-		glUniform1i(glGetUniformLocation(shaderProgramObject_IsoSurface, "u_isoValue"), uiIsoValue);
+		float fNormalizedIsoValue = uiIsoValue / fMaxForIsoValue;
+		glUniform1f(glGetUniformLocation(shaderProgramObject_IsoSurface, "u_isoValue"), fNormalizedIsoValue);
 
 		// Texture : 0
 		glActiveTexture(GL_TEXTURE0);

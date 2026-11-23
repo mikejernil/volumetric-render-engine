@@ -47,6 +47,11 @@ float rotationY = 0.0f;
 float rotationZ = 0.0f;
 
 unsigned int uiIsoValue= 48;
+unsigned int uiMinIsoValue = 2;
+unsigned int uiMaxIsoValue = 252;
+
+unsigned int ui_BaseIsoValue = 48;
+float fMaxForIsoValue=255.0f;
 
 glm::mat4 perspectiveProjMatrix_glm = glm::identity<glm::mat4>();
 

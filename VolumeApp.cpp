@@ -985,7 +985,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					fClipPlane_Left = 0.0f;
 					fClipPlane_Top = 1.0f;
 					fClipPlane_Bottom = 0.0f;
-					uiIsoValue = 48;
+					uiIsoValue = ui_BaseIsoValue;
 					bSliceUpdate = TRUE;
 					SetIsosurfaceValue(uiIsoValue);
 					bRecalculateForIsoValue = TRUE;
@@ -1380,7 +1380,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				fZMinus_BackFace= -0.5f;
 				fXMinus_SideFace = -0.5f;
 				dist = -2.0f;
-				uiIsoValue = 48;
+				uiIsoValue = ui_BaseIsoValue;
 				SetIsosurfaceValue(uiIsoValue);
 				bRecalculateForIsoValue = TRUE;
 				// reset all labels:
@@ -2561,15 +2561,18 @@ bool LoadCustomRawVolume(HWND hwnd)
 			if (volumeData[index] > maxValue)
 				maxValue = volumeData[index];
 
+			uiIsoValue = (minValue+maxValue)/2;
+			ui_BaseIsoValue = (minValue + maxValue) / 2;
+
 		}
 		wchar_t message[256];
-		swprintf_s(message, L"Type uint16 raw format : minValue %ld | maxValue : %ld ", minValue,maxValue);
+		swprintf_s(message, L"Type uint16 raw format : minValue %ld | maxValue : %ld | Updated ui_BaseIsoValue : %ld ", minValue,maxValue, ui_BaseIsoValue);
 		MessageBoxW(hwnd, message, L"Range Calculation", MB_OK | MB_ICONINFORMATION);
 	}
 	else if (dataType == RawDataType::Float32)
 	{
-		float minValue = FLT_MAX;
-		float maxValue = -FLT_MAX;
+		uint16_t minValue = UINT16_MAX;
+		uint16_t maxValue = 0;
 		for (size_t index = 0; index < expectedBytes; ++index)
 		{
 			const GLfloat value = floatData[index];
@@ -2581,9 +2584,13 @@ bool LoadCustomRawVolume(HWND hwnd)
 
 			if (volumeData[index] > maxValue)
 				maxValue = volumeData[index];
+
+			uiIsoValue = (minValue + maxValue) / 2;
+			ui_BaseIsoValue = (minValue + maxValue) / 2;
+
 		}
 		wchar_t message[256];
-		swprintf_s(message, L"Type float32 raw format : minValue %f | maxValue : %f ", minValue, maxValue);
+		swprintf_s(message, L"Type float32 raw format : minValue %ld | maxValue : %ld | updated ui_BaseIsoValue : %ld ", minValue, maxValue, ui_BaseIsoValue);
 		MessageBoxW(hwnd, message, L"Range Calculation", MB_OK | MB_ICONINFORMATION);
 	}
 	else if (dataType == RawDataType::UInt32)
@@ -2603,9 +2610,12 @@ bool LoadCustomRawVolume(HWND hwnd)
 
 			if (volumeData[index] > maxValue)
 				maxValue = volumeData[index];
+
+			uiIsoValue = (minValue + maxValue) / 2;
+			ui_BaseIsoValue= (minValue + maxValue) / 2;
 		}
 		wchar_t message[256];
-		swprintf_s(message, L"Type uint32 raw format : minValue %ld | maxValue : %ld ", minValue, maxValue);
+		swprintf_s(message, L"Type uint32 raw format : minValue %ld | maxValue : %ld | ui_BaseIsoValue : %d ", minValue, maxValue, ui_BaseIsoValue);
 		MessageBoxW(hwnd, message, L"Range Calculation", MB_OK | MB_ICONINFORMATION);
 	}
 
@@ -2643,6 +2653,7 @@ bool LoadCustomRawVolume(HWND hwnd)
 	std::copy(volumeData.begin(), volumeData.end(), customVolume);
 	textureID = customTextureID;
 	pVolume = customVolume;
+	SetIsosurfaceValue(uiIsoValue);
 	MarchVolume(customVolume);
 	ReCalculate_VAO(volumeMarcherVAO, volumeMarcherVBO, customVolume);
 	iDataSet = -1;

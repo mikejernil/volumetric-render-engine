@@ -43,6 +43,7 @@ extern float rotationZ;
 extern unsigned int uiIsoValue;
 extern unsigned int uiMinIsoValue;
 extern unsigned int uiMaxIsoValue;
+extern unsigned int ui_BaseIsoValue;
 extern float fMaxForIsoValue;
 
 
